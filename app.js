@@ -86,6 +86,11 @@ function applyFilters(rows, f, now) {
     if (f.minArea != null && r.area != null && r.area < f.minArea) return false;
     if (f.minRooms != null && r.rooms != null && r.rooms < f.minRooms) return false;
     if (f.onlyNew && !isNew(r, now, f.since)) return false;
+    const mark = f.marks ? markState(r, f.marks) : null;
+    const view = f.view || "current";
+    if (view === "current" && mark === "hidden") return false;
+    if (view === "fav" && mark !== "fav") return false;
+    if (view === "hidden" && mark !== "hidden") return false;
     return true;
   });
 }
@@ -277,6 +282,122 @@ function startVisit(local, session, dataTime) {
   return typeof baseline === "number" ? baseline : null;
 }
 
+// ---------- favourites and hidden listings (kept in this browser only) ----------
+
+const FAVS_KEY = "flatscraper:v1:favs";
+const HIDDEN_KEY = "flatscraper:v1:hidden";
+const MAX_MARKS = 2000;
+const VIEWS = ["current", "fav", "hidden"];
+
+const markKey = (m) => `${m.site}:${m.id}`;
+const emptyMarks = () => ({ favs: {}, hidden: {} });
+
+/** A favourite keeps the facts of the listing, so it still shows up after the portal removes it from our data. */
+function snapshotOf(m, group, savedAt) {
+  return {
+    site: m.site, id: m.id, url: m.url, title: m.title, price: m.price, area: m.area, rooms: m.rooms,
+    district: m.district, street: m.street, firstSeen: m.firstSeen, lastSeen: m.lastSeen, group, savedAt,
+  };
+}
+
+function snapshotToRow(snap) {
+  return { ...snap, ppm: snap.price != null && snap.area ? snap.price / snap.area : null, city: null };
+}
+
+/** Oldest marks go first when there are too many: hidden ones before favourites. */
+function capMarks(marks, max = MAX_MARKS) {
+  const overflow = Object.keys(marks.favs).length + Object.keys(marks.hidden).length - max;
+  if (overflow <= 0) return marks;
+  const hidden = { ...marks.hidden }, favs = { ...marks.favs };
+  const oldest = (obj, time) => Object.keys(obj).sort((a, b) => time(obj[a]) - time(obj[b]));
+  let left = overflow;
+  for (const k of oldest(hidden, (t) => t)) { if (left-- <= 0) break; delete hidden[k]; }
+  for (const k of oldest(favs, (f) => f.savedAt ?? 0)) { if (left-- <= 0) break; delete favs[k]; }
+  return { favs, hidden };
+}
+
+const isText = (v) => typeof v === "string";
+const numOrNull = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+/** Storage content is untrusted: keep only well-formed entries. */
+function sanitizeMarks(favsRaw, hiddenRaw) {
+  const marks = emptyMarks();
+  if (favsRaw && typeof favsRaw === "object" && !Array.isArray(favsRaw)) {
+    for (const [key, f] of Object.entries(favsRaw)) {
+      if (!f || typeof f !== "object" || !isText(f.site) || !isText(f.id) || !isText(f.title) || key !== markKey(f)) continue;
+      marks.favs[key] = {
+        site: f.site, id: f.id, url: isText(f.url) ? f.url : "", title: f.title, price: numOrNull(f.price),
+        area: numOrNull(f.area), rooms: numOrNull(f.rooms), district: isText(f.district) ? f.district : null,
+        street: isText(f.street) ? f.street : null, firstSeen: numOrNull(f.firstSeen), lastSeen: numOrNull(f.lastSeen),
+        group: Array.isArray(f.group) ? f.group.filter(isText) : [key], savedAt: numOrNull(f.savedAt) ?? 0,
+      };
+    }
+  }
+  if (hiddenRaw && typeof hiddenRaw === "object" && !Array.isArray(hiddenRaw)) {
+    for (const [key, t] of Object.entries(hiddenRaw)) if (typeof t === "number" && /^[^:]+:.+/.test(key)) marks.hidden[key] = t;
+  }
+  return marks;
+}
+
+const loadMarks = (storage) => sanitizeMarks(readJSON(storage, FAVS_KEY), readJSON(storage, HIDDEN_KEY));
+
+function saveMarks(storage, marks) {
+  const a = writeJSON(storage, FAVS_KEY, marks.favs);
+  const b = writeJSON(storage, HIDDEN_KEY, marks.hidden);
+  return a && b;
+}
+
+/** "fav" | "hidden" | null for a display row. A favourite wins if its listings disagree (e.g. after a merge). */
+function markState(view, marks) {
+  let hidden = false;
+  for (const m of view.members) {
+    const k = markKey(m);
+    if (marks.favs[k]) return "fav";
+    if (marks.hidden[k]) hidden = true;
+  }
+  return hidden ? "hidden" : null;
+}
+
+/** mode: "fav" | "hidden" | null (clear). Applies to every listing in the row, so it survives re-grouping. */
+function setMark(marks, view, mode, now) {
+  const group = view.members.map(markKey);
+  const favs = { ...marks.favs }, hidden = { ...marks.hidden };
+  for (const m of view.members) {
+    const k = markKey(m);
+    delete favs[k];
+    delete hidden[k];
+    if (mode === "fav") favs[k] = snapshotOf(m, group, now);
+    else if (mode === "hidden") hidden[k] = now;
+  }
+  return capMarks({ favs, hidden });
+}
+
+/** Keep favourites' snapshots current while their listings are still in the data (price changes etc.). */
+function refreshSnapshots(marks, rows) {
+  const favs = { ...marks.favs };
+  let changed = false;
+  for (const r of rows) {
+    const k = markKey(r), old = favs[k];
+    if (!old) continue;
+    const fresh = snapshotOf(r, old.group, old.savedAt);
+    if (JSON.stringify(fresh) !== JSON.stringify(old)) { favs[k] = fresh; changed = true; }
+  }
+  return changed ? { marks: { ...marks, favs }, changed } : { marks, changed };
+}
+
+/** Favourites whose listings have left the data, as display rows (flagged `gone`), one per flat. */
+function goneViews(marks, rows) {
+  const live = new Set(rows.map(markKey));
+  const groups = new Map();
+  for (const f of Object.values(marks.favs)) {
+    if (live.has(markKey(f)) || f.group.some((k) => live.has(k))) continue; // still shown through a live listing
+    const id = [...f.group].sort().join("|");
+    if (!groups.has(id)) groups.set(id, []);
+    groups.get(id).push(f);
+  }
+  return [...groups.values()].map((snaps) => ({ ...toView(snaps.map(snapshotToRow)), gone: true }));
+}
+
 // ---------- remembered filters ----------
 
 const PREFS_KEY = "flatscraper:v1:prefs";
@@ -288,8 +409,8 @@ const ROOM_CHOICES = [1, 2, 3, 4];
  * What is worth remembering between visits. The search text is deliberately left out: a stale search term
  * left over from last time would look like the list is broken.
  */
-function prefsFromState({ site, districts, maxPrice, minArea, minRooms, onlyNew }, merge, sort) {
-  return { site, districts, maxPrice, minArea, minRooms, onlyNew, merge, sort };
+function prefsFromState({ site, districts, maxPrice, minArea, minRooms, onlyNew, view }, merge, sort) {
+  return { site, districts, maxPrice, minArea, minRooms, onlyNew, view, merge, sort };
 }
 
 /** Anything coming back from storage is untrusted: keep only values that still make sense for the current data. */
@@ -305,6 +426,7 @@ function sanitizePrefs(raw, known) {
     minArea: amount(p.minArea),
     minRooms: ROOM_CHOICES.includes(p.minRooms) ? p.minRooms : null,
     onlyNew: p.onlyNew === true,
+    view: p.view === "fav" ? "fav" : "current", // a leftover "hidden" view would look like the page is empty
     merge: p.merge !== false,
     sort,
   };
@@ -325,14 +447,15 @@ function describeSince(ms, now) {
 if (typeof module !== "undefined") {
   module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
     isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON,
-    prefsFromState, sanitizePrefs, loadPrefs, savePrefs, PREFS_KEY };
+    prefsFromState, sanitizePrefs, loadPrefs, savePrefs, PREFS_KEY,
+    markKey, emptyMarks, loadMarks, saveMarks, setMark, markState, refreshSnapshots, goneViews, capMarks, sanitizeMarks, MAX_MARKS, FAVS_KEY, HIDDEN_KEY, VIEWS };
 }
 
 // ---------- browser UI ----------
 
 if (typeof document !== "undefined") {
   const $ = (id) => document.getElementById(id);
-  const state = { rows: [], views: [], baseline: null, visitStarted: false, prefsReady: false, sort: { ...DEFAULT_SORT } };
+  const state = { rows: [], views: [], baseline: null, visitStarted: false, prefsReady: false, marks: emptyMarks(), sort: { ...DEFAULT_SORT } };
 
   function browserStorage(name) {
     try { const s = window[name]; s.getItem("flatscraper:probe"); return s; } catch { return memoryStorage(); }
@@ -355,6 +478,7 @@ if (typeof document !== "undefined") {
       districts: [...document.querySelectorAll("#districtPanel input:checked")].map((i) => i.value),
       maxPrice: n("maxPrice"), minArea: n("minArea"), minRooms: n("minRooms"),
       onlyNew: $("onlyNew").checked, since: state.baseline,
+      view: $("show").value, marks: state.marks,
     };
   }
 
@@ -384,14 +508,52 @@ if (typeof document !== "undefined") {
     return td;
   }
 
-  function renderRow(r, now) {
-    const tr = el("tr");
+  let toastTimer = null;
+  function hideToast() { clearTimeout(toastTimer); $("toast").hidden = true; state.undoMarks = null; }
+
+  /** A mis-tap on ✕ is easy on a phone, so hiding offers an undo for a few seconds. */
+  function showUndo(text, previous) {
+    state.undoMarks = previous;
+    $("toastText").textContent = text;
+    $("toast").hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 8000);
+  }
+
+  function setMarkAndRender(view, mode) {
+    const previous = state.marks;
+    state.marks = setMark(state.marks, view, mode, Date.now());
+    saveMarks(localStore, state.marks);
+    if (mode === "hidden") showUndo("Ogłoszenie ukryte.", previous); else hideToast();
+    render();
+  }
+
+  function actionsCell(r, mark, showing) {
+    const td = el("td", { className: "actions" });
+    const fav = el("button", { type: "button", className: "act fav", textContent: mark === "fav" ? "★" : "☆" });
+    fav.setAttribute("aria-pressed", String(mark === "fav"));
+    fav.setAttribute("aria-label", `${mark === "fav" ? "Usuń z ulubionych" : "Dodaj do ulubionych"}: ${r.title}`);
+    fav.title = mark === "fav" ? "Usuń z ulubionych" : "Dodaj do ulubionych";
+    fav.addEventListener("click", () => setMarkAndRender(r, mark === "fav" ? null : "fav"));
+    const hide = el("button", { type: "button", className: "act hide", textContent: showing === "hidden" ? "↩" : "✕" });
+    const hideText = showing === "hidden" ? "Przywróć ogłoszenie" : "Ukryj ogłoszenie";
+    hide.setAttribute("aria-label", `${hideText}: ${r.title}`);
+    hide.title = hideText;
+    hide.addEventListener("click", () => setMarkAndRender(r, showing === "hidden" ? null : "hidden"));
+    td.append(fav, hide);
+    return td;
+  }
+
+  function renderRow(r, now, showing) {
+    const mark = markState(r, state.marks);
+    const tr = el("tr", { className: r.gone ? "is-gone" : mark === "hidden" ? "is-hidden" : "" });
     const titleTd = el("td", { className: "title" });
     const href = safeUrl(r.url);
     const title = r.title || "(bez tytułu)";
     if (isNew(r, now, state.baseline)) titleTd.append(el("span", { className: "badge" }, "NOWE"));
     titleTd.append(href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, title) : el("span", {}, title));
     tr.append(
+      actionsCell(r, mark, showing),
       titleTd,
       cell("num price", formatPrice(r.price), "Cena"),
       cell("num area", formatArea(r.area), "Powierzchnia"),
@@ -399,7 +561,7 @@ if (typeof document !== "undefined") {
       cell("num rooms", r.rooms == null ? "—" : String(r.rooms), "Pokoje"),
       cell("district", r.district || "—", "Dzielnica"),
       siteCell(r),
-      cell("added", relativeTime(r.firstSeen, now), "Dodano"),
+      cell("added", r.gone ? `ostatnio widziano: ${relativeTime(r.lastSeen, now)}` : relativeTime(r.firstSeen, now), "Dodano"),
     );
     return tr;
   }
@@ -407,11 +569,16 @@ if (typeof document !== "undefined") {
   function render() {
     const now = Date.now();
     const filters = readFilters();
-    const rows = sortRows(applyFilters(state.views, filters, now), state.sort.key, state.sort.dir);
+    const gone = goneViews(state.marks, state.rows);
+    const pool = filters.view === "fav" ? state.views.concat(gone) : state.views;
+    const rows = sortRows(applyFilters(pool, filters, now), state.sort.key, state.sort.dir);
+    const countMarked = (mode) => state.views.filter((v) => markState(v, state.marks) === mode).length;
+    document.querySelector("#show option[value=fav]").textContent = `Ulubione (${countMarked("fav") + gone.length})`;
+    document.querySelector("#show option[value=hidden]").textContent = `Ukryte (${countMarked("hidden")})`;
     updateDistrictSummary(filters.districts);
     const body = $("rows");
     const frag = document.createDocumentFragment();
-    rows.forEach((r) => frag.append(renderRow(r, now)));
+    rows.forEach((r) => frag.append(renderRow(r, now, filters.view)));
     body.replaceChildren(frag);
     const merged = state.rows.length - state.views.length;
     const newCount = state.views.filter((v) => isNew(v, now, state.baseline)).length;
@@ -439,6 +606,7 @@ if (typeof document !== "undefined") {
     $("minArea").value = p.minArea ?? "";
     $("minRooms").value = p.minRooms == null ? "" : String(p.minRooms);
     $("onlyNew").checked = p.onlyNew;
+    $("show").value = p.view;
     $("merge").checked = p.merge;
     state.sort = p.sort;
   }
@@ -498,6 +666,12 @@ if (typeof document !== "undefined") {
       $("onlyNewHint").textContent = state.baseline != null
         ? `(od ostatniej wizyty: ${describeSince(state.baseline, Date.now())})` : "(24 h)";
     }
+    if (!state.marksLoaded) { // favourites: load, then refresh their snapshots from the live data
+      state.marksLoaded = true;
+      const refreshed = refreshSnapshots(loadMarks(localStore), state.rows);
+      state.marks = refreshed.marks;
+      if (refreshed.changed) saveMarks(localStore, state.marks);
+    }
     if (!state.prefsReady) {
       const known = { sites: unique("site"), districts: [...new Set(state.rows.map((r) => r.district ?? NO_DISTRICT))] };
       applyPrefs(loadPrefs(localStore, known));
@@ -531,7 +705,7 @@ if (typeof document !== "undefined") {
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    ["q", "site", "district", "maxPrice", "minArea", "minRooms", "onlyNew"].forEach((id) => {
+    ["q", "site", "district", "maxPrice", "minArea", "minRooms", "onlyNew", "show"].forEach((id) => {
       $(id).addEventListener("input", render);
     });
     // close the district dropdown on an outside click or Escape
@@ -555,6 +729,11 @@ if (typeof document !== "undefined") {
           : { key, dir: first };
         render();
       });
+    });
+    $("toastUndo").addEventListener("click", () => {
+      if (state.undoMarks) { state.marks = state.undoMarks; saveMarks(localStore, state.marks); }
+      hideToast();
+      render();
     });
     $("retry").addEventListener("click", load);
     load();

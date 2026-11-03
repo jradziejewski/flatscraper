@@ -392,16 +392,17 @@ def test_prefs_round_trip():
     out = run_node(f"""
 const known = {KNOWN};
 const storage = lib.memoryStorage();
-const filters = {{q: 'balkon', site: 'olx', districts: ['Krzyki', lib.NO_DISTRICT], maxPrice: 3500, minArea: 40, minRooms: 2, onlyNew: true, since: 123}};
+const filters = {{q: 'balkon', site: 'olx', districts: ['Krzyki', lib.NO_DISTRICT], maxPrice: 3500, minArea: 40, minRooms: 2, onlyNew: true, since: 123, view: 'fav', marks: {{}}}};
 const prefs = lib.prefsFromState(filters, false, {{key: 'price', dir: 'asc'}});
 const saved = lib.savePrefs(storage, prefs);
 return {{saved, prefs, loaded: lib.loadPrefs(storage, known), raw: JSON.parse(storage.getItem(lib.PREFS_KEY))}};
 """)
     assert out["saved"] is True
     assert "q" not in out["prefs"] and "q" not in out["raw"] and "since" not in out["raw"]  # search text is never remembered
+    assert "marks" not in out["raw"]  # favourites have their own storage keys
     assert out["loaded"] == out["prefs"]
     assert out["loaded"] == {"site": "olx", "districts": ["Krzyki", "__none__"], "maxPrice": 3500, "minArea": 40,
-                             "minRooms": 2, "onlyNew": True, "merge": False, "sort": {"key": "price", "dir": "asc"}}
+                             "minRooms": 2, "onlyNew": True, "view": "fav", "merge": False, "sort": {"key": "price", "dir": "asc"}}
 
 
 @needs_node
@@ -416,10 +417,16 @@ return [
 ];
 """)
     default = {"site": "", "districts": [], "maxPrice": None, "minArea": None, "minRooms": None, "onlyNew": False,
-               "merge": True, "sort": {"key": "firstSeen", "dir": "desc"}}
+               "view": "current", "merge": True, "sort": {"key": "firstSeen", "dir": "desc"}}
     # values that are present but wrong are dropped one by one; "merge: 0" is not exactly false, so it stays on
     assert out[0] == {**default, "districts": ["Krzyki"]}
     assert out[1] == default and out[2] == default and out[3] == default and out[4] == default and out[5] == default
+
+
+@needs_node
+def test_a_remembered_hidden_view_is_not_restored():
+    out = run_node(f"""const known = {KNOWN}; return ['hidden', 'fav', 'current', 'x', null].map(v => lib.sanitizePrefs({{view: v}}, known).view);""")
+    assert out == ["current", "fav", "current", "current", "current"]  # "Ukryte" would look like an empty page next time
 
 
 @needs_node
@@ -431,3 +438,129 @@ const broken = {{getItem() {{ throw new Error('x'); }}, setItem() {{ throw new E
 return [lib.loadPrefs(garbage, known).sort.key, lib.loadPrefs(broken, known).sort.key, lib.savePrefs(broken, {{}})];
 """)
     assert out == ["firstSeen", "firstSeen", False]  # defaults, and saving reports failure instead of throwing
+
+
+# ---------- favourites and hidden listings ----------
+
+def view_rows(records):
+    """Normalized rows of `records` plus the helper to build display rows, as JS source."""
+    return f"const rows = {json.dumps(records)}.map(lib.normalize); const views = lib.buildRows(rows, true);"
+
+
+FLATS = [
+    rec("otodom", "a", street="Hubska", title="Flat A", last_seen="2026-11-03T10:00:00Z"),
+    rec("morizon", "m", street="Hubska", title="Flat A on morizon"),          # same flat as "a" -> merged row
+    rec("olx", "o", price_pln="2000", title="Other flat"),
+    rec("olx", "p", price_pln="2100", title="Third flat"),
+]
+
+
+@needs_node
+def test_marks_apply_to_every_listing_of_a_merged_row():
+    out = run_node(view_rows(FLATS) + """
+let marks = lib.emptyMarks();
+const merged = views.find(v => v.members.length === 2), single = views.find(v => v.id === 'o');
+marks = lib.setMark(marks, merged, 'fav', 1000);
+const afterFav = {keys: Object.keys(marks.favs).sort(), group: marks.favs['otodom:a'].group, state: lib.markState(merged, marks), other: lib.markState(single, marks)};
+marks = lib.setMark(marks, merged, 'hidden', 2000);       // hiding un-favourites it
+const afterHide = {favs: Object.keys(marks.favs), hidden: Object.keys(marks.hidden).sort(), state: lib.markState(merged, marks)};
+marks = lib.setMark(marks, merged, 'fav', 3000);          // starring un-hides it
+const afterRefav = {favs: Object.keys(marks.favs).sort(), hidden: Object.keys(marks.hidden), state: lib.markState(merged, marks)};
+marks = lib.setMark(marks, merged, null, 4000);
+return {afterFav, afterHide, afterRefav, cleared: [Object.keys(marks.favs).length, Object.keys(marks.hidden).length, lib.markState(merged, marks)]};
+""")
+    assert out["afterFav"] == {"keys": ["morizon:m", "otodom:a"], "group": ["otodom:a", "morizon:m"], "state": "fav", "other": None}
+    assert out["afterHide"] == {"favs": [], "hidden": ["morizon:m", "otodom:a"], "state": "hidden"}
+    assert out["afterRefav"] == {"favs": ["morizon:m", "otodom:a"], "hidden": [], "state": "fav"}
+    assert out["cleared"] == [0, 0, None]
+
+
+@needs_node
+def test_a_favourite_wins_when_the_listings_of_a_row_disagree():
+    out = run_node(view_rows(FLATS) + """
+const merged = views.find(v => v.members.length === 2);
+// she hid the morizon listing earlier and starred the otodom one later: the merged row counts as a favourite
+const marks = {favs: lib.setMark(lib.emptyMarks(), {members: [rows[0]]}, 'fav', 1).favs, hidden: {'morizon:m': 5}};
+return [lib.markState(merged, marks), lib.markState({members: [rows[1]]}, marks)];
+""")
+    assert out == ["fav", "hidden"]
+
+
+@needs_node
+def test_view_filter_current_favourites_and_hidden():
+    out = run_node(view_rows(FLATS) + """
+const now = Date.parse('2026-11-04T12:00:00Z');
+let marks = lib.emptyMarks();
+marks = lib.setMark(marks, views.find(v => v.id === 'o'), 'hidden', 1);
+marks = lib.setMark(marks, views.find(v => v.members.length === 2), 'fav', 2);
+const ids = (view) => lib.applyFilters(views, {view, marks}, now).map(v => v.id).sort();
+return {current: ids('current'), fav: ids('fav'), hidden: ids('hidden'), none: ids(undefined),
+        noMarks: lib.applyFilters(views, {view: 'fav'}, now).length};
+""")
+    assert out["current"] == ["a", "p"]  # the hidden flat is excluded, the favourite stays
+    assert out["fav"] == ["a"] and out["hidden"] == ["o"]
+    assert out["none"] == out["current"]  # default view
+    assert out["noMarks"] == 0
+
+
+@needs_node
+def test_favourites_keep_a_snapshot_that_outlives_the_listing():
+    out = run_node(view_rows(FLATS) + """
+let marks = lib.setMark(lib.emptyMarks(), views.find(v => v.id === 'o'), 'fav', 1000);
+// 1) still in the data: nothing is "gone"
+const stillLive = lib.goneViews(marks, rows).length;
+// 2) the listing disappears from the CSV
+const without = rows.filter(r => r.id !== 'o');
+const gone = lib.goneViews(marks, without);
+// 3) a price change while it is live refreshes the snapshot
+const repriced = rows.map(r => r.id === 'o' ? {...r, price: 1900} : r);
+const refreshed = lib.refreshSnapshots(marks, repriced);
+const unchanged = lib.refreshSnapshots(marks, rows);
+return {stillLive, gone: gone.map(g => ({id: g.id, gone: g.gone, title: g.title, price: g.price, members: g.members.length})),
+        refreshedPrice: refreshed.marks.favs['olx:o'].price, changed: [refreshed.changed, unchanged.changed], savedAt: refreshed.marks.favs['olx:o'].savedAt};
+""")
+    assert out["stillLive"] == 0
+    assert out["gone"] == [{"id": "o", "gone": True, "title": "Other flat", "price": 2000, "members": 1}]
+    assert out["refreshedPrice"] == 1900 and out["changed"] == [True, False] and out["savedAt"] == 1000
+
+
+@needs_node
+def test_a_gone_merged_favourite_is_one_row_and_a_live_sibling_covers_it():
+    out = run_node(view_rows(FLATS) + """
+const marks = lib.setMark(lib.emptyMarks(), views.find(v => v.members.length === 2), 'fav', 1);
+const bothGone = lib.goneViews(marks, rows.filter(r => r.id !== 'a' && r.id !== 'm'));
+const oneGone = lib.goneViews(marks, rows.filter(r => r.id !== 'a'));  // morizon listing still live: shown through it
+return {bothGone: bothGone.map(g => g.members.map(m => m.site)), oneGone: oneGone.length};
+""")
+    assert out["bothGone"] == [["otodom", "morizon"]]  # one row with both portals' links
+    assert out["oneGone"] == 0
+
+
+@needs_node
+def test_marks_storage_round_trip_garbage_and_cap():
+    out = run_node(view_rows(FLATS) + """
+const storage = lib.memoryStorage();
+let marks = lib.setMark(lib.emptyMarks(), views.find(v => v.id === 'o'), 'fav', 10);
+marks = lib.setMark(marks, views.find(v => v.id === 'p'), 'hidden', 20);
+const saved = lib.saveMarks(storage, marks), loaded = lib.loadMarks(storage);
+const bad = lib.memoryStorage();
+bad.setItem(lib.FAVS_KEY, JSON.stringify({'olx:o': {site: 'olx', id: 'WRONG', title: 't'}, 'x': 5, 'olx:z': {site: 'olx', id: 'z', title: 'ok', price: 'abc', lastSeen: 7, group: [1, 'olx:z']}}));
+bad.setItem(lib.HIDDEN_KEY, JSON.stringify({'olx:p': 5, 'nocolon': 5, 'olx:q': 'x'}));
+const sanitized = lib.loadMarks(bad);
+const broken = {getItem() { throw new Error('x'); }, setItem() { throw new Error('x'); }};
+// cap: 5 hidden (old) + 3 favourites, limit 6 -> the 2 oldest hidden go first
+const big = {favs: {a: {savedAt: 1}, b: {savedAt: 2}, c: {savedAt: 3}}, hidden: {h1: 10, h2: 11, h3: 12, h4: 13, h5: 14}};
+const capped = lib.capMarks(big, 6);
+const capped2 = lib.capMarks(big, 2);
+return {saved, same: JSON.stringify(loaded) === JSON.stringify(marks),
+        sanitizedFavs: Object.keys(sanitized.favs), z: sanitized.favs['olx:z'], sanitizedHidden: Object.keys(sanitized.hidden),
+        brokenLoad: lib.loadMarks(broken), brokenSave: lib.saveMarks(broken, marks),
+        capped: [Object.keys(capped.hidden), Object.keys(capped.favs)], capped2: [Object.keys(capped2.hidden), Object.keys(capped2.favs)]};
+""")
+    assert out["saved"] is True and out["same"] is True
+    assert out["sanitizedFavs"] == ["olx:z"]  # wrong key/id and non-objects are dropped
+    assert out["z"]["price"] is None and out["z"]["lastSeen"] == 7 and out["z"]["group"] == ["olx:z"]
+    assert out["sanitizedHidden"] == ["olx:p"]
+    assert out["brokenLoad"] == {"favs": {}, "hidden": {}} and out["brokenSave"] is False
+    assert out["capped"] == [["h3", "h4", "h5"], ["a", "b", "c"]]  # oldest hidden dropped first
+    assert out["capped2"] == [[], ["b", "c"]]  # a smaller cap drops all hidden ones, then the oldest favourite
