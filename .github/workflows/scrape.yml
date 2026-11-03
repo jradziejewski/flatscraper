@@ -1,0 +1,40 @@
+name: scrape
+
+on:
+  schedule:
+    # UTC. 07:00/13:00/19:00 Warsaw in winter, 08:00/14:00/20:00 in summer.
+    - cron: "0 6,12,18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6  # installs the Python from .python-version
+
+      - run: uv sync --no-dev
+
+      - run: uv run python main.py
+
+      - name: Commit listings.csv if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add listings.csv
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "listings: update from scheduled run"
+          git pull --rebase
+          git push
