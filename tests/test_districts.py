@@ -28,6 +28,7 @@ def test_spelling_variants(raw, expected):
     ("Kępa Mieszczańska", "Śródmieście"), ("Sępolno", "Śródmieście"), ("Kuźniki", "Fabryczna"),
     ("Żerniki", "Fabryczna"), ("Lipa Piotrowska", "Psie Pole"), ("Stabłowice", "Fabryczna"),
     ("Szczepin", "Stare Miasto"), ("Różanka", "Psie Pole"),
+    ("Rakowiec", "Krzyki"), ("Strachowice", "Fabryczna"),
 ])
 def test_neighbourhoods_map_to_their_district(raw, expected):
     assert norm(raw) == expected
