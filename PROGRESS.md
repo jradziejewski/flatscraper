@@ -1,6 +1,6 @@
 # Progress and handoff notes
 
-Read this first in a new session, then `CLAUDE.md` (the spec and rules). Last updated 2026-11-04, after Step 11.
+Read this first in a new session, then `CLAUDE.md` (the spec and rules). Last updated 2026-11-04, after Step 12.
 
 ## What this is
 A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three times a day, writes `listings.csv`
@@ -8,7 +8,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 - Repo: `jradziejewski/flatscraper` (public). Page: https://jradziejewski.github.io/flatscraper/ (GitHub Pages, branch `main`, folder `/`).
 - Config: `config.yaml` = Wrocław, max 5000 zł, min 30 m², min 2 rooms, all districts.
 
-## Status: everything below is built, tested and pushed (HEAD `bd5d282`)
+## Status: everything below is built and tested. Steps 1-11 are pushed; Step 12 is committed locally, **not pushed yet**
 | Step | What |
 |---|---|
 | 1 | Skeleton, `Listing` model, CSV merge, config with filters |
@@ -19,24 +19,26 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 | 9 | District normalization to the 5 official districts (`aptsearch/districts.py`) |
 | 10 | `street` column + duplicate merging across portals on the page (Strict) |
 | 11 | Per-device page features: new since last visit, remembered filters, favourites/hide with undo |
+| 12 | `photo` column (thumbnail URL from each portal's list data) + 96x72 thumbnails on the page, beside the title in the phone card |
 
 **Not yet seen live:** the Actions bot has not run since the pushes of Steps 10 and 11, so the CSV on GitHub still has no `street`
 column and the page shows no merged duplicates yet. After the next run (06:00/12:00/18:00 UTC, or run it from Actions → scrape →
-Run workflow) check: the CSV header has `street`, the count line says "połączono N duplikatów", and the Actions log has no new
-"Unknown district names" warning. The first run after the upgrade rewrites the whole CSV once (big diff, expected).
+Run workflow) check: the CSV header has `street` (and `photo` once Step 12 is pushed), the count line says "połączono N duplikatów",
+the thumbnails show, and the Actions log has no new "Unknown district names" warning. The first run after an upgrade rewrites the
+whole CSV once (big diff, expected).
 
 ## Map of the code
 ```
 main.py                  run(): scrapers -> normalize districts -> filter -> merge -> snapshot new -> prune -> save
-aptsearch/models.py      Listing (site,id,url,title,price_pln,area_m2,rooms,district,street,city,posted_at,first_seen,last_seen)
+aptsearch/models.py      Listing (site,id,url,title,price_pln,area_m2,rooms,district,street,photo,city,posted_at,first_seen,last_seen)
 aptsearch/config.py      Config, load_config() (unknown keys fail), matches() (missing values pass)
-aptsearch/storage.py     load/merge/save, prune (STALE_AFTER 3 days), save_snapshot; reads old CSVs without new columns
+aptsearch/storage.py     load/merge/save, prune (STALE_AFTER 3 days), save_snapshot; reads old CSVs without the street/photo columns
 aptsearch/districts.py   WROCLAW table (59 neighbourhoods) + normalize_district(); unknown -> None, logged by main.py
-aptsearch/text.py        city_slug, clean_street
+aptsearch/text.py        city_slug, clean_street, photo_url (http(s) only)
 aptsearch/http.py        get() (urllib, browser UA) and get_curl() (OLX only: urllib gets 403)
 aptsearch/scrapers/      otodom, nieruchomosci, morizon, olx; SCRAPERS list in __init__.py
 index.html, app.js       the page; pure functions exported for node tests, DOM code only in a browser
-tests/                   156 tests (pytest); test_site.py drives app.js through node
+tests/                   167 tests (pytest); test_site.py drives app.js through node
 .github/workflows/scrape.yml
 archive/YYYY-MM/*.csv    immutable snapshots of new listings
 ```
@@ -47,7 +49,7 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
 - **Districts:** only Otodom/Morizon/OLX give the 5 official districts; nieruchomosci gives neighbourhoods. The table was built from
   Morizon/Otodom data (no conflicts) and cross-checked with pl.wikipedia "Podział administracyjny Wrocławia". Unmatched names become
   empty ("Brak dzielnicy") and are logged. Typo repair is deliberately strict (difflib cutoff 0.85: fixes "Krzyk", not "Krzyky").
-- **`merge()`** updates `price_pln`, `district`, `street`, `last_seen`; an empty value never overwrites a known one; rows are never
+- **`merge()`** updates `price_pln`, `district`, `street`, `photo`, `last_seen`; an empty value never overwrites a known one; rows are never
   deleted by `merge()` (pruning is a separate step and is skipped when a run finds nothing at all).
 - **Duplicate merging is display-only, in `app.js`** (`groupDuplicates`). Strict rule: same price, area rounded to whole m², rooms,
   district, on different portals, AND the same street (distinctive words of one name contained in the other's); a street-less row
@@ -59,6 +61,14 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
 - The page reads the CSV from `raw.githubusercontent.com` (CORS-enabled), so it never needs a redeploy for new data.
 - OLX: Python's HTTP client gets 403 (also on its HTML pages), plain `curl` gets 200. We chose `curl` and not browser automation.
   It works from GitHub's runners (verified on the first run). OLX has no street field.
+- **Photos (Step 12):** hot-linked from the portals' CDNs, never copied into the repo. Sizes: Otodom `small` 314x236, OLX 320x240 (we
+  substitute the `{width}x{height}` placeholders), nieruchomosci ld+json `image`, Morizon `3x2_s` (450x300, 21 KB; `_m` is 600x400, 35 KB,
+  not needed at 96x72). Morizon sends photo ids, so its URL is built in `scrapers/morizon.py` (`IMG_BASE`, the same URL its pages use).
+  All four CDNs answered `200 image/jpeg` with no Referer, and the `<img>` sends `no-referrer` anyway (checked 2026-11-04). On a live run
+  (748 listings) every one had a photo except a single Otodom listing the portal itself sent none for; the 40 rows from before the column
+  stay empty until they are seen again.
+  A merged row shows the first portal (by priority) that has a picture. A portal may rotate or block CDN URLs later: the `error` handler
+  just leaves the grey box, so nothing breaks. CSV grew from ~205 KB to ~325 KB.
 
 ## How we work (user preferences)
 - **One step at a time.** Show the file layout first, plan, get approval, implement, then stop and wait. Plan mode is used for this;
@@ -89,12 +99,6 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
   bot's own commits count). Pushes to `main` by the bot mean: `git pull --rebase` before starting work.
 
 ## Backlog (agreed order, each needs its own plan + approval)
-**Step 12: photos in the list.** All four portals give a thumbnail URL in list data: Otodom `images[0].small`; Morizon `photos[0]` →
-`https://img1.staticmorizon.com.pl/thumb/{id}/3x2_m:fill_and_crop/{name}.jpg` (identical to its ld+json `image`); nieruchomosci
-ld+json `image` (real flat photos); OLX `photos[0].link` with `{width}x{height}` placeholders (use 320x240). All four CDNs returned
-`200 image/jpeg` with and without a github.io `Referer` (checked 2026-11-04). Not guaranteed to last, so hide failed images and keep the
-title link. Needs a `photo` column (~70-260 chars/row, CSV +~130 KB), lazy loading, fixed-size boxes; merged rows use the first member with a photo.
-
 **Step 13: monthly fee + floor.** Fee (czynsz) is in list data for OLX (`params` key `rent`, 98/104) and Otodom (`rentPrice.value`,
 65/74); Morizon and nieruchomosci have none, so "total per month" can only be shown for about half the rows ("czynsz nieznany"
 otherwise; a merged flat can take the fee from whichever portal has it). Median fee ≈ 890 zł on 2800 zł (+32%). Floor: OLX
@@ -107,6 +111,8 @@ shared flats ("pokój do wynajęcia", area is the whole flat's).
 
 ## Known limitations
 - OLX flats rarely merge (no street field). Merged rows exist only where streets match.
+- Photo URLs are whatever the portal sent at the last sighting; a listing that left the portal may show the grey box. Favourites keep the
+  URL in their snapshot, so a dead image there also falls back to the box. The desktop rows are taller now (72 px photo vs ~42 px text).
 - A name missing from the district table becomes "Brak dzielnicy" until added (watch the Actions log for "Unknown district names").
 - Each site is read only to 5 pages (~200 newest listings) per run, so an older live listing can drop out and be pruned after 3 days.
 - `CLAUDE.md` still has an old "Step 1 (current)" layout section that no longer matches the repo.

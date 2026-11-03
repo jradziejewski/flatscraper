@@ -14,12 +14,14 @@ For a new step, show the file structure first, then implement.
 - Python 3.12. Deps managed with uv (or pip + requirements.txt).
 - Scrapers for otodom.pl, morizon.pl, olx.pl and nieruchomosci-online.pl. Poland, rentals only; city and filters come from config.
 - Every scraper returns the same `Listing` dataclass:
-  `site, id, url, title, price_pln, area_m2, rooms, district, street, city, posted_at, first_seen, last_seen`.
+  `site, id, url, title, price_pln, area_m2, rooms, district, street, photo, city, posted_at, first_seen, last_seen`.
   `street` is the street name without "ul."/"al." (`text.clean_street`), empty where a site gives none (OLX).
-  `load_listings` still reads older CSVs that lack the column.
+  `photo` is the URL of the first list thumbnail, taken from the list data each scraper already fetches (no extra
+  requests); only http(s) URLs are kept (`text.photo_url`), empty where a site sends none.
+  `load_listings` still reads older CSVs that lack the `street` or `photo` column.
 - Results merge into `listings.csv`, keyed by `(site, id)`:
   - new rows get `first_seen=now`
-  - existing rows update `price_pln`, `district`, `street` and `last_seen`; an empty price, district or street never overwrites a known one
+  - existing rows update `price_pln`, `district`, `street`, `photo` and `last_seen`; an empty price, district, street or photo never overwrites a known one
   - `merge()` itself never deletes rows
 - Every run that finds listings not yet in `listings.csv` writes an immutable snapshot of just those new
   listings to `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
@@ -46,6 +48,12 @@ For a new step, show the file structure first, then implement.
 
 - `index.html` + `app.js` is a static, Polish-language page served by GitHub Pages: search, filters, sortable columns, "NOWE" badge for listings first seen in the last 24 h, card layout on phones. Live at https://jradziejewski.github.io/flatscraper/.
 - **Duplicates:** the same flat is often listed on several portals, so the page merges those rows ("Łącz duplikaty", on by default; off shows every listing). Strict rule (`groupDuplicates` in `app.js`): same price, area (rounded to a whole m²), rooms and district on different portals, plus evidence of the same place, which means the same street (one name's distinctive words contained in the other's, so "Sikorskiego" matches "gen. Władysława Sikorskiego"). A row without a street (OLX) matches only if its title or URL names the other row's street. Different streets never merge, two listings from one portal are never combined, and a merged row links to every portal's listing. Nothing is removed from the data; merging is display only. It is the only place that decides what counts as the same flat, so alerts or exports would need the same rule.
+- **Photos:** every row starts with a 96×72 thumbnail (`photoCell` in `app.js`); on phones it sits beside the title in the card.
+  The image is lazy-loaded, sent with `referrerpolicy="no-referrer"`, and its `src` only ever gets a `safeUrl` value. The box has a
+  fixed size, so a missing or dead image (portals rotate CDN URLs) leaves an empty grey box and the title link keeps working. A merged
+  row shows the picture of the first portal (by priority) that has one. Favourites keep the photo URL in their snapshot.
+  Portals' thumbnails: Otodom `images[0].small`, Morizon `photos[0]` built into its `3x2_s` thumb URL, nieruchomosci ld+json `image`,
+  OLX `photos[0].link` with `{width}x{height}` = 320x240. The page hot-links the portals' CDNs; nothing is copied into this repo.
 - **Per-device features** (browser `localStorage`/`sessionStorage`, keys `flatscraper:v1:*`; nothing is sent anywhere and nothing is shared between devices; every access is wrapped in try/catch and falls back to memory when storage is blocked):
   - *New since last visit*: the baseline is the newest `last_seen` in the data she saw last time (not the wall clock, because the raw CSV is cached for ~5 min), fixed for the tab session so a refresh keeps the badges. First visit: falls back to "first seen in the last 24 h".
   - *Remembered filters and sort* (not the search text; a remembered "Ukryte" view is not restored). Values are sanitized against the current data on load.
