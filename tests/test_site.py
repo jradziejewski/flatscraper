@@ -69,7 +69,11 @@ return {{
   minRooms: titles({{minRooms: 2}}),
   minArea: titles({{minArea: 50}}),
   site: titles({{site: 'olx'}}),
-  district: titles({{district: 'Krzyki'}}),
+  district: titles({{districts: ['Krzyki']}}),
+  multi: titles({{districts: ['Krzyki', 'Stare Miasto']}}),
+  noDistrict: titles({{districts: [lib.NO_DISTRICT]}}),
+  mixed: titles({{districts: ['Krzyki', lib.NO_DISTRICT]}}),
+  allDistricts: titles({{districts: []}}),
   search: titles({{q: 'żoliborz'}}),
   onlyNew: titles({{onlyNew: true}}),
 }};
@@ -79,6 +83,10 @@ return {{
     assert out["minRooms"] == ["Duże ŻOLIBORZ", "Bez danych"]
     assert out["minArea"] == ["Duże ŻOLIBORZ", "Bez danych"]
     assert out["site"] == ["Duże ŻOLIBORZ"] and out["district"] == ["Duże ŻOLIBORZ"]
+    assert out["multi"] == ["Tani Rynek", "Duże ŻOLIBORZ"]  # any of the chosen districts
+    assert out["noDistrict"] == ["Bez danych"]  # the "Brak dzielnicy" option
+    assert out["mixed"] == ["Duże ŻOLIBORZ", "Bez danych"]
+    assert len(out["allDistricts"]) == 3  # nothing ticked = no district filter
     assert out["search"] == ["Duże ŻOLIBORZ"]  # case-insensitive, Polish letters
     assert out["onlyNew"] == ["Tani Rynek"]  # first seen within 24 h of "now"
 

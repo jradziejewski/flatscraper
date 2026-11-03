@@ -40,10 +40,28 @@
 
   form#filters {
     display: grid; gap: 10px; align-items: end; margin-bottom: 10px;
-    grid-template-columns: 2fr repeat(5, 1fr) auto auto;
+    grid-template-columns: 1.7fr 1fr 1.35fr 1fr 1.1fr 1fr auto auto;
   }
-  form#filters label { display: flex; flex-direction: column; gap: 3px; font-size: .78rem; color: var(--muted); min-width: 0; }
-  form#filters input, form#filters select { width: 100%; }
+  form#filters label, form#filters .field { display: flex; flex-direction: column; gap: 3px; font-size: .78rem; color: var(--muted); min-width: 0; }
+  form#filters input:not([type=checkbox]), form#filters select { width: 100%; }
+  .multi { position: relative; }
+  .multi details { position: static; }
+  .multi summary {
+    list-style: none; cursor: pointer; background: var(--surface); color: var(--fg); font-size: 1rem;
+    border: 1px solid var(--line); border-radius: 8px; padding: 7px 28px 7px 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative;
+  }
+  .multi summary::-webkit-details-marker { display: none; }
+  .multi summary::after { content: "▾"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .multi .panel {
+    position: absolute; z-index: 10; top: calc(100% + 4px); left: 0; min-width: 100%; width: max-content; max-width: 90vw;
+    max-height: 300px; overflow: auto; padding: 6px; background: var(--surface); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+  }
+  .opt { flex-direction: row !important; align-items: center; gap: 8px !important; padding: 5px 6px; border-radius: 6px; font-size: .92rem !important; color: var(--fg) !important; cursor: pointer; }
+  .opt:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .opt input { width: auto; }
+  .opt .cnt { margin-left: auto; padding-left: 14px; color: var(--muted); font-size: .8rem; }
   label.check { flex-direction: row !important; align-items: center; gap: 6px !important; color: var(--fg) !important; font-size: .9rem !important; white-space: nowrap; padding-bottom: 8px; }
   label.check input { width: auto; }
   .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin: 6px 0 8px; color: var(--muted); font-size: .9rem; }
@@ -79,6 +97,7 @@
     main { padding: 14px 12px 40px; }
     form#filters { grid-template-columns: 1fr 1fr; }
     .sort-mobile { display: flex; align-items: center; gap: 6px; }
+    .multi .panel { left: auto; right: 0; max-width: calc(100vw - 24px); } /* the district box is in the right column */
     thead { display: none; }
     table, tbody { display: block; background: none; border: 0; }
     /* card: title / price · area · rooms · zł/m² / district · portal · added */
@@ -116,9 +135,13 @@
       <label>Portal
         <select id="site"><option value="">Wszystkie</option></select>
       </label>
-      <label>Dzielnica
-        <select id="district"><option value="">Wszystkie</option></select>
-      </label>
+      <div class="field multi">
+        <span id="districtLabel">Dzielnica</span>
+        <details id="district">
+          <summary id="districtSummary" aria-labelledby="districtLabel districtSummary">Wszystkie</summary>
+          <div id="districtPanel" class="panel" role="group" aria-labelledby="districtLabel"></div>
+        </details>
+      </div>
       <label>Cena do (zł)
         <input id="maxPrice" type="number" inputmode="numeric" min="0" step="100">
       </label>

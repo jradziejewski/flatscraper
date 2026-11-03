@@ -9,6 +9,7 @@ const LOCAL_URL = "listings.csv"; // fallback, and what `python -m http.server` 
 const NEW_WINDOW_MS = 24 * 3600 * 1000;
 const STALE_AFTER_MS = 13 * 3600 * 1000; // the bot runs every 6 h
 const TIME_ZONE = "Europe/Warsaw";
+const NO_DISTRICT = "__none__"; // filter value for listings without a district
 
 const SITE_NAMES = { otodom: "Otodom", morizon: "Morizon", olx: "OLX", nieruchomosci: "Nieruchomosci-online" };
 
@@ -72,7 +73,7 @@ function applyFilters(rows, f, now) {
   return rows.filter((r) => {
     if (q && !(fold(r.title).includes(q) || fold(r.district).includes(q))) return false;
     if (f.site && r.site !== f.site) return false;
-    if (f.district && r.district !== f.district) return false;
+    if (f.districts && f.districts.length && !f.districts.includes(r.district ?? NO_DISTRICT)) return false;
     if (f.maxPrice != null && r.price != null && r.price > f.maxPrice) return false;
     if (f.minArea != null && r.area != null && r.area < f.minArea) return false;
     if (f.minRooms != null && r.rooms != null && r.rooms < f.minRooms) return false;
@@ -126,7 +127,7 @@ function safeUrl(u) {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS };
+  module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT };
 }
 
 // ---------- browser UI ----------
@@ -146,7 +147,8 @@ if (typeof document !== "undefined") {
   function readFilters() {
     const n = (id) => (($(id).value || "").trim() === "" ? null : Number($(id).value));
     return {
-      q: $("q").value, site: $("site").value, district: $("district").value,
+      q: $("q").value, site: $("site").value,
+      districts: [...document.querySelectorAll("#districtPanel input:checked")].map((i) => i.value),
       maxPrice: n("maxPrice"), minArea: n("minArea"), minRooms: n("minRooms"),
       onlyNew: $("onlyNew").checked,
     };
@@ -187,7 +189,9 @@ if (typeof document !== "undefined") {
 
   function render() {
     const now = Date.now();
-    const rows = sortRows(applyFilters(state.rows, readFilters(), now), state.sort.key, state.sort.dir);
+    const filters = readFilters();
+    const rows = sortRows(applyFilters(state.rows, filters, now), state.sort.key, state.sort.dir);
+    updateDistrictSummary(filters.districts);
     const body = $("rows");
     const frag = document.createDocumentFragment();
     rows.forEach((r) => frag.append(renderRow(r, now)));
@@ -202,6 +206,28 @@ if (typeof document !== "undefined") {
     $("sort").value = preset ? preset[0] : "custom";
   }
 
+  const districtLabel = (v) => (v === NO_DISTRICT ? "Brak dzielnicy" : v);
+
+  function buildDistrictPanel() {
+    const counts = new Map();
+    state.rows.forEach((r) => { const k = r.district ?? NO_DISTRICT; counts.set(k, (counts.get(k) || 0) + 1); });
+    const keys = [...counts.keys()].filter((k) => k !== NO_DISTRICT).sort((a, b) => a.localeCompare(b, "pl"));
+    if (counts.has(NO_DISTRICT)) keys.push(NO_DISTRICT);
+    const frag = document.createDocumentFragment();
+    keys.forEach((k) => {
+      const opt = el("label", { className: "opt" });
+      opt.append(el("input", { type: "checkbox", value: k }), el("span", {}, districtLabel(k)), el("span", { className: "cnt" }, String(counts.get(k))));
+      frag.append(opt);
+    });
+    $("districtPanel").replaceChildren(frag);
+  }
+
+  function updateDistrictSummary(selected) {
+    $("districtSummary").textContent = selected.length === 0 ? "Wszystkie"
+      : selected.length <= 2 ? selected.map(districtLabel).join(", ")
+      : `${selected.length} wybrane`;
+  }
+
   function fillSelect(select, values, labelOf = (v) => v) {
     select.querySelectorAll("option:not([value=''])").forEach((o) => o.remove());
     values.forEach((v) => select.append(el("option", { value: v }, labelOf(v))));
@@ -211,7 +237,7 @@ if (typeof document !== "undefined") {
     state.rows = records.map(normalize);
     const unique = (key) => [...new Set(state.rows.map((r) => r[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pl"));
     fillSelect($("site"), unique("site"), (s) => SITE_NAMES[s] || s);
-    fillSelect($("district"), unique("district"));
+    buildDistrictPanel();
     const cities = unique("city");
     $("city").textContent = cities.length === 1 ? ` — ${cities[0]}` : "";
     const last = Math.max(0, ...state.rows.map((r) => r.lastSeen || 0));
@@ -252,6 +278,9 @@ if (typeof document !== "undefined") {
     ["q", "site", "district", "maxPrice", "minArea", "minRooms", "onlyNew"].forEach((id) => {
       $(id).addEventListener("input", render);
     });
+    // close the district dropdown on an outside click or Escape
+    document.addEventListener("click", (e) => { if (!$("district").contains(e.target)) $("district").open = false; });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("district").open = false; });
     $("reset").addEventListener("click", () => {
       $("filters").reset();
       render();
