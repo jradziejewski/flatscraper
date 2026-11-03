@@ -14,10 +14,12 @@ For a new step, show the file structure first, then implement.
 - Python 3.12. Deps managed with uv (or pip + requirements.txt).
 - Scrapers for otodom.pl, morizon.pl, olx.pl and nieruchomosci-online.pl. Poland, rentals only; city and filters come from config.
 - Every scraper returns the same `Listing` dataclass:
-  `site, id, url, title, price_pln, area_m2, rooms, district, city, posted_at, first_seen, last_seen`.
+  `site, id, url, title, price_pln, area_m2, rooms, district, street, city, posted_at, first_seen, last_seen`.
+  `street` is the street name without "ul."/"al." (`text.clean_street`), empty where a site gives none (OLX).
+  `load_listings` still reads older CSVs that lack the column.
 - Results merge into `listings.csv`, keyed by `(site, id)`:
   - new rows get `first_seen=now`
-  - existing rows update `price_pln`, `district` and `last_seen`; an empty price or district never overwrites a known one
+  - existing rows update `price_pln`, `district`, `street` and `last_seen`; an empty price, district or street never overwrites a known one
   - `merge()` itself never deletes rows
 - Every run that finds listings not yet in `listings.csv` writes an immutable snapshot of just those new
   listings to `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
@@ -43,6 +45,7 @@ For a new step, show the file structure first, then implement.
 ## Viewing the listings
 
 - `index.html` + `app.js` is a static, Polish-language page served by GitHub Pages: search, filters, sortable columns, "NOWE" badge for listings first seen in the last 24 h, card layout on phones. Live at https://jradziejewski.github.io/flatscraper/.
+- **Duplicates:** the same flat is often listed on several portals, so the page merges those rows ("Łącz duplikaty", on by default; off shows every listing). Strict rule (`groupDuplicates` in `app.js`): same price, area (rounded to a whole m²), rooms and district on different portals, plus evidence of the same place, which means the same street (one name's distinctive words contained in the other's, so "Sikorskiego" matches "gen. Władysława Sikorskiego"). A row without a street (OLX) matches only if its title or URL names the other row's street. Different streets never merge, two listings from one portal are never combined, and a merged row links to every portal's listing. Nothing is removed from the data; merging is display only. It is the only place that decides what counts as the same flat, so alerts or exports would need the same rule.
 - It fetches `listings.csv` from `raw.githubusercontent.com` (CORS-enabled, cached ~5 min) and falls back to the relative `listings.csv`. So it never needs redeploying when the bot commits new data.
 - One-time setup: repo Settings → Pages → Source "Deploy from a branch" → `main`, folder `/ (root)`. `.nojekyll` skips the Jekyll build.
 - Listing fields come from scraped sites, so `app.js` fills the page with `textContent` only (never `innerHTML`) and links only `http(s)` URLs. A test enforces this.
