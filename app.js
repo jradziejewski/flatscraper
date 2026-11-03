@@ -113,10 +113,11 @@ function streetWords(street) {
   return wordsOf((street || "").replace(/^(?:(?:ul|al|pl|os)\.\s*|(?:ulica|aleja|plac|osiedle)\s+)/i, ""));
 }
 
-/** Same street if all words of the shorter name are in the longer one ("Sikorskiego" ~ "gen. Władysława Sikorskiego"). */
+/** Same street if all distinctive words of the shorter name are in the longer one: "Sikorskiego" ~
+ *  "gen. Władysława Sikorskiego" ~ "Generała Władysława Sikorskiego". Short words (gen., ks., św.) are ignored. */
 function streetsMatch(a, b) {
-  const wa = streetWords(a), wb = streetWords(b);
-  if (!wa.some(distinctive) || !wb.some(distinctive)) return false;
+  const wa = streetWords(a).filter(distinctive), wb = streetWords(b).filter(distinctive);
+  if (!wa.length || !wb.length) return false;
   const [small, big] = wa.length <= wb.length ? [wa, wb] : [wb, wa];
   return small.every((w) => big.includes(w));
 }

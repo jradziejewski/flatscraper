@@ -222,6 +222,17 @@ def test_street_names_match_when_one_is_contained_in_the_other():
 
 
 @needs_node
+def test_street_matching_ignores_abbreviated_ranks():
+    script = "return input.map(([a, b]) => lib.streetsMatch(a, b));"
+    out = run_node(script, [
+        ["gen. Władysława Sikorskiego", "Generała Władysława Sikorskiego"], ["Sikorskiego", "Generała Władysława Sikorskiego"],
+        ["ks. Kordeckiego", "Kordeckiego"], ["Plac Grunwaldzki", "pl. Grunwaldzki"],
+        ["Hubska", "Nowowiejska"], ["Kościuszki", "Kościuszki Tadeusza Nowa"], ["ul. Os", "Os"], ["", "Hubska"],
+    ])
+    assert out == [True, True, True, True, False, True, False, False]
+
+
+@needs_node
 def test_a_listing_without_a_street_matches_only_if_its_title_names_the_street():
     named = rec("olx", "o", title="Mieszkanie na wynajem, Wrocław, ul. Kościuszki 118")
     unnamed = rec("olx", "p", title="Przytulne mieszkanie blisko centrum")
