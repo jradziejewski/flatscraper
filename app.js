@@ -61,6 +61,7 @@ function normalize(record) {
     rooms: num(record.rooms),
     district: record.district || null,
     street: record.street || null,
+    photo: safeUrl(record.photo), // listing data comes from scraped sites: only http(s) ever reaches an <img src>
     city: record.city || null,
     firstSeen: ts(record.first_seen),
     lastSeen: ts(record.last_seen),
@@ -164,6 +165,7 @@ function toView(members) {
   return {
     ...rep,
     firstSeen: Number.isFinite(earliest) ? earliest : null, // a flat is only "new" if its earliest listing is
+    photo: ordered.find((m) => m.photo)?.photo ?? null, // the first portal (by priority) that has a picture
     members: ordered,
     sites: ordered.map((m) => m.site),
     searchText: fold(`${members.map((m) => m.title).join(" ")} ${rep.district ?? ""}`),
@@ -296,7 +298,7 @@ const emptyMarks = () => ({ favs: {}, hidden: {} });
 function snapshotOf(m, group, savedAt) {
   return {
     site: m.site, id: m.id, url: m.url, title: m.title, price: m.price, area: m.area, rooms: m.rooms,
-    district: m.district, street: m.street, firstSeen: m.firstSeen, lastSeen: m.lastSeen, group, savedAt,
+    district: m.district, street: m.street, photo: m.photo ?? null, firstSeen: m.firstSeen, lastSeen: m.lastSeen, group, savedAt,
   };
 }
 
@@ -328,7 +330,8 @@ function sanitizeMarks(favsRaw, hiddenRaw) {
       marks.favs[key] = {
         site: f.site, id: f.id, url: isText(f.url) ? f.url : "", title: f.title, price: numOrNull(f.price),
         area: numOrNull(f.area), rooms: numOrNull(f.rooms), district: isText(f.district) ? f.district : null,
-        street: isText(f.street) ? f.street : null, firstSeen: numOrNull(f.firstSeen), lastSeen: numOrNull(f.lastSeen),
+        street: isText(f.street) ? f.street : null, photo: isText(f.photo) ? safeUrl(f.photo) : null,
+        firstSeen: numOrNull(f.firstSeen), lastSeen: numOrNull(f.lastSeen),
         group: Array.isArray(f.group) ? f.group.filter(isText) : [key], savedAt: numOrNull(f.savedAt) ?? 0,
       };
     }
@@ -544,6 +547,27 @@ if (typeof document !== "undefined") {
     return td;
   }
 
+  /** Fixed-size box, so rows don't jump while pictures load. A missing or broken picture leaves the empty box. */
+  function photoCell(r) {
+    const td = el("td", { className: "photo" });
+    const href = safeUrl(r.url);
+    // the title is the accessible link; the picture is only a bigger click target for the same page
+    const box = href
+      ? el("a", { className: "thumb", href, target: "_blank", rel: "noopener noreferrer", tabIndex: -1 })
+      : el("span", { className: "thumb" });
+    box.setAttribute("aria-hidden", "true");
+    const src = safeUrl(r.photo);
+    if (src) {
+      const img = el("img", {
+        src, alt: "", width: 96, height: 72, loading: "lazy", decoding: "async", referrerPolicy: "no-referrer",
+      });
+      img.addEventListener("error", () => img.remove()); // portals rotate image URLs; keep the empty box
+      box.append(img);
+    }
+    td.append(box);
+    return td;
+  }
+
   function renderRow(r, now, showing) {
     const mark = markState(r, state.marks);
     const tr = el("tr", { className: r.gone ? "is-gone" : mark === "hidden" ? "is-hidden" : "" });
@@ -554,6 +578,7 @@ if (typeof document !== "undefined") {
     titleTd.append(href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, title) : el("span", {}, title));
     tr.append(
       actionsCell(r, mark, showing),
+      photoCell(r),
       titleTd,
       cell("num price", formatPrice(r.price), "Cena"),
       cell("num area", formatArea(r.area), "Powierzchnia"),

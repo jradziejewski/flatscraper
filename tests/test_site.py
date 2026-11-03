@@ -440,6 +440,63 @@ return [lib.loadPrefs(garbage, known).sort.key, lib.loadPrefs(broken, known).sor
     assert out == ["firstSeen", "firstSeen", False]  # defaults, and saving reports failure instead of throwing
 
 
+# ---------- photos ----------
+
+@needs_node
+def test_photo_is_normalized_and_only_http_urls_survive():
+    out = run_node("return input.map(p => lib.normalize({site: 'x', photo: p}).photo);",
+                   ["https://img.test/a.jpg", "http://img.test/a.jpg", "", "javascript:alert(1)", "data:image/png;base64,AAAA", "//img.test/a.jpg"])
+    assert out == ["https://img.test/a.jpg", "http://img.test/a.jpg", None, None, None, None]
+    assert run_node("return lib.normalize({site: 'x'}).photo;", None) is None  # old CSV without the column
+
+
+@needs_node
+def test_a_merged_row_takes_the_photo_of_the_first_portal_that_has_one():
+    flats = [
+        rec("otodom", "a", street="Hubska", photo=""),                          # highest priority, but no picture
+        rec("morizon", "m", street="Hubska", photo="https://img.test/m.jpg"),
+        rec("nieruchomosci", "n", street="Hubska", photo="https://img.test/n.jpg"),
+        rec("olx", "o", price_pln="2000", photo="https://img.test/o.jpg"),
+        rec("olx", "p", price_pln="2100", photo=""),
+    ]
+    out = run_node(f"const rows = {json.dumps(flats)}.map(lib.normalize);"
+                   "return lib.buildRows(rows, true).map(v => [v.members.length, v.photo]);")
+    by_size = sorted(out, key=lambda x: (-x[0], x[1] or ""))  # the merged row first, then the single ones
+    assert by_size == [[3, "https://img.test/m.jpg"], [1, None], [1, "https://img.test/o.jpg"]]
+    # with merging off every listing keeps its own picture
+    off = run_node(f"const rows = {json.dumps(flats)}.map(lib.normalize); return lib.buildRows(rows, false).map(v => v.photo);")
+    assert off == [None, "https://img.test/m.jpg", "https://img.test/n.jpg", "https://img.test/o.jpg", None]
+
+
+@needs_node
+def test_favourites_keep_the_photo_and_do_not_trust_stored_ones():
+    out = run_node(f"const rows = {json.dumps([rec('olx', 'o', photo='https://img.test/o.jpg')])}.map(lib.normalize);"
+                   """
+const views = lib.buildRows(rows, true);
+const marks = lib.setMark(lib.emptyMarks(), views[0], 'fav', 1);
+const gone = lib.goneViews(marks, []);
+const storage = lib.memoryStorage();
+lib.saveMarks(storage, marks);
+const reloaded = lib.loadMarks(storage);
+const refreshed = lib.refreshSnapshots(reloaded, rows);   // same data: the snapshot must not look "changed" on every visit
+const evil = lib.sanitizeMarks({'olx:z': {site: 'olx', id: 'z', title: 't', photo: 'javascript:alert(1)'},
+                                'olx:y': {site: 'olx', id: 'y', title: 't', photo: 5},
+                                'olx:w': {site: 'olx', id: 'w', title: 't'}}, {});
+return {saved: marks.favs['olx:o'].photo, gone: gone.map(g => g.photo), reloaded: reloaded.favs['olx:o'].photo,
+        changed: refreshed.changed, evil: ['olx:z', 'olx:y', 'olx:w'].map(k => evil.favs[k].photo)};
+""")
+    assert out == {"saved": "https://img.test/o.jpg", "gone": ["https://img.test/o.jpg"], "reloaded": "https://img.test/o.jpg",
+                   "changed": False, "evil": [None, None, None]}
+
+
+def test_images_only_ever_get_a_checked_url():
+    cell = re.search(r"function photoCell\(r\) \{.*?\n  \}\n", APP_JS, re.S).group(0)
+    assert 'safeUrl(r.photo)' in cell and re.search(r"\bsrc,", cell)  # src comes from the checked local, nothing else
+    assert 'referrerPolicy: "no-referrer"' in cell and 'loading: "lazy"' in cell
+    assert '"error"' in cell  # a dead image URL falls back to the empty box
+    assert INDEX_HTML.count('class="photo"') == 1  # the header cell for the new column
+
+
 # ---------- favourites and hidden listings ----------
 
 def view_rows(records):

@@ -91,6 +91,9 @@
   .chip { display: inline-block; margin: 0 4px 3px 0; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--accent); text-decoration: none; }
   a.chip:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); border-color: var(--accent); }
   .badge { display: inline-block; margin-right: 8px; padding: 1px 7px; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .03em; background: var(--badge-bg); color: var(--badge-fg); vertical-align: 1px; }
+  td.photo { width: 1%; padding-right: 0; }
+  .thumb { display: block; width: 96px; height: 72px; border-radius: 6px; overflow: hidden; background: var(--line); }
+  .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
   td.actions { white-space: nowrap; width: 1%; padding-right: 0; }
   .act { all: unset; box-sizing: border-box; cursor: pointer; min-width: 30px; padding: 4px 6px; text-align: center; font-size: 1.15rem; line-height: 1; border-radius: 6px; color: var(--muted); }
   .act:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--fg); }
@@ -116,20 +119,22 @@
     .multi .panel { left: auto; right: 0; max-width: calc(100vw - 24px); } /* the district box is in the right column */
     thead { display: none; }
     table, tbody { display: block; background: none; border: 0; }
-    /* card: title / price · area · rooms · zł/m² / district · portal · added */
+    /* card: photo | title | actions / price · area · rooms · zł/m² / district · portal · added */
     tbody tr {
       display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 14px; margin-bottom: 10px; padding: 10px 12px;
       background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
     }
-    tbody tr::after { content: ""; flex: 0 0 100%; height: 0; order: 5; } /* forced line break */
+    tbody tr::after { content: ""; flex: 0 0 100%; height: 0; order: 7; } /* forced line break */
     tbody tr:hover { background: var(--surface); }
     tbody td { display: block; padding: 0; border: 0; text-align: left; }
-    tbody tr { position: relative; }
-    td.actions { position: absolute; top: 2px; right: 4px; width: auto; display: flex; gap: 10px; }
+    /* first line: 96px photo + title + a column of two 42px buttons, with two 14px gaps. The title's basis is exactly
+       what is left, so the price row cannot squeeze onto this line. */
+    td.photo { order: 0; flex: 0 0 96px; width: auto; align-self: flex-start; }
+    td.title { order: 1; flex: 1 1 calc(100% - 166px); min-width: 0; align-self: flex-start; margin-bottom: 4px; font-size: 1rem; }
+    td.actions { order: 2; flex: 0 0 42px; width: auto; align-self: flex-start; display: flex; flex-direction: column; margin: -4px -6px 0 0; }
     .act { min-width: 42px; min-height: 42px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-    td.title { flex: 0 0 100%; order: 0; margin-bottom: 4px; font-size: 1rem; padding-right: 108px; }
-    td.price { order: 1; } td.area { order: 2; } td.rooms { order: 3; } td.ppm { order: 4; }
-    td.district { order: 6; } td.site { order: 7; } td.added { order: 8; }
+    td.price { order: 3; } td.area { order: 4; } td.rooms { order: 5; } td.ppm { order: 6; }
+    td.district { order: 8; } td.site { order: 9; } td.added { order: 10; }
     td.district, td.site, td.added { font-size: .85rem; }
     td.rooms::after { content: " pok."; }
   }
@@ -206,6 +211,7 @@
       <thead>
         <tr>
           <th scope="col" class="actions"><span class="sr-only">Akcje</span></th>
+          <th scope="col" class="photo"><span class="sr-only">Zdjęcie</span></th>
           <th scope="col" data-key="title"><button type="button">Tytuł</button></th>
           <th scope="col" data-key="price" class="num"><button type="button">Cena</button></th>
           <th scope="col" data-key="area" class="num"><button type="button">Pow.</button></th>
