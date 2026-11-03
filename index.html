@@ -62,8 +62,9 @@
   .opt:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
   .opt input { width: auto; }
   .opt .cnt { margin-left: auto; padding-left: 14px; color: var(--muted); font-size: .8rem; }
-  .checks { display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
-  label.check { flex-direction: row !important; align-items: center; gap: 6px !important; color: var(--fg) !important; font-size: .9rem !important; white-space: nowrap; }
+  .checks { display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; max-width: 210px; }
+  label.check { flex-direction: row !important; align-items: center; gap: 6px !important; color: var(--fg) !important; font-size: .9rem !important; }
+  label.check small { display: block; color: var(--muted); font-size: .75rem; line-height: 1.2; }
   label.check input { width: auto; }
   .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin: 6px 0 8px; color: var(--muted); font-size: .9rem; }
   .sort-mobile { display: none; }
@@ -158,7 +159,7 @@
         </select>
       </label>
       <div class="checks">
-        <label class="check"><input id="onlyNew" type="checkbox"> Tylko nowe (24 h)</label>
+        <label class="check"><input id="onlyNew" type="checkbox"><span>Tylko nowe <small id="onlyNewHint">(24 h)</small></span></label>
         <label class="check"><input id="merge" type="checkbox" checked> Łącz duplikaty</label>
       </div>
       <button id="clearFilters" type="button">Wyczyść filtry</button>

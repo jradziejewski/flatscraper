@@ -52,6 +52,7 @@ function normalize(record) {
   const area = num(record.area_m2);
   return {
     site: record.site,
+    id: record.id,
     url: record.url,
     title: record.title,
     price,
@@ -68,6 +69,12 @@ function normalize(record) {
 
 const fold = (s) => (s || "").toLocaleLowerCase("pl");
 
+/** New = first seen after `since` (the data she last looked at), or within 24 h when there is no such moment. */
+function isNew(r, now, since) {
+  if (r.firstSeen == null) return false;
+  return since != null ? r.firstSeen > since : now - r.firstSeen <= NEW_WINDOW_MS;
+}
+
 /** Like the scrapers' filters, a missing value never excludes a listing. */
 function applyFilters(rows, f, now) {
   const q = fold(f.q).trim();
@@ -78,7 +85,7 @@ function applyFilters(rows, f, now) {
     if (f.maxPrice != null && r.price != null && r.price > f.maxPrice) return false;
     if (f.minArea != null && r.area != null && r.area < f.minArea) return false;
     if (f.minRooms != null && r.rooms != null && r.rooms < f.minRooms) return false;
-    if (f.onlyNew && !(r.firstSeen != null && now - r.firstSeen <= NEW_WINDOW_MS)) return false;
+    if (f.onlyNew && !isNew(r, now, f.since)) return false;
     return true;
   });
 }
@@ -233,15 +240,68 @@ function safeUrl(u) {
   return /^https?:\/\//i.test(u || "") ? u : null;
 }
 
+// ---------- per-device storage (localStorage / sessionStorage are injected so tests can fake them) ----------
+
+const LAST_VISIT_KEY = "flatscraper:v1:lastVisit";
+const SESSION_BASELINE_KEY = "flatscraper:v1:baseline";
+
+function readJSON(storage, key) {
+  try {
+    const raw = storage.getItem(key);
+    return raw == null ? undefined : JSON.parse(raw);
+  } catch { return undefined; }
+}
+
+function writeJSON(storage, key, value) {
+  try { storage.setItem(key, JSON.stringify(value)); return true; } catch { return false; }
+}
+
+/** In-memory stand-in used when the browser's storage is blocked (private mode etc.). */
+function memoryStorage() {
+  const m = new Map();
+  return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => { m.set(k, String(v)); }, removeItem: (k) => { m.delete(k); } };
+}
+
+/**
+ * Baseline for "new since last visit" = the data she saw last time (the newest `last_seen` in the CSV then),
+ * not the wall clock: GitHub caches the CSV for ~5 min, so a clock-based baseline could hide flats she never saw.
+ * It is kept per tab session so a refresh doesn't make the NOWE badges vanish.
+ * Returns null on a first visit (the page then falls back to "last 24 h").
+ */
+function startVisit(local, session, dataTime) {
+  const stored = readJSON(local, LAST_VISIT_KEY);
+  const inSession = readJSON(session, SESSION_BASELINE_KEY);
+  const baseline = inSession !== undefined ? inSession : (typeof stored === "number" ? stored : null);
+  writeJSON(session, SESSION_BASELINE_KEY, baseline);
+  if (dataTime > 0) writeJSON(local, LAST_VISIT_KEY, dataTime);
+  return typeof baseline === "number" ? baseline : null;
+}
+
+/** "dziś, 18:30" / "wczoraj, 18:30" / "3 lis, 18:30" (Warsaw time). */
+function describeSince(ms, now) {
+  const day = (t) => new Date(t).toLocaleDateString("sv-SE", { timeZone: TIME_ZONE });
+  const time = new Date(ms).toLocaleTimeString("pl-PL", { timeZone: TIME_ZONE, hour: "2-digit", minute: "2-digit" });
+  if (day(ms) === day(now)) return `dziś, ${time}`;
+  if (day(ms) === day(now - 24 * 3600 * 1000)) return `wczoraj, ${time}`;
+  return formatDate(ms);
+}
+
 if (typeof module !== "undefined") {
-  module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch };
+  module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
+    isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON };
 }
 
 // ---------- browser UI ----------
 
 if (typeof document !== "undefined") {
   const $ = (id) => document.getElementById(id);
-  const state = { rows: [], views: [], sort: { key: "firstSeen", dir: "desc" } };
+  const state = { rows: [], views: [], baseline: null, visitStarted: false, sort: { key: "firstSeen", dir: "desc" } };
+
+  function browserStorage(name) {
+    try { const s = window[name]; s.getItem("flatscraper:probe"); return s; } catch { return memoryStorage(); }
+  }
+  const localStore = browserStorage("localStorage");
+  const sessionStore = browserStorage("sessionStorage");
 
   const SORT_PRESETS = {
     newest: ["firstSeen", "desc"],
@@ -257,7 +317,7 @@ if (typeof document !== "undefined") {
       q: $("q").value, site: $("site").value,
       districts: [...document.querySelectorAll("#districtPanel input:checked")].map((i) => i.value),
       maxPrice: n("maxPrice"), minArea: n("minArea"), minRooms: n("minRooms"),
-      onlyNew: $("onlyNew").checked,
+      onlyNew: $("onlyNew").checked, since: state.baseline,
     };
   }
 
@@ -292,7 +352,7 @@ if (typeof document !== "undefined") {
     const titleTd = el("td", { className: "title" });
     const href = safeUrl(r.url);
     const title = r.title || "(bez tytułu)";
-    if (r.firstSeen != null && now - r.firstSeen <= NEW_WINDOW_MS) titleTd.append(el("span", { className: "badge" }, "NOWE"));
+    if (isNew(r, now, state.baseline)) titleTd.append(el("span", { className: "badge" }, "NOWE"));
     titleTd.append(href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, title) : el("span", {}, title));
     tr.append(
       titleTd,
@@ -317,8 +377,10 @@ if (typeof document !== "undefined") {
     rows.forEach((r) => frag.append(renderRow(r, now)));
     body.replaceChildren(frag);
     const merged = state.rows.length - state.views.length;
+    const newCount = state.views.filter((v) => isNew(v, now, state.baseline)).length;
     $("count").textContent = `Pokazano ${rows.length} z ${state.views.length}` +
-      (merged > 0 ? ` · połączono ${merged} ${plural(merged, "duplikat", "duplikaty", "duplikatów")}` : "");
+      (merged > 0 ? ` · połączono ${merged} ${plural(merged, "duplikat", "duplikaty", "duplikatów")}` : "") +
+      ` · ${state.baseline != null ? "nowe od ostatniej wizyty" : "nowe (24 h)"}: ${newCount}`;
     $("empty").hidden = rows.length > 0;
     document.querySelectorAll("th[data-key]").forEach((th) => {
       const active = th.dataset.key === state.sort.key;
@@ -376,6 +438,12 @@ if (typeof document !== "undefined") {
     if (last && Date.now() - last > STALE_AFTER_MS) {
       status.textContent += " · ⚠ dane mogą być nieaktualne";
       status.classList.add("warn");
+    }
+    if (!state.visitStarted) { // once per page load, after the data is on screen
+      state.visitStarted = true;
+      state.baseline = startVisit(localStore, sessionStore, last);
+      $("onlyNewHint").textContent = state.baseline != null
+        ? `(od ostatniej wizyty: ${describeSince(state.baseline, Date.now())})` : "(24 h)";
     }
     $("app").hidden = false;
     $("status").hidden = true;

@@ -317,3 +317,66 @@ return {rows: rows.length, views: views.length, hidden: rows.length - views.leng
     out = run_node(script, text)
     assert out["problems"] == []
     assert out["views"] <= out["rows"] and out["hidden"] == out["rows"] - out["views"]
+
+
+# ---------- new since the last visit ----------
+
+T0 = "Date.parse('2026-11-04T12:00:00Z')"
+
+
+@needs_node
+def test_start_visit_uses_the_previous_visit_and_survives_a_refresh():
+    out = run_node("""
+const local = lib.memoryStorage(), session = lib.memoryStorage();
+const d = (iso) => Date.parse(iso);
+const first = lib.startVisit(local, session, d('2026-11-03T10:00:00Z'));       // first ever visit
+const refresh = lib.startVisit(local, session, d('2026-11-03T10:00:00Z'));     // same tab refreshed
+const newerData = lib.startVisit(local, session, d('2026-11-03T16:00:00Z'));   // same tab, newer data
+const newSession = lib.startVisit(local, lib.memoryStorage(), d('2026-11-04T07:00:00Z'));  // next day, new tab
+const another = lib.startVisit(local, lib.memoryStorage(), d('2026-11-04T08:00:00Z'));
+return {first, refresh, newerData, newSession: new Date(newSession).toISOString(), another: new Date(another).toISOString()};
+""")
+    assert out["first"] is None  # nothing to compare with: the page falls back to "last 24 h"
+    assert out["refresh"] is None and out["newerData"] is None  # the baseline is fixed for the whole tab session
+    assert out["newSession"] == "2026-11-03T16:00:00.000Z"  # the data she saw at her previous visit
+    assert out["another"] == "2026-11-04T07:00:00.000Z"
+
+
+@needs_node
+def test_start_visit_ignores_garbage_and_blocked_storage():
+    out = run_node("""
+const broken = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } };
+const garbage = lib.memoryStorage(); garbage.setItem('flatscraper:v1:lastVisit', '{not json');
+const textual = lib.memoryStorage(); textual.setItem('flatscraper:v1:lastVisit', '"yesterday"');
+return [lib.startVisit(broken, broken, 5), lib.startVisit(garbage, lib.memoryStorage(), 5), lib.startVisit(textual, lib.memoryStorage(), 5),
+        lib.startVisit(lib.memoryStorage(), lib.memoryStorage(), 0)];
+""")
+    assert out == [None, None, None, None]
+
+
+@needs_node
+def test_is_new_with_and_without_a_baseline():
+    out = run_node(f"""
+const now = {T0}, h = 3600e3;
+const row = (hoursAgo) => ({{firstSeen: now - hoursAgo * h}});
+return {{
+  fallback: [lib.isNew(row(2), now, null), lib.isNew(row(23), now, null), lib.isNew(row(25), now, null), lib.isNew({{firstSeen: null}}, now, null)],
+  withBaseline: [lib.isNew(row(2), now, now - 5 * h), lib.isNew(row(5), now, now - 5 * h), lib.isNew(row(30), now, now - 40 * h), lib.isNew(row(30), now, now - 5 * h)],
+  filter: lib.applyFilters([row(2), row(30)], {{onlyNew: true, since: now - 40 * h}}, now).length,
+  filterFallback: lib.applyFilters([row(2), row(30)], {{onlyNew: true}}, now).length,
+}};
+""")
+    assert out["fallback"] == [True, True, False, False]
+    assert out["withBaseline"] == [True, False, True, False]  # strictly after the baseline
+    assert out["filter"] == 2 and out["filterFallback"] == 1  # a 40 h-old baseline reaches the 30 h-old flat
+
+
+@needs_node
+def test_describe_since():
+    out = run_node(f"""
+const now = Date.parse('2026-11-04T12:00:00Z');   // 13:00 in Warsaw
+const d = (iso) => lib.describeSince(Date.parse(iso), now);
+return [d('2026-11-04T09:30:00Z'), d('2026-11-03T17:30:00Z'), d('2026-10-30T09:00:00Z')];
+""")
+    assert out[0] == "dziś, 10:30" and out[1] == "wczoraj, 18:30"
+    assert out[2].startswith("30 paź") and out[2].endswith("10:00")
