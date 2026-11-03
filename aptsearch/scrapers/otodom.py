@@ -86,14 +86,13 @@ def parse_items(search_ads: dict) -> list[Listing]:
 
 def scrape(cfg: Config) -> list[Listing]:
     listings: list[Listing] = []
-    page = 1
-    while page <= MAX_PAGES:
+    fetched = 0
+    for page in range(1, MAX_PAGES + 1):
         ads = extract_search_ads(http.get(build_url(cfg, page)))
+        fetched += 1
         listings.extend(parse_items(ads))
-        total_pages = (ads.get("pagination") or {}).get("totalPages", 1)
-        if page >= total_pages:
+        if page >= (ads.get("pagination") or {}).get("totalPages", 1):
             break
-        page += 1
         time.sleep(DELAY_S)
-    log.info("otodom: fetched %d listings from %d page(s)", len(listings), page)
+    log.info("otodom: fetched %d listings from %d page(s)", len(listings), fetched)
     return listings
