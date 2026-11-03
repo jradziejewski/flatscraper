@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from .. import http
 from ..config import Config
 from ..models import Listing
+from ..text import clean_street
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +71,7 @@ def parse_item(item: dict) -> Listing:
         area_m2=float(area) if area is not None else None,
         rooms=ROOM_VALUES.get(item.get("roomsNumber")),
         district=_location(item, "district"),
+        street=clean_street((((item.get("location") or {}).get("address") or {}).get("street") or {}).get("name")),
         city=_location(item, "city_or_village"),
         posted_at=item.get("dateCreated"),
     )

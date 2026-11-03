@@ -22,6 +22,7 @@ def test_parse_page():
     assert span_tile.posted_at is None
     # the site renders the province as <a> links on most tiles and <span>s on others
     assert anchor_tile.id == "24703680" and anchor_tile.district == "Różanka"
+    assert anchor_tile.street == "Obornicka" and span_tile.street is None  # streetAddress from ld+json, when present
     assert anchor_tile.price_pln == 3200 and anchor_tile.rooms == 2
     # province "Wrocław, dolnośląskie" means there is no neighbourhood
     assert no_hood.id == "27021854" and no_hood.district is None

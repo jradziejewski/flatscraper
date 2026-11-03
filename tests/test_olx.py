@@ -24,6 +24,7 @@ def test_parse_offers():
     assert first.area_m2 == float(params["m"]["key"]) and isinstance(first.area_m2, float)  # API sends "60"
     assert first.rooms == olx.ROOMS.index(params["rooms"]["key"]) + 1
     assert first.district == raw["location"]["district"]["name"] and first.city == "Wrocław"
+    assert first.street is None  # the OLX API has no street field
     assert first.posted_at.endswith("Z") and len(first.posted_at) == 20
     # no district, non-PLN price and missing area/rooms all become None
     assert edge.id == "1" and edge.title == "Edge case"

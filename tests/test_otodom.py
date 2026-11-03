@@ -15,13 +15,15 @@ def ads():
 
 
 def test_parse_items(ads):
-    first, _, third, edge = otodom.parse_items(ads)
+    first, second, third, edge = otodom.parse_items(ads)
     assert first.site == "otodom" and first.id == "63164515"
     assert first.url == "https://www.otodom.pl/pl/oferta/mieszkanie-45m2-i-2-pok-i-okolice-ch-magnolia-i-garaz-ID4h1Yw"
     assert first.price_pln == 2900
     assert first.area_m2 == 45 and isinstance(first.area_m2, float)  # site sends an int
     assert first.rooms == 2
     assert first.district == "Fabryczna"
+    assert first.street == "Białowieska"  # "ul. " prefix dropped
+    assert second.street == "gen. Władysława Sikorskiego"
     assert first.city == "Wrocław"
     assert first.posted_at == "2022-06-05T21:01:01Z"
     assert third.area_m2 == 54.79 and third.district == "Krzyki"

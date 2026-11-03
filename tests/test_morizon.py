@@ -74,6 +74,8 @@ def test_parse_nodes():
     assert first.area_m2 == 76.0 and isinstance(first.area_m2, float)  # site sends "76"
     assert first.rooms == 4
     assert first.district == "Krzyki" and first.city == "Wrocław"
+    assert first.street == "Obrońców Poczty Gdańskiej" and second.street == "Hubska"
+    assert hood.street is None and edge.street == "Nowowiejska"  # the site sometimes gives no street
     assert first.posted_at == "2026-11-03"
     assert second.rooms == 2 and second.price_pln == 3000
     # the 4th location element (neighbourhood) is ignored; district is the 3rd

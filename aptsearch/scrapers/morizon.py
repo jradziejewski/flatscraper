@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 from .. import http
 from ..config import Config
 from ..models import Listing
-from ..text import city_slug
+from ..text import city_slug, clean_street
 
 log = logging.getLogger(__name__)
 
@@ -98,6 +98,7 @@ def parse_node(node: dict) -> Listing:
         area_m2=float(area) if area else None,
         rooms=int(rooms.group()) if rooms else None,
         district=where[2] if len(where) > 2 else None,
+        street=clean_street((node.get("location") or {}).get("street")),
         city=where[1] if len(where) > 1 else None,
         posted_at=node.get("addedAt"),
     )
