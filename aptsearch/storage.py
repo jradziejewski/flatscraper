@@ -1,15 +1,18 @@
 import csv
 from dataclasses import asdict, replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .models import FIELDS, Listing
 
 Key = tuple[str, str]
 
+STALE_AFTER = timedelta(days=3)
+TS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 
 def utc_iso(now: datetime) -> str:
-    return now.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return now.astimezone(timezone.utc).strftime(TS_FORMAT)
 
 
 def _opt(value: str, cast):
@@ -66,3 +69,31 @@ def save_listings(listings: dict[Key, Listing], path: str | Path = "listings.csv
         for key in sorted(listings):
             row = asdict(listings[key])
             writer.writerow({k: "" if v is None else v for k, v in row.items()})
+
+
+def prune(listings: dict[Key, Listing], now: datetime) -> dict[Key, Listing]:
+    """Drop rows not seen for STALE_AFTER. A row whose last_seen cannot be parsed is kept."""
+    cutoff = now.astimezone(timezone.utc).replace(microsecond=0) - STALE_AFTER
+    kept = {}
+    for key, listing in listings.items():
+        try:
+            seen = datetime.strptime(listing.last_seen, TS_FORMAT).replace(tzinfo=timezone.utc)
+        except ValueError:
+            kept[key] = listing
+            continue
+        if seen >= cutoff:
+            kept[key] = listing
+    return kept
+
+
+def save_snapshot(
+    listings: dict[Key, Listing], now: datetime, archive_dir: str | Path = "archive"
+) -> Path:
+    """Write one immutable archive file for a run: archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv."""
+    ts = utc_iso(now)
+    path = Path(archive_dir) / ts[:7] / f"{ts.replace(':', '-')}.csv"
+    if path.exists():
+        raise FileExistsError(f"snapshot already exists: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    save_listings(listings, path)
+    return path
