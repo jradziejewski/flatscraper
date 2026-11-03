@@ -1,6 +1,10 @@
+from datetime import datetime, timedelta, timezone
+
 from main import run
 from aptsearch.models import Listing
-from aptsearch.storage import load_listings
+from aptsearch.storage import load_listings, save_listings, save_snapshot
+
+NOW = datetime(2026, 11, 3, 6, 0, tzinfo=timezone.utc)
 
 
 def test_failing_scraper_does_not_break_run(tmp_path):
@@ -27,3 +31,61 @@ def test_no_scrapers_writes_header_only(tmp_path):
     out = tmp_path / "l.csv"
     run([], cfg, out)
     assert out.read_text().startswith("site,id,url")
+
+
+def setup(tmp_path):
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text("city: Warszawa\n")
+    return cfg, tmp_path / "l.csv", tmp_path / "archive"
+
+
+def listing(id, **kw):
+    return Listing(site="s", id=id, url="u", title=id, price_pln=1000, **kw)
+
+
+def stale_row(id, now=NOW):
+    seen = (now - timedelta(days=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return listing(id, first_seen=seen, last_seen=seen)
+
+
+def test_run_archives_found_listings_and_prunes_stale_rows(tmp_path):
+    cfg, out, archive = setup(tmp_path)
+    save_listings({("s", "old"): stale_row("old")}, out)
+    run([lambda _: [listing("new")]], cfg, out, NOW)
+    assert list(load_listings(out)) == [("s", "new")]  # stale row left the current file
+    snapshot = archive / "2026-11" / "2026-11-03T06-00-00Z.csv"
+    rows = load_listings(snapshot)
+    assert list(rows) == [("s", "new")]  # snapshot holds only what this run saw...
+    assert rows[("s", "new")].first_seen == "2026-11-03T06:00:00Z"  # ...with merged fields
+
+
+def test_pruned_row_stays_in_the_snapshot_that_saw_it(tmp_path):
+    cfg, out, archive = setup(tmp_path)
+    earlier = NOW - timedelta(days=10)
+    old = {("s", "old"): stale_row("old")}
+    save_listings(old, out)
+    first = save_snapshot(old, earlier, archive)
+    before = first.read_bytes()
+    run([lambda _: [listing("new")]], cfg, out, NOW)
+    assert ("s", "old") not in load_listings(out)
+    assert first.read_bytes() == before and ("s", "old") in load_listings(first)
+
+
+def test_total_outage_writes_no_snapshot_and_prunes_nothing(tmp_path):
+    cfg, out, archive = setup(tmp_path)
+    save_listings({("s", "old"): stale_row("old")}, out)
+
+    def bad(_):
+        raise RuntimeError("boom")
+
+    run([bad], cfg, out, NOW)
+    assert ("s", "old") in load_listings(out)
+    assert not archive.exists()
+
+
+def test_each_run_adds_its_own_snapshot(tmp_path):
+    cfg, out, archive = setup(tmp_path)
+    run([lambda _: [listing("1")]], cfg, out, NOW)
+    run([lambda _: [listing("1")]], cfg, out, NOW + timedelta(hours=6))
+    assert sorted(p.name for p in (archive / "2026-11").iterdir()) == [
+        "2026-11-03T06-00-00Z.csv", "2026-11-03T12-00-00Z.csv"]
