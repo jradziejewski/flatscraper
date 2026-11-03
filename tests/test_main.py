@@ -48,14 +48,14 @@ def stale_row(id, now=NOW):
     return listing(id, first_seen=seen, last_seen=seen)
 
 
-def test_run_archives_found_listings_and_prunes_stale_rows(tmp_path):
+def test_run_archives_new_listings_and_prunes_stale_rows(tmp_path):
     cfg, out, archive = setup(tmp_path)
     save_listings({("s", "old"): stale_row("old")}, out)
     run([lambda _: [listing("new")]], cfg, out, NOW)
     assert list(load_listings(out)) == [("s", "new")]  # stale row left the current file
     snapshot = archive / "2026-11" / "2026-11-03T06-00-00Z.csv"
     rows = load_listings(snapshot)
-    assert list(rows) == [("s", "new")]  # snapshot holds only what this run saw...
+    assert list(rows) == [("s", "new")]  # snapshot holds only listings new in this run...
     assert rows[("s", "new")].first_seen == "2026-11-03T06:00:00Z"  # ...with merged fields
 
 
@@ -83,9 +83,19 @@ def test_total_outage_writes_no_snapshot_and_prunes_nothing(tmp_path):
     assert not archive.exists()
 
 
-def test_each_run_adds_its_own_snapshot(tmp_path):
+def test_snapshot_holds_only_listings_new_in_that_run(tmp_path):
+    cfg, out, archive = setup(tmp_path)
+    run([lambda _: [listing("1"), listing("2")]], cfg, out, NOW)
+    run([lambda _: [listing("1"), listing("2"), listing("3")]], cfg, out, NOW + timedelta(hours=6))
+    first, second = sorted((archive / "2026-11").iterdir())
+    assert first.name == "2026-11-03T06-00-00Z.csv" and second.name == "2026-11-03T12-00-00Z.csv"
+    assert set(load_listings(first)) == {("s", "1"), ("s", "2")}
+    assert set(load_listings(second)) == {("s", "3")}  # 1 and 2 were already known
+
+
+def test_run_without_new_listings_writes_no_snapshot(tmp_path):
     cfg, out, archive = setup(tmp_path)
     run([lambda _: [listing("1")]], cfg, out, NOW)
-    run([lambda _: [listing("1")]], cfg, out, NOW + timedelta(hours=6))
-    assert sorted(p.name for p in (archive / "2026-11").iterdir()) == [
-        "2026-11-03T06-00-00Z.csv", "2026-11-03T12-00-00Z.csv"]
+    run([lambda _: [listing("1")]], cfg, out, NOW + timedelta(hours=6))  # nothing new
+    assert [p.name for p in (archive / "2026-11").iterdir()] == ["2026-11-03T06-00-00Z.csv"]
+    assert load_listings(out)[("s", "1")].last_seen == "2026-11-03T12:00:00Z"  # but it is still refreshed
