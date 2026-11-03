@@ -1,0 +1,5 @@
+city: Wrocław
+max_price: 5000      # PLN per month
+min_area: 30         # m2
+min_rooms: 2
+districts: []        # empty = all districts

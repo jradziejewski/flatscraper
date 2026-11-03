@@ -1,0 +1,13 @@
+[project]
+name = "aptsearch"
+version = "0.1.0"
+description = "Scrapes Polish rental listings into listings.csv"
+requires-python = ">=3.12"
+dependencies = ["pyyaml>=6.0"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

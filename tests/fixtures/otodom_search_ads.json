@@ -1,0 +1,401 @@
+{
+ "items": [
+  {
+   "id": 63164515,
+   "title": "Mieszkanie 45m2 I 2 pok I okolice CH MAGNOLIA I garaż",
+   "slug": "mieszkanie-45m2-i-2-pok-i-okolice-ch-magnolia-i-garaz-ID4h1Yw",
+   "estate": "FLAT",
+   "transaction": "RENT",
+   "investmentEstimatedDelivery": null,
+   "investmentState": null,
+   "investmentUnitsFloorsRange": null,
+   "investmentUnitsAreaInSquareMeters": null,
+   "investmentUnitsNumber": null,
+   "investmentUnitsRoomsNumber": null,
+   "source": "urn:site:local",
+   "isCrossListed": false,
+   "areaInSquareMeters": 45,
+   "dateCreated": "2022-06-05T21:01:01Z",
+   "createdAtFirst": "2022-06-05T21:01:01+00:00",
+   "development": null,
+   "developmentId": 0,
+   "developmentTitle": "",
+   "developmentUrl": "",
+   "floorNumber": "THIRD",
+   "hasRemoteServices": false,
+   "hidePrice": false,
+   "isExclusiveOffer": false,
+   "isPrivateOwner": true,
+   "isPromoted": false,
+   "extendedAdvertiserType": "private_person",
+   "links": {
+    "localPlanUrl": "",
+    "walkaroundUrl": "",
+    "videoUrl": "",
+    "view3dUrl": ""
+   },
+   "location": {
+    "mapDetails": {
+     "radius": 0
+    },
+    "address": {
+     "street": {
+      "name": "ul. Białowieska",
+      "number": null
+     },
+     "city": null,
+     "province": null
+    },
+    "reverseGeocoding": {
+     "locations": [
+      {
+       "id": "dolnoslaskie",
+       "locationLevel": "voivodeship",
+       "name": "dolnośląskie",
+       "fullName": "dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw",
+       "locationLevel": "city_or_village",
+       "name": "Wrocław",
+       "fullName": "Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw/fabryczna",
+       "locationLevel": "district",
+       "name": "Fabryczna",
+       "fullName": "Fabryczna, Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw/fabryczna/popowice-polnocne",
+       "locationLevel": "residential",
+       "name": "Popowice Północne",
+       "fullName": "Popowice Północne, Fabryczna, Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      }
+     ]
+    }
+   },
+   "openDays": null,
+   "unifiedOpenDays": null,
+   "peoplePerRoom": null,
+   "priceFromPerSquareMeter": null,
+   "pricePerSquareMeter": null,
+   "pushedUpAt": "2026-11-03T22:19:04+01:00",
+   "rentPrice": {
+    "value": 500,
+    "currency": "PLN"
+   },
+   "roomsNumber": "TWO",
+   "shortDescription": null,
+   "specialOffer": null,
+   "terrainAreaInSquareMeters": null,
+   "totalPossibleImages": 6,
+   "totalPrice": {
+    "value": 2900,
+    "currency": "PLN"
+   },
+   "showPremiumTile": false,
+   "organisationAssignedMember": null,
+   "href": "[lang]/ad/mieszkanie-45m2-i-2-pok-i-okolice-ch-magnolia-i-garaz-ID4h1Yw"
+  },
+  {
+   "id": 63717989,
+   "title": "Atal Towers 10 piętro z widokiem i dużym tarasem",
+   "slug": "atal-towers-10-pietro-z-widokiem-i-duzym-tarasem-ID4jlXw",
+   "estate": "FLAT",
+   "transaction": "RENT",
+   "investmentEstimatedDelivery": null,
+   "investmentState": null,
+   "investmentUnitsFloorsRange": null,
+   "investmentUnitsAreaInSquareMeters": null,
+   "investmentUnitsNumber": null,
+   "investmentUnitsRoomsNumber": null,
+   "source": "urn:site:local",
+   "isCrossListed": false,
+   "areaInSquareMeters": 46,
+   "dateCreated": "2022-11-23T13:21:33Z",
+   "createdAtFirst": "2022-11-23T13:21:33+00:00",
+   "development": null,
+   "developmentId": 0,
+   "developmentTitle": "",
+   "developmentUrl": "",
+   "floorNumber": "TENTH",
+   "hasRemoteServices": false,
+   "hidePrice": false,
+   "isExclusiveOffer": false,
+   "isPrivateOwner": false,
+   "isPromoted": false,
+   "extendedAdvertiserType": "business",
+   "links": {
+    "localPlanUrl": "",
+    "walkaroundUrl": "",
+    "videoUrl": "",
+    "view3dUrl": ""
+   },
+   "location": {
+    "mapDetails": {
+     "radius": 0
+    },
+    "address": {
+     "street": {
+      "name": "ul. gen. Władysława Sikorskiego",
+      "number": null
+     },
+     "city": null,
+     "province": null
+    },
+    "reverseGeocoding": {
+     "locations": [
+      {
+       "id": "dolnoslaskie",
+       "locationLevel": "voivodeship",
+       "name": "dolnośląskie",
+       "fullName": "dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw",
+       "locationLevel": "city_or_village",
+       "name": "Wrocław",
+       "fullName": "Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw/stare-miasto",
+       "locationLevel": "district",
+       "name": "Stare Miasto",
+       "fullName": "Stare Miasto, Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw/stare-miasto/szczepin",
+       "locationLevel": "residential",
+       "name": "Szczepin",
+       "fullName": "Szczepin, Stare Miasto, Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      }
+     ]
+    }
+   },
+   "openDays": null,
+   "unifiedOpenDays": null,
+   "peoplePerRoom": null,
+   "priceFromPerSquareMeter": null,
+   "pricePerSquareMeter": null,
+   "pushedUpAt": "2026-11-03T22:04:40+01:00",
+   "rentPrice": {
+    "value": 900,
+    "currency": "PLN"
+   },
+   "roomsNumber": "TWO",
+   "shortDescription": null,
+   "specialOffer": null,
+   "terrainAreaInSquareMeters": null,
+   "totalPossibleImages": 15,
+   "totalPrice": {
+    "value": 3600,
+    "currency": "PLN"
+   },
+   "showPremiumTile": false,
+   "organisationAssignedMember": null,
+   "href": "[lang]/ad/atal-towers-10-pietro-z-widokiem-i-duzym-tarasem-ID4jlXw"
+  },
+  {
+   "id": 68544522,
+   "title": "Mieszkanie 2-pokojowe z balkonem w Krzykach",
+   "slug": "mieszkanie-2-pokojowe-z-balkonem-w-krzykach-ID4DByO",
+   "estate": "FLAT",
+   "transaction": "RENT",
+   "investmentEstimatedDelivery": null,
+   "investmentState": null,
+   "investmentUnitsFloorsRange": null,
+   "investmentUnitsAreaInSquareMeters": null,
+   "investmentUnitsNumber": null,
+   "investmentUnitsRoomsNumber": null,
+   "source": "urn:site:local",
+   "isCrossListed": false,
+   "areaInSquareMeters": 54.79,
+   "dateCreated": "2026-10-19T19:25:14Z",
+   "createdAtFirst": "2026-10-19T19:25:14+00:00",
+   "development": null,
+   "developmentId": 0,
+   "developmentTitle": "",
+   "developmentUrl": "",
+   "floorNumber": "GROUND",
+   "hasRemoteServices": false,
+   "hidePrice": false,
+   "isExclusiveOffer": false,
+   "isPrivateOwner": true,
+   "isPromoted": false,
+   "extendedAdvertiserType": "private_person",
+   "links": {
+    "localPlanUrl": "",
+    "walkaroundUrl": "",
+    "videoUrl": "",
+    "view3dUrl": ""
+   },
+   "location": {
+    "mapDetails": {
+     "radius": 0
+    },
+    "address": {
+     "street": {
+      "name": "ul. Przystankowa",
+      "number": null
+     },
+     "city": null,
+     "province": null
+    },
+    "reverseGeocoding": {
+     "locations": [
+      {
+       "id": "dolnoslaskie",
+       "locationLevel": "voivodeship",
+       "name": "dolnośląskie",
+       "fullName": "dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw",
+       "locationLevel": "city_or_village",
+       "name": "Wrocław",
+       "fullName": "Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw/krzyki",
+       "locationLevel": "district",
+       "name": "Krzyki",
+       "fullName": "Krzyki, Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw/krzyki/wojszyce",
+       "locationLevel": "residential",
+       "name": "Wojszyce",
+       "fullName": "Wojszyce, Krzyki, Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      }
+     ]
+    }
+   },
+   "openDays": null,
+   "unifiedOpenDays": null,
+   "peoplePerRoom": null,
+   "priceFromPerSquareMeter": null,
+   "pricePerSquareMeter": null,
+   "pushedUpAt": "2026-11-03T21:26:10+01:00",
+   "rentPrice": {
+    "value": 700,
+    "currency": "PLN"
+   },
+   "roomsNumber": "TWO",
+   "shortDescription": null,
+   "specialOffer": null,
+   "terrainAreaInSquareMeters": null,
+   "totalPossibleImages": 12,
+   "totalPrice": {
+    "value": 3500,
+    "currency": "PLN"
+   },
+   "showPremiumTile": false,
+   "organisationAssignedMember": null,
+   "href": "[lang]/ad/mieszkanie-2-pokojowe-z-balkonem-w-krzykach-ID4DByO"
+  },
+  {
+   "id": 1,
+   "title": "Mieszkanie 45m2 I 2 pok I okolice CH MAGNOLIA I garaż",
+   "slug": "edge",
+   "estate": "FLAT",
+   "transaction": "RENT",
+   "investmentEstimatedDelivery": null,
+   "investmentState": null,
+   "investmentUnitsFloorsRange": null,
+   "investmentUnitsAreaInSquareMeters": null,
+   "investmentUnitsNumber": null,
+   "investmentUnitsRoomsNumber": null,
+   "source": "urn:site:local",
+   "isCrossListed": false,
+   "areaInSquareMeters": null,
+   "dateCreated": "2022-06-05T21:01:01Z",
+   "createdAtFirst": "2022-06-05T21:01:01+00:00",
+   "development": null,
+   "developmentId": 0,
+   "developmentTitle": "",
+   "developmentUrl": "",
+   "floorNumber": "THIRD",
+   "hasRemoteServices": false,
+   "hidePrice": false,
+   "isExclusiveOffer": false,
+   "isPrivateOwner": true,
+   "isPromoted": false,
+   "extendedAdvertiserType": "private_person",
+   "links": {
+    "localPlanUrl": "",
+    "walkaroundUrl": "",
+    "videoUrl": "",
+    "view3dUrl": ""
+   },
+   "location": {
+    "mapDetails": {
+     "radius": 0
+    },
+    "address": {
+     "street": {
+      "name": "ul. Białowieska",
+      "number": null
+     },
+     "city": null,
+     "province": null
+    },
+    "reverseGeocoding": {
+     "locations": [
+      {
+       "id": "dolnoslaskie",
+       "locationLevel": "voivodeship",
+       "name": "dolnośląskie",
+       "fullName": "dolnośląskie",
+       "__typename": "BasicLocationObject"
+      },
+      {
+       "id": "dolnoslaskie/wroclaw/wroclaw/wroclaw",
+       "locationLevel": "city_or_village",
+       "name": "Wrocław",
+       "fullName": "Wrocław, dolnośląskie",
+       "__typename": "BasicLocationObject"
+      }
+     ]
+    }
+   },
+   "openDays": null,
+   "unifiedOpenDays": null,
+   "peoplePerRoom": null,
+   "priceFromPerSquareMeter": null,
+   "pricePerSquareMeter": null,
+   "pushedUpAt": "2026-11-03T22:19:04+01:00",
+   "rentPrice": {
+    "value": 500,
+    "currency": "PLN"
+   },
+   "roomsNumber": "MORE",
+   "shortDescription": null,
+   "specialOffer": null,
+   "terrainAreaInSquareMeters": null,
+   "totalPossibleImages": 6,
+   "totalPrice": null,
+   "showPremiumTile": false,
+   "organisationAssignedMember": null,
+   "href": "[lang]/ad/mieszkanie-45m2-i-2-pok-i-okolice-ch-magnolia-i-garaz-ID4h1Yw"
+  }
+ ],
+ "pagination": {
+  "itemsPerPage": 36,
+  "totalItems": 1765,
+  "totalPages": 50,
+  "currentPage": 1
+ }
+}
