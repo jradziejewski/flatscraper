@@ -1,3 +1,4 @@
+import subprocess
 import urllib.request
 
 USER_AGENT = (
@@ -13,3 +14,15 @@ def get(url: str, timeout: float = 20) -> str:
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.read().decode("utf-8")
+
+
+def get_curl(url: str, timeout: int = 20) -> str:
+    """Fetch via the system `curl`. OLX answers curl but returns 403 to Python's
+    HTTP client, so only the OLX scraper uses this."""
+    result = subprocess.run(
+        ["curl", "--silent", "--show-error", "--fail", "--location", "--max-time", str(timeout),
+         "--user-agent", USER_AGENT, "--header", "Accept-Language: pl,en;q=0.8", url],
+        capture_output=True,
+        check=True,
+    )
+    return result.stdout.decode("utf-8")
