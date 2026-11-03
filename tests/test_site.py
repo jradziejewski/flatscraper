@@ -140,6 +140,16 @@ def test_every_element_the_script_looks_up_exists_in_the_page():
     assert len(wanted) > 10 and wanted <= present, wanted - present
 
 
+def test_form_children_do_not_shadow_form_methods():
+    # a child with id="reset" replaces form.reset (named access on forms), so reset() throws
+    form = re.search(r'<form id="filters".*?</form>', INDEX_HTML, re.S).group(0)
+    child_names = set(re.findall(r'\b(?:id|name)="(\w+)"', form)) - {"filters"}
+    form_members = {"reset", "submit", "elements", "length", "action", "method", "target", "name", "id",
+                    "enctype", "encoding", "acceptCharset", "autocomplete", "noValidate", "requestSubmit",
+                    "checkValidity", "reportValidity"}
+    assert child_names and not (child_names & form_members), child_names & form_members
+
+
 def test_page_never_writes_untrusted_html():
     # listing fields come from scraped sites; everything must go through textContent
     assert not re.search(r"innerHTML|outerHTML|insertAdjacentHTML|document\.write", APP_JS)

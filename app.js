@@ -281,7 +281,7 @@ if (typeof document !== "undefined") {
     // close the district dropdown on an outside click or Escape
     document.addEventListener("click", (e) => { if (!$("district").contains(e.target)) $("district").open = false; });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("district").open = false; });
-    $("reset").addEventListener("click", () => {
+    $("clearFilters").addEventListener("click", () => {
       $("filters").reset();
       render();
     });
