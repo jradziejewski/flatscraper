@@ -3,12 +3,12 @@ import json
 import logging
 import re
 import time
-import unicodedata
 from urllib.parse import urlencode
 
 from .. import http
 from ..config import Config
 from ..models import Listing
+from ..text import city_slug
 
 log = logging.getLogger(__name__)
 
@@ -21,12 +21,6 @@ DELAY_S = 2.0
 _NUXT_DATA = re.compile(r'<script[^>]*id="__NUXT_DATA__"[^>]*>(.*?)</script>', re.S)
 _WRAPPERS = {"Reactive", "ShallowReactive", "Ref", "ShallowRef"}
 _LEADING_INT = re.compile(r"\d+")
-
-
-def city_slug(city: str) -> str:
-    text = city.casefold().replace("ł", "l")
-    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
-    return re.sub(r"[^a-z0-9]+", "-", text).strip("-")
 
 
 def build_url(cfg: Config, page: int) -> str:
