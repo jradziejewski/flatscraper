@@ -1,8 +1,10 @@
 import logging
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 
 from aptsearch.config import load_config, matches
+from aptsearch.districts import normalize_district
 from aptsearch.scrapers import SCRAPERS
 from aptsearch.storage import load_listings, merge, prune, save_listings, save_snapshot
 
@@ -18,8 +20,17 @@ def run(scrapers=SCRAPERS, config_path="config.yaml", csv_path="listings.csv", n
             found.extend(scraper(cfg))
         except Exception:
             log.exception("Scraper %s failed", getattr(scraper, "__name__", scraper))
+    unknown: set[str] = set()
+
+    def with_official_district(listing):
+        district = normalize_district(listing.district, listing.city or cfg.city)
+        if listing.district and district is None:
+            unknown.add(listing.district)
+        return replace(listing, district=district)
+
+    found = [with_official_district(l) for l in found]
     found = [l for l in found if matches(l, cfg)]
-    existing = load_listings(csv_path)
+    existing = {k: with_official_district(l) for k, l in load_listings(csv_path).items()}
     merged = merge(existing, found, now)
     pruned = 0
     if found:  # on a total outage keep everything: no snapshot, no pruning
@@ -32,6 +43,8 @@ def run(scrapers=SCRAPERS, config_path="config.yaml", csv_path="listings.csv", n
         before = len(merged)
         merged = prune(merged, now)
         pruned = before - len(merged)
+    if unknown:
+        log.warning("Unknown district names (add them to aptsearch/districts.py): %s", sorted(unknown))
     save_listings(merged, csv_path)
     log.info("Saved %d rows (%d matches this run, %d pruned)", len(merged), len(found), pruned)
 

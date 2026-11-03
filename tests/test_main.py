@@ -99,3 +99,50 @@ def test_run_without_new_listings_writes_no_snapshot(tmp_path):
     run([lambda _: [listing("1")]], cfg, out, NOW + timedelta(hours=6))  # nothing new
     assert [p.name for p in (archive / "2026-11").iterdir()] == ["2026-11-03T06-00-00Z.csv"]
     assert load_listings(out)[("s", "1")].last_seen == "2026-11-03T12:00:00Z"  # but it is still refreshed
+
+
+def wroclaw_setup(tmp_path, districts="[]"):
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text(f"city: Wrocław\ndistricts: {districts}\n")
+    return cfg, tmp_path / "l.csv"
+
+
+def flat(id, district, **kw):
+    return Listing(site="s", id=id, url="u", title=id, price_pln=1000, city="Wrocław", district=district, **kw)
+
+
+def test_run_maps_neighbourhoods_and_typos_to_official_districts(tmp_path):
+    cfg, out = wroclaw_setup(tmp_path)
+    found = [flat("1", "Partynice"), flat("2", "Krzyk"), flat("3", "Krzyki-Partynice"), flat("4", "Fabryczna")]
+    run([lambda _: found], cfg, out, NOW)
+    saved = load_listings(out)
+    assert {k[1]: v.district for k, v in saved.items()} == {"1": "Krzyki", "2": "Krzyki", "3": "Krzyki", "4": "Fabryczna"}
+
+
+def test_districts_filter_sees_official_names(tmp_path):
+    cfg, out = wroclaw_setup(tmp_path, districts="[Krzyki]")
+    found = [flat("1", "Partynice"), flat("2", "Fabryczna"), flat("3", None)]
+    run([lambda _: found], cfg, out, NOW)
+    assert sorted(k[1] for k in load_listings(out)) == ["1", "3"]  # neighbourhood counts; unknown district passes
+
+
+def test_run_heals_existing_rows_and_keeps_them_fresh(tmp_path):
+    cfg, out = wroclaw_setup(tmp_path)
+    seen = NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
+    save_listings({("s", "old"): flat("old", "Krzki", first_seen=seen, last_seen=seen)}, out)
+    run([lambda _: [flat("new", "Fabryczna")]], cfg, out, NOW + timedelta(hours=1))
+    assert load_listings(out)[("s", "old")].district == "Krzyki"
+
+
+def test_unknown_district_becomes_empty_and_is_logged(tmp_path, caplog):
+    cfg, out = wroclaw_setup(tmp_path)
+    with caplog.at_level("WARNING", logger="aptsearch"):
+        run([lambda _: [flat("1", "Nibylandia")]], cfg, out, NOW)
+    assert load_listings(out)[("s", "1")].district is None
+    assert "Nibylandia" in caplog.text
+
+
+def test_other_cities_keep_their_district_text(tmp_path):
+    cfg, out, _ = setup(tmp_path)  # city: Warszawa
+    run([lambda _: [Listing(site="s", id="1", url="u", title="t", city="Warszawa", district="Mokotów")]], cfg, out, NOW)
+    assert load_listings(out)[("s", "1")].district == "Mokotów"
