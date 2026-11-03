@@ -101,3 +101,29 @@ def test_merge_fills_a_missing_district_but_never_erases_a_known_one():
     assert rows[("otodom", "2")].district == "Krzyki"  # an empty value does not erase it
     rows = merge(rows, [mk(id="2", district="Psie Pole")], T2)
     assert rows[("otodom", "2")].district == "Psie Pole"  # a fresh non-empty value wins, like price
+
+
+def test_street_round_trips_and_old_csv_without_the_column_still_loads(tmp_path):
+    rows = merge({}, [mk(street="Hubska"), mk(id="2")], T1)
+    path = tmp_path / "l.csv"
+    save_listings(rows, path)
+    assert "district,street,city" in path.read_text(encoding="utf-8").splitlines()[0]
+    assert load_listings(path) == rows
+    # a file written before the street column existed (what the first run after an upgrade finds)
+    old = tmp_path / "old.csv"
+    old.write_text(
+        "site,id,url,title,price_pln,area_m2,rooms,district,city,posted_at,first_seen,last_seen\n"
+        "otodom,1,http://x/1,Flat,3000,40.0,2,Krzyki,Wrocław,,2026-01-01T07:00:00Z,2026-01-01T07:00:00Z\n",
+        encoding="utf-8",
+    )
+    loaded = load_listings(old)[("otodom", "1")]
+    assert loaded.street is None and loaded.district == "Krzyki" and loaded.price_pln == 3000
+    save_listings(load_listings(old), tmp_path / "upgraded.csv")  # and it can be saved in the new layout
+    assert load_listings(tmp_path / "upgraded.csv")[("otodom", "1")] == loaded
+
+
+def test_merge_fills_a_missing_street_but_never_erases_a_known_one():
+    rows = merge({}, [mk(id="1", street=None), mk(id="2", street="Hubska")], T1)
+    rows = merge(rows, [mk(id="1", street="Odrzańska"), mk(id="2", street=None)], T2)
+    assert rows[("otodom", "1")].street == "Odrzańska"
+    assert rows[("otodom", "2")].street == "Hubska"

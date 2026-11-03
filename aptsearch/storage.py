@@ -35,6 +35,7 @@ def load_listings(path: str | Path = "listings.csv") -> dict[Key, Listing]:
                 area_m2=_opt(row["area_m2"], float),
                 rooms=_opt(row["rooms"], int),
                 district=row["district"] or None,
+                street=row.get("street") or None,  # CSVs written before this column existed
                 city=row["city"] or None,
                 posted_at=row["posted_at"] or None,
                 first_seen=row["first_seen"],
@@ -47,8 +48,8 @@ def load_listings(path: str | Path = "listings.csv") -> dict[Key, Listing]:
 def merge(
     existing: dict[Key, Listing], scraped: list[Listing], now: datetime
 ) -> dict[Key, Listing]:
-    """New rows get first_seen=now; known rows update price_pln, district and last_seen.
-    A None price or district never overwrites a known one. Rows are never deleted."""
+    """New rows get first_seen=now; known rows update price_pln, district, street and last_seen.
+    A None price, district or street never overwrites a known one. Rows are never deleted."""
     ts = utc_iso(now)
     result = dict(existing)
     for lst in scraped:
@@ -59,7 +60,8 @@ def merge(
         else:
             price = lst.price_pln if lst.price_pln is not None else old.price_pln
             district = lst.district if lst.district is not None else old.district
-            result[key] = replace(old, price_pln=price, district=district, last_seen=ts)
+            street = lst.street if lst.street is not None else old.street
+            result[key] = replace(old, price_pln=price, district=district, street=street, last_seen=ts)
     return result
 
 
