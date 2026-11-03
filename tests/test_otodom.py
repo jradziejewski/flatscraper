@@ -19,7 +19,7 @@ def test_parse_items(ads):
     assert first.site == "otodom" and first.id == "63164515"
     assert first.url == "https://www.otodom.pl/pl/oferta/mieszkanie-45m2-i-2-pok-i-okolice-ch-magnolia-i-garaz-ID4h1Yw"
     assert first.price_pln == 2900
-    assert first.area_m2 == 45
+    assert first.area_m2 == 45 and isinstance(first.area_m2, float)  # site sends an int
     assert first.rooms == 2
     assert first.district == "Fabryczna"
     assert first.city == "Wrocław"

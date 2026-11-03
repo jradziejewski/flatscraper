@@ -60,13 +60,14 @@ def _location(item: dict, level: str) -> str | None:
 
 def parse_item(item: dict) -> Listing:
     price = item.get("totalPrice") or {}
+    area = item.get("areaInSquareMeters")
     return Listing(
         site=SITE,
         id=str(item["id"]),
         url=f"{BASE}/pl/oferta/{item['slug']}",
         title=item.get("title") or "",
         price_pln=int(price["value"]) if price.get("currency") == "PLN" and price.get("value") is not None else None,
-        area_m2=item.get("areaInSquareMeters"),
+        area_m2=float(area) if area is not None else None,
         rooms=ROOM_VALUES.get(item.get("roomsNumber")),
         district=_location(item, "district"),
         city=_location(item, "city_or_village"),
