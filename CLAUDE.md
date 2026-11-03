@@ -19,8 +19,9 @@ For a new step, show the file structure first, then implement.
   - new rows get `first_seen=now`
   - existing rows update `price_pln` and `last_seen`
   - `merge()` itself never deletes rows
-- Every run with at least one result also writes an immutable snapshot of the listings it saw to
-  `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
+- Every run that finds listings not yet in `listings.csv` writes an immutable snapshot of just those new
+  listings to `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
+  A run with no new listings writes no snapshot.
 - `listings.csv` is the current view: after merging, rows not seen for 3 days (`STALE_AFTER` in `storage.py`)
   are removed; they stay in the snapshots of the runs that saw them. A run that finds nothing
   (all scrapers failed) writes no snapshot and prunes nothing.
@@ -73,9 +74,9 @@ Planned layout:
 
 - `last_seen` changes on every successful run, so "commit only if changed" will commit nearly every run.
 - Filtering happens before merging, so a saved listing whose price rises above `max_price` stops getting `price_pln` and `last_seen` updates, and is removed from `listings.csv` after 3 days.
-- A listing that comes back after being pruned is treated as new: its `first_seen` resets. The earlier `first_seen` survives only in old snapshots.
+- A listing that comes back after being pruned is treated as new: its `first_seen` resets and it is archived again. The earlier `first_seen` survives only in old snapshots.
 - Each site is fetched only to a page cap, so a still-live listing can fall out of the window and be pruned after 3 days.
-- Snapshots add about 3 files (~150 KB each, compressed well by git) per day, i.e. ~1,100 files a year.
+- Snapshots hold only new listings, so they stay small (the first run after a fresh start archives everything), at up to ~3 files a day.
 
 ## Commands
 
