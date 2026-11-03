@@ -62,7 +62,8 @@
   .opt:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
   .opt input { width: auto; }
   .opt .cnt { margin-left: auto; padding-left: 14px; color: var(--muted); font-size: .8rem; }
-  label.check { flex-direction: row !important; align-items: center; gap: 6px !important; color: var(--fg) !important; font-size: .9rem !important; white-space: nowrap; padding-bottom: 8px; }
+  .checks { display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
+  label.check { flex-direction: row !important; align-items: center; gap: 6px !important; color: var(--fg) !important; font-size: .9rem !important; white-space: nowrap; }
   label.check input { width: auto; }
   .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin: 6px 0 8px; color: var(--muted); font-size: .9rem; }
   .sort-mobile { display: none; }
@@ -84,8 +85,10 @@
   td.title a { text-decoration: none; font-weight: 500; }
   td.title a:hover { text-decoration: underline; }
   td.price { font-weight: 600; white-space: nowrap; }
-  td.num, td.added, td.site { white-space: nowrap; }
-  td.ppm, td.added, td.site, td.district { color: var(--muted); }
+  td.num, td.added { white-space: nowrap; }
+  td.ppm, td.added, td.district { color: var(--muted); }
+  .chip { display: inline-block; margin: 0 4px 3px 0; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--accent); text-decoration: none; }
+  a.chip:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); border-color: var(--accent); }
   .badge { display: inline-block; margin-right: 8px; padding: 1px 7px; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .03em; background: var(--badge-bg); color: var(--badge-fg); vertical-align: 1px; }
   #empty { text-align: center; color: var(--muted); padding: 32px 0; }
 
@@ -154,7 +157,10 @@
           <option value="3">3</option><option value="4">4</option>
         </select>
       </label>
-      <label class="check"><input id="onlyNew" type="checkbox"> Tylko nowe (24 h)</label>
+      <div class="checks">
+        <label class="check"><input id="onlyNew" type="checkbox"> Tylko nowe (24 h)</label>
+        <label class="check"><input id="merge" type="checkbox" checked> Łącz duplikaty</label>
+      </div>
       <button id="clearFilters" type="button">Wyczyść filtry</button>
     </form>
 

@@ -59,6 +59,7 @@ function normalize(record) {
     ppm: price != null && area ? price / area : null,
     rooms: num(record.rooms),
     district: record.district || null,
+    street: record.street || null,
     city: record.city || null,
     firstSeen: ts(record.first_seen),
     lastSeen: ts(record.last_seen),
@@ -71,8 +72,8 @@ const fold = (s) => (s || "").toLocaleLowerCase("pl");
 function applyFilters(rows, f, now) {
   const q = fold(f.q).trim();
   return rows.filter((r) => {
-    if (q && !(fold(r.title).includes(q) || fold(r.district).includes(q))) return false;
-    if (f.site && r.site !== f.site) return false;
+    if (q && !(r.searchText ?? fold(`${r.title} ${r.district ?? ""}`)).includes(q)) return false;
+    if (f.site && !(r.sites || [r.site]).includes(f.site)) return false;
     if (f.districts && f.districts.length && !f.districts.includes(r.district ?? NO_DISTRICT)) return false;
     if (f.maxPrice != null && r.price != null && r.price > f.maxPrice) return false;
     if (f.minArea != null && r.area != null && r.area < f.minArea) return false;
@@ -93,6 +94,111 @@ function sortRows(rows, key, dir) {
     const c = typeof x === "string" ? x.localeCompare(y, "pl") : x - y;
     return c * sign;
   });
+}
+
+// ---------- duplicate merging ----------
+// The same flat is often listed on several portals. Rows are merged only when the specs match AND there is
+// evidence it is the same place (the same street); see CLAUDE.md. Rows are never dropped: a merged row keeps
+// a link to every portal's listing.
+
+const SITE_PRIORITY = ["otodom", "morizon", "nieruchomosci", "olx"];
+const sitePriority = (site) => { const i = SITE_PRIORITY.indexOf(site); return i < 0 ? 99 : i; };
+
+const foldText = (s) => (s || "").toLowerCase().replace(/ł/g, "l").normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+const wordsOf = (s) => foldText(s).match(/[a-z0-9]+/g) || [];
+const distinctive = (w) => w.length >= 4;
+
+/** Words of a street name without its ul./al./plac prefix. */
+function streetWords(street) {
+  return wordsOf((street || "").replace(/^(?:(?:ul|al|pl|os)\.\s*|(?:ulica|aleja|plac|osiedle)\s+)/i, ""));
+}
+
+/** Same street if all words of the shorter name are in the longer one ("Sikorskiego" ~ "gen. Władysława Sikorskiego"). */
+function streetsMatch(a, b) {
+  const wa = streetWords(a), wb = streetWords(b);
+  if (!wa.some(distinctive) || !wb.some(distinctive)) return false;
+  const [small, big] = wa.length <= wb.length ? [wa, wb] : [wb, wa];
+  return small.every((w) => big.includes(w));
+}
+
+function slugWords(url) {
+  const last = (url || "").split("?")[0].replace(/\/+$/, "").split("/").pop() || "";
+  return wordsOf(last.replace(/\.html?$/i, ""));
+}
+
+/** For a row without a street (OLX): does its title or URL slug name the other row's street? */
+function mentionsStreet(street, other) {
+  const words = streetWords(street).filter(distinctive);
+  if (!words.length) return false;
+  const text = new Set([...wordsOf(other.title), ...slugWords(other.url)]);
+  return text.has(words[words.length - 1]); // the last word is usually the distinctive one
+}
+
+/** Strict: two streets that differ never match; with no street on either side there is no evidence. */
+function hasEvidence(a, b) {
+  if (a.street && b.street) return streetsMatch(a.street, b.street);
+  if (a.street) return mentionsStreet(a.street, b);
+  if (b.street) return mentionsStreet(b.street, a);
+  return false;
+}
+
+/** One display row for a set of listings of the same flat (a single listing is a group of one). */
+function toView(members) {
+  const ordered = [...members].sort((a, b) => sitePriority(a.site) - sitePriority(b.site));
+  const first = (m) => m.firstSeen ?? Infinity;
+  const rep = [...members].sort((a, b) => first(a) - first(b) || sitePriority(a.site) - sitePriority(b.site))[0];
+  const earliest = Math.min(...members.map(first));
+  return {
+    ...rep,
+    firstSeen: Number.isFinite(earliest) ? earliest : null, // a flat is only "new" if its earliest listing is
+    members: ordered,
+    sites: ordered.map((m) => m.site),
+    searchText: fold(`${members.map((m) => m.title).join(" ")} ${rep.district ?? ""}`),
+  };
+}
+
+/** Normalized rows -> display rows, merging the same flat listed on several portals. */
+function groupDuplicates(rows) {
+  const bySpec = new Map();
+  rows.forEach((r, i) => {
+    if (r.price == null || r.area == null || r.rooms == null || !r.district) return;
+    const key = [r.price, Math.round(r.area), r.rooms, r.district].join("|");
+    if (!bySpec.has(key)) bySpec.set(key, []);
+    bySpec.get(key).push(i);
+  });
+  const groupOf = new Map(); // row index -> array of member indices
+  for (const idxs of bySpec.values()) {
+    if (idxs.length < 2) continue;
+    const parent = new Map(idxs.map((i) => [i, i]));
+    const find = (i) => { while (parent.get(i) !== i) { parent.set(i, parent.get(parent.get(i))); i = parent.get(i); } return i; };
+    for (let x = 0; x < idxs.length; x++) {
+      for (let y = x + 1; y < idxs.length; y++) {
+        const a = rows[idxs[x]], b = rows[idxs[y]];
+        if (a.site !== b.site && hasEvidence(a, b)) parent.set(find(idxs[x]), find(idxs[y]));
+      }
+    }
+    const components = new Map();
+    idxs.forEach((i) => { const root = find(i); if (!components.has(root)) components.set(root, []); components.get(root).push(i); });
+    for (const members of components.values()) {
+      const sites = new Set(members.map((i) => rows[i].site));
+      if (members.length >= 2 && sites.size === members.length) members.forEach((i) => groupOf.set(i, members));
+    }
+  }
+  const views = [];
+  const emitted = new Set();
+  rows.forEach((r, i) => {
+    const members = groupOf.get(i);
+    if (!members) { views.push(toView([r])); return; }
+    if (emitted.has(members)) return;
+    emitted.add(members);
+    views.push(toView(members.map((j) => rows[j])));
+  });
+  return views;
+}
+
+/** `merge` off shows every listing on its own row. */
+function buildRows(rows, merge) {
+  return merge ? groupDuplicates(rows) : rows.map((r) => toView([r]));
 }
 
 function formatPrice(n) {
@@ -127,14 +233,14 @@ function safeUrl(u) {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT };
+  module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch };
 }
 
 // ---------- browser UI ----------
 
 if (typeof document !== "undefined") {
   const $ = (id) => document.getElementById(id);
-  const state = { rows: [], sort: { key: "firstSeen", dir: "desc" } };
+  const state = { rows: [], views: [], sort: { key: "firstSeen", dir: "desc" } };
 
   const SORT_PRESETS = {
     newest: ["firstSeen", "desc"],
@@ -167,6 +273,19 @@ if (typeof document !== "undefined") {
     return td;
   }
 
+  function siteCell(r) {
+    const td = el("td", { className: "site" });
+    td.dataset.label = "Portal";
+    r.members.forEach((m) => {
+      const name = SITE_NAMES[m.site] || m.site;
+      const href = safeUrl(m.url);
+      td.append(href
+        ? el("a", { className: "chip", href, target: "_blank", rel: "noopener noreferrer" }, name)
+        : el("span", { className: "chip" }, name));
+    });
+    return td;
+  }
+
   function renderRow(r, now) {
     const tr = el("tr");
     const titleTd = el("td", { className: "title" });
@@ -181,7 +300,7 @@ if (typeof document !== "undefined") {
       cell("num ppm", r.ppm == null ? "—" : formatPrice(r.ppm).replace(" zł", " zł/m²"), "zł/m²"),
       cell("num rooms", r.rooms == null ? "—" : String(r.rooms), "Pokoje"),
       cell("district", r.district || "—", "Dzielnica"),
-      cell("site", SITE_NAMES[r.site] || r.site, "Portal"),
+      siteCell(r),
       cell("added", relativeTime(r.firstSeen, now), "Dodano"),
     );
     return tr;
@@ -190,13 +309,15 @@ if (typeof document !== "undefined") {
   function render() {
     const now = Date.now();
     const filters = readFilters();
-    const rows = sortRows(applyFilters(state.rows, filters, now), state.sort.key, state.sort.dir);
+    const rows = sortRows(applyFilters(state.views, filters, now), state.sort.key, state.sort.dir);
     updateDistrictSummary(filters.districts);
     const body = $("rows");
     const frag = document.createDocumentFragment();
     rows.forEach((r) => frag.append(renderRow(r, now)));
     body.replaceChildren(frag);
-    $("count").textContent = `Pokazano ${rows.length} z ${state.rows.length}`;
+    const merged = state.rows.length - state.views.length;
+    $("count").textContent = `Pokazano ${rows.length} z ${state.views.length}` +
+      (merged > 0 ? ` · połączono ${merged} ${plural(merged, "duplikat", "duplikaty", "duplikatów")}` : "");
     $("empty").hidden = rows.length > 0;
     document.querySelectorAll("th[data-key]").forEach((th) => {
       const active = th.dataset.key === state.sort.key;
@@ -204,6 +325,14 @@ if (typeof document !== "undefined") {
     });
     const preset = Object.entries(SORT_PRESETS).find(([, [k, d]]) => k === state.sort.key && d === state.sort.dir);
     $("sort").value = preset ? preset[0] : "custom";
+  }
+
+  const plural = (n, one, few, many) =>
+    n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && !(n % 100 >= 12 && n % 100 <= 14) ? few : many;
+
+  function rebuild() {
+    state.views = buildRows(state.rows, $("merge").checked);
+    render();
   }
 
   const districtLabel = (v) => (v === NO_DISTRICT ? "Brak dzielnicy" : v);
@@ -249,7 +378,7 @@ if (typeof document !== "undefined") {
     }
     $("app").hidden = false;
     $("status").hidden = true;
-    render();
+    rebuild();
   }
 
   async function fetchText(url) {
@@ -282,9 +411,10 @@ if (typeof document !== "undefined") {
     document.addEventListener("click", (e) => { if (!$("district").contains(e.target)) $("district").open = false; });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("district").open = false; });
     $("clearFilters").addEventListener("click", () => {
-      $("filters").reset();
-      render();
+      $("filters").reset(); // also restores "Łącz duplikaty" to its default (on)
+      rebuild();
     });
+    $("merge").addEventListener("input", rebuild);
     $("sort").addEventListener("change", (e) => {
       const preset = SORT_PRESETS[e.target.value];
       if (preset) { state.sort = { key: preset[0], dir: preset[1] }; render(); }

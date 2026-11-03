@@ -163,3 +163,146 @@ def test_page_wiring():
     if remote.returncode or not m:
         pytest.skip("no GitHub origin remote")
     assert f"raw.githubusercontent.com/{m.group(1)}/main/listings.csv" in APP_JS
+
+
+# ---------- duplicate merging ----------
+
+def rec(site, id, **over):
+    base = {"site": site, "id": id, "url": f"https://{site}.test/{id}", "title": f"Flat {id}", "price_pln": "3000",
+            "area_m2": "45", "rooms": "2", "district": "Krzyki", "street": "", "first_seen": "2026-11-03T10:00:00Z",
+            "last_seen": "2026-11-03T10:00:00Z"}
+    return {**base, **over}
+
+
+def groups(records, merge=True):
+    """Run buildRows in node; returns [[(site, id), ...], ...] for each display row (representative first)."""
+    script = """
+const rows = input.records.map(lib.normalize).map((r, i) => ({...r, id: input.records[i].id}));
+return lib.buildRows(rows, input.merge).map(v => ({rep: v.id, members: v.members.map(m => m.site + ':' + m.id), sites: v.sites,
+  firstSeen: v.firstSeen, searchText: v.searchText}));
+"""
+    return run_node(script, {"records": records, "merge": merge})
+
+
+def merged(records):
+    return sorted(sorted(g["members"]) for g in groups(records) if len(g["members"]) > 1)
+
+
+@needs_node
+def test_merges_same_specs_on_the_same_street():
+    out = merged([rec("otodom", "a", street="Hubska"), rec("morizon", "b", street="hubska")])
+    assert out == [["morizon:b", "otodom:a"]]
+
+
+@needs_node
+@pytest.mark.parametrize("a, b", [
+    (dict(street="Hubska"), dict(street="Nowowiejska")),                       # different streets: never merge
+    (dict(street=""), dict(street="")),                                       # no street on either side: no evidence
+    (dict(street="Hubska"), dict(street="Hubska", price_pln="3100")),         # different price
+    (dict(street="Hubska"), dict(street="Hubska", rooms="3")),                # different rooms
+    (dict(street="Hubska"), dict(street="Hubska", district="Fabryczna")),     # different district
+    (dict(street="Hubska"), dict(street="Hubska", area_m2="47")),             # different area
+    (dict(street="Hubska"), dict(street="Hubska", price_pln="")),             # missing spec: cannot compare
+    (dict(street="Hubska"), dict(street="Hubska", district="")),
+])
+def test_does_not_merge_without_matching_specs_and_street(a, b):
+    assert merged([rec("otodom", "a", **a), rec("morizon", "b", **b)]) == []
+
+
+@needs_node
+def test_area_is_compared_rounded_to_whole_square_metres():
+    assert merged([rec("otodom", "a", street="Hubska", area_m2="45.4"), rec("morizon", "b", street="Hubska", area_m2="45")]) != []
+    assert merged([rec("otodom", "a", street="Hubska", area_m2="45.6"), rec("morizon", "b", street="Hubska", area_m2="45")]) == []
+
+
+@needs_node
+def test_street_names_match_when_one_is_contained_in_the_other():
+    out = merged([rec("otodom", "a", street="gen. Władysława Sikorskiego"), rec("nieruchomosci", "b", street="Sikorskiego")])
+    assert out == [["nieruchomosci:b", "otodom:a"]]
+
+
+@needs_node
+def test_a_listing_without_a_street_matches_only_if_its_title_names_the_street():
+    named = rec("olx", "o", title="Mieszkanie na wynajem, Wrocław, ul. Kościuszki 118")
+    unnamed = rec("olx", "p", title="Przytulne mieszkanie blisko centrum")
+    assert merged([rec("otodom", "a", street="Tadeusza Kościuszki"), named]) == [["olx:o", "otodom:a"]]
+    assert merged([rec("otodom", "a", street="Tadeusza Kościuszki"), unnamed]) == []
+    # the URL slug counts as well as the title
+    assert merged([rec("otodom", "a", street="Hubska"), rec("olx", "q", title="x", url="https://olx.test/d/oferta/mieszkanie-hubska-ID1.html")]) != []
+
+
+@needs_node
+def test_never_merges_two_listings_from_the_same_site():
+    two_same_site = [rec("otodom", "a", street="Hubska"), rec("otodom", "b", street="Hubska"), rec("morizon", "c", street="Hubska")]
+    assert merged(two_same_site) == []  # identical specs twice on one portal: probably distinct flats
+    assert len(groups(two_same_site)) == 3
+
+
+@needs_node
+def test_three_portal_group_representative_and_first_seen():
+    out = groups([
+        rec("olx", "o", title="ul. Hubska 3", first_seen="2026-11-03T10:00:00Z"),
+        rec("otodom", "a", street="Hubska", first_seen="2026-11-02T08:00:00Z"),
+        rec("morizon", "m", street="Hubska", first_seen="2026-11-03T09:00:00Z"),
+    ])
+    assert len(out) == 1
+    g = out[0]
+    assert g["rep"] == "a"  # earliest first seen
+    assert g["members"] == ["otodom:a", "morizon:m", "olx:o"]  # portal priority order
+    assert g["firstSeen"] == run_node("return Date.parse('2026-11-02T08:00:00Z');")  # earliest of the three
+    assert all(t in g["searchText"] for t in ("flat a", "flat m", "ul. hubska 3"))  # lowercased titles of all members
+
+
+@needs_node
+def test_representative_tie_goes_to_portal_priority():
+    out = groups([rec("olx", "o", title="Hubska", first_seen="2026-11-03T10:00:00Z"), rec("morizon", "m", street="Hubska", first_seen="2026-11-03T10:00:00Z")])
+    assert out[0]["rep"] == "m"
+
+
+@needs_node
+def test_turning_merging_off_shows_every_listing():
+    records = [rec("otodom", "a", street="Hubska"), rec("morizon", "b", street="Hubska"), rec("olx", "c", price_pln="1")]
+    assert len(groups(records, merge=True)) == 2
+    assert len(groups(records, merge=False)) == 3
+
+
+@needs_node
+def test_filters_see_every_member_of_a_merged_row():
+    script = """
+const rows = input.map(lib.normalize).map((r, i) => ({...r, id: input[i].id}));
+const views = lib.buildRows(rows, true), now = Date.parse('2026-11-03T12:00:00Z');
+const ids = (f) => lib.applyFilters(views, f, now).map(v => v.id);
+return {total: views.length, olx: ids({site: 'olx'}), morizon: ids({site: 'morizon'}), search: ids({q: 'LIPOWA'}),
+        onlyNew: ids({onlyNew: true})};
+"""
+    # one flat cross-posted: first seen on otodom 3 days ago, on olx an hour ago
+    out = run_node(script, [
+        rec("otodom", "a", street="Lipowa", title="Stary wpis", first_seen="2026-10-31T10:00:00Z"),
+        rec("olx", "o", title="ul. Lipowa 5", first_seen="2026-11-03T11:00:00Z"),
+        rec("morizon", "m", price_pln="9000", first_seen="2026-11-03T11:30:00Z"),
+    ])
+    assert out["total"] == 2
+    assert out["olx"] == ["a"] and out["morizon"] == ["m"]  # portal filter matches any member
+    assert out["search"] == ["a"]  # text search covers every member's title
+    assert out["onlyNew"] == ["m"]  # the merged flat is old: its earliest listing is 3 days old
+
+
+@needs_node
+def test_merging_on_the_real_file_only_ever_combines_identical_specs():
+    text = (ROOT / "listings.csv").read_text(encoding="utf-8")
+    script = """
+const rows = lib.parseCSV(input).map(lib.normalize);
+const views = lib.buildRows(rows, true);
+const problems = [];
+for (const v of views) {
+  if (v.members.length < 2) continue;
+  const sites = new Set(v.members.map(m => m.site));
+  if (sites.size !== v.members.length) problems.push('repeated portal: ' + v.title);
+  const key = (m) => [m.price, Math.round(m.area), m.rooms, m.district].join('|');
+  if (new Set(v.members.map(key)).size !== 1) problems.push('specs differ: ' + v.title);
+}
+return {rows: rows.length, views: views.length, hidden: rows.length - views.length, problems};
+"""
+    out = run_node(script, text)
+    assert out["problems"] == []
+    assert out["views"] <= out["rows"] and out["hidden"] == out["rows"] - out["views"]
