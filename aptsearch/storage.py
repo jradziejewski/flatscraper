@@ -47,8 +47,8 @@ def load_listings(path: str | Path = "listings.csv") -> dict[Key, Listing]:
 def merge(
     existing: dict[Key, Listing], scraped: list[Listing], now: datetime
 ) -> dict[Key, Listing]:
-    """New rows get first_seen=now; known rows update price_pln and last_seen.
-    A None price never overwrites a known one. Rows are never deleted."""
+    """New rows get first_seen=now; known rows update price_pln, district and last_seen.
+    A None price or district never overwrites a known one. Rows are never deleted."""
     ts = utc_iso(now)
     result = dict(existing)
     for lst in scraped:
@@ -58,7 +58,8 @@ def merge(
             result[key] = replace(lst, first_seen=ts, last_seen=ts)
         else:
             price = lst.price_pln if lst.price_pln is not None else old.price_pln
-            result[key] = replace(old, price_pln=price, last_seen=ts)
+            district = lst.district if lst.district is not None else old.district
+            result[key] = replace(old, price_pln=price, district=district, last_seen=ts)
     return result
 
 

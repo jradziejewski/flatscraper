@@ -92,3 +92,12 @@ def test_save_snapshot_path_content_and_immutability(tmp_path):
         save_snapshot({}, T1, tmp_path / "archive")  # never overwritten
     later = save_snapshot(merge(rows, [mk(price_pln=1)], T2), T2, tmp_path / "archive")
     assert later != path and path.read_bytes() == before
+
+
+def test_merge_fills_a_missing_district_but_never_erases_a_known_one():
+    rows = merge({}, [mk(id="1", district=None), mk(id="2", district="Krzyki")], T1)
+    rows = merge(rows, [mk(id="1", district="Fabryczna"), mk(id="2", district=None)], T2)
+    assert rows[("otodom", "1")].district == "Fabryczna"  # filled in once the name became known
+    assert rows[("otodom", "2")].district == "Krzyki"  # an empty value does not erase it
+    rows = merge(rows, [mk(id="2", district="Psie Pole")], T2)
+    assert rows[("otodom", "2")].district == "Psie Pole"  # a fresh non-empty value wins, like price
