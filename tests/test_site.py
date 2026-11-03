@@ -380,3 +380,54 @@ return [d('2026-11-04T09:30:00Z'), d('2026-11-03T17:30:00Z'), d('2026-10-30T09:0
 """)
     assert out[0] == "dziś, 10:30" and out[1] == "wczoraj, 18:30"
     assert out[2].startswith("30 paź") and out[2].endswith("10:00")
+
+
+# ---------- remembered filters ----------
+
+KNOWN = "{sites: ['olx', 'otodom'], districts: ['Krzyki', 'Fabryczna', lib.NO_DISTRICT]}"
+
+
+@needs_node
+def test_prefs_round_trip():
+    out = run_node(f"""
+const known = {KNOWN};
+const storage = lib.memoryStorage();
+const filters = {{q: 'balkon', site: 'olx', districts: ['Krzyki', lib.NO_DISTRICT], maxPrice: 3500, minArea: 40, minRooms: 2, onlyNew: true, since: 123}};
+const prefs = lib.prefsFromState(filters, false, {{key: 'price', dir: 'asc'}});
+const saved = lib.savePrefs(storage, prefs);
+return {{saved, prefs, loaded: lib.loadPrefs(storage, known), raw: JSON.parse(storage.getItem(lib.PREFS_KEY))}};
+""")
+    assert out["saved"] is True
+    assert "q" not in out["prefs"] and "q" not in out["raw"] and "since" not in out["raw"]  # search text is never remembered
+    assert out["loaded"] == out["prefs"]
+    assert out["loaded"] == {"site": "olx", "districts": ["Krzyki", "__none__"], "maxPrice": 3500, "minArea": 40,
+                             "minRooms": 2, "onlyNew": True, "merge": False, "sort": {"key": "price", "dir": "asc"}}
+
+
+@needs_node
+def test_prefs_drop_values_that_no_longer_make_sense():
+    out = run_node(f"""
+const known = {KNOWN};
+const s = (o) => lib.sanitizePrefs(o, known);
+return [
+  s({{site: 'zniknął', districts: ['Krzyki', 'Atlantyda', 5, null], maxPrice: -5, minArea: '40', minRooms: 9, onlyNew: 'yes', merge: 0, sort: {{key: 'hack', dir: 'asc'}}}}),
+  s({{sort: {{key: 'area', dir: 'sideways'}}}}),
+  s(null), s('text'), s([1, 2]), s(undefined),
+];
+""")
+    default = {"site": "", "districts": [], "maxPrice": None, "minArea": None, "minRooms": None, "onlyNew": False,
+               "merge": True, "sort": {"key": "firstSeen", "dir": "desc"}}
+    # values that are present but wrong are dropped one by one; "merge: 0" is not exactly false, so it stays on
+    assert out[0] == {**default, "districts": ["Krzyki"]}
+    assert out[1] == default and out[2] == default and out[3] == default and out[4] == default and out[5] == default
+
+
+@needs_node
+def test_prefs_survive_garbage_and_broken_storage():
+    out = run_node(f"""
+const known = {KNOWN};
+const garbage = lib.memoryStorage(); garbage.setItem(lib.PREFS_KEY, '{{oops');
+const broken = {{getItem() {{ throw new Error('x'); }}, setItem() {{ throw new Error('x'); }}}};
+return [lib.loadPrefs(garbage, known).sort.key, lib.loadPrefs(broken, known).sort.key, lib.savePrefs(broken, {{}})];
+""")
+    assert out == ["firstSeen", "firstSeen", False]  # defaults, and saving reports failure instead of throwing

@@ -277,6 +277,42 @@ function startVisit(local, session, dataTime) {
   return typeof baseline === "number" ? baseline : null;
 }
 
+// ---------- remembered filters ----------
+
+const PREFS_KEY = "flatscraper:v1:prefs";
+const SORT_KEYS = ["title", "price", "area", "ppm", "rooms", "district", "site", "firstSeen"];
+const DEFAULT_SORT = { key: "firstSeen", dir: "desc" };
+const ROOM_CHOICES = [1, 2, 3, 4];
+
+/**
+ * What is worth remembering between visits. The search text is deliberately left out: a stale search term
+ * left over from last time would look like the list is broken.
+ */
+function prefsFromState({ site, districts, maxPrice, minArea, minRooms, onlyNew }, merge, sort) {
+  return { site, districts, maxPrice, minArea, minRooms, onlyNew, merge, sort };
+}
+
+/** Anything coming back from storage is untrusted: keep only values that still make sense for the current data. */
+function sanitizePrefs(raw, known) {
+  const p = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  const amount = (v) => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : null);
+  const sort = p.sort && SORT_KEYS.includes(p.sort.key) && ["asc", "desc"].includes(p.sort.dir)
+    ? { key: p.sort.key, dir: p.sort.dir } : { ...DEFAULT_SORT };
+  return {
+    site: known.sites.includes(p.site) ? p.site : "",
+    districts: Array.isArray(p.districts) ? p.districts.filter((d) => known.districts.includes(d)) : [],
+    maxPrice: amount(p.maxPrice),
+    minArea: amount(p.minArea),
+    minRooms: ROOM_CHOICES.includes(p.minRooms) ? p.minRooms : null,
+    onlyNew: p.onlyNew === true,
+    merge: p.merge !== false,
+    sort,
+  };
+}
+
+const loadPrefs = (storage, known) => sanitizePrefs(readJSON(storage, PREFS_KEY), known);
+const savePrefs = (storage, prefs) => writeJSON(storage, PREFS_KEY, prefs);
+
 /** "dziś, 18:30" / "wczoraj, 18:30" / "3 lis, 18:30" (Warsaw time). */
 function describeSince(ms, now) {
   const day = (t) => new Date(t).toLocaleDateString("sv-SE", { timeZone: TIME_ZONE });
@@ -288,14 +324,15 @@ function describeSince(ms, now) {
 
 if (typeof module !== "undefined") {
   module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
-    isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON };
+    isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON,
+    prefsFromState, sanitizePrefs, loadPrefs, savePrefs, PREFS_KEY };
 }
 
 // ---------- browser UI ----------
 
 if (typeof document !== "undefined") {
   const $ = (id) => document.getElementById(id);
-  const state = { rows: [], views: [], baseline: null, visitStarted: false, sort: { key: "firstSeen", dir: "desc" } };
+  const state = { rows: [], views: [], baseline: null, visitStarted: false, prefsReady: false, sort: { ...DEFAULT_SORT } };
 
   function browserStorage(name) {
     try { const s = window[name]; s.getItem("flatscraper:probe"); return s; } catch { return memoryStorage(); }
@@ -382,12 +419,28 @@ if (typeof document !== "undefined") {
       (merged > 0 ? ` · połączono ${merged} ${plural(merged, "duplikat", "duplikaty", "duplikatów")}` : "") +
       ` · ${state.baseline != null ? "nowe od ostatniej wizyty" : "nowe (24 h)"}: ${newCount}`;
     $("empty").hidden = rows.length > 0;
+    $("empty").textContent = filters.onlyNew && newCount === 0
+      ? "Nic nowego od ostatniej wizyty. Odznacz „Tylko nowe”, żeby zobaczyć wszystkie ogłoszenia."
+      : "Brak ogłoszeń spełniających kryteria.";
     document.querySelectorAll("th[data-key]").forEach((th) => {
       const active = th.dataset.key === state.sort.key;
       th.setAttribute("aria-sort", active ? (state.sort.dir === "asc" ? "ascending" : "descending") : "none");
     });
     const preset = Object.entries(SORT_PRESETS).find(([, [k, d]]) => k === state.sort.key && d === state.sort.dir);
     $("sort").value = preset ? preset[0] : "custom";
+    if (state.prefsReady) savePrefs(localStore, prefsFromState(filters, $("merge").checked, state.sort));
+  }
+
+  /** Put remembered values back into the controls (after the options they refer to exist). */
+  function applyPrefs(p) {
+    $("site").value = p.site;
+    document.querySelectorAll("#districtPanel input").forEach((i) => { i.checked = p.districts.includes(i.value); });
+    $("maxPrice").value = p.maxPrice ?? "";
+    $("minArea").value = p.minArea ?? "";
+    $("minRooms").value = p.minRooms == null ? "" : String(p.minRooms);
+    $("onlyNew").checked = p.onlyNew;
+    $("merge").checked = p.merge;
+    state.sort = p.sort;
   }
 
   const plural = (n, one, few, many) =>
@@ -444,6 +497,11 @@ if (typeof document !== "undefined") {
       state.baseline = startVisit(localStore, sessionStore, last);
       $("onlyNewHint").textContent = state.baseline != null
         ? `(od ostatniej wizyty: ${describeSince(state.baseline, Date.now())})` : "(24 h)";
+    }
+    if (!state.prefsReady) {
+      const known = { sites: unique("site"), districts: [...new Set(state.rows.map((r) => r.district ?? NO_DISTRICT))] };
+      applyPrefs(loadPrefs(localStore, known));
+      state.prefsReady = true;
     }
     $("app").hidden = false;
     $("status").hidden = true;
