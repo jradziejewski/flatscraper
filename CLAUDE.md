@@ -17,7 +17,7 @@ For a new step, show the file structure first, then implement.
   `site, id, url, title, price_pln, area_m2, rooms, district, city, posted_at, first_seen, last_seen`.
 - Results merge into `listings.csv`, keyed by `(site, id)`:
   - new rows get `first_seen=now`
-  - existing rows update `price_pln` and `last_seen`
+  - existing rows update `price_pln`, `district` and `last_seen`; an empty price or district never overwrites a known one
   - `merge()` itself never deletes rows
 - Every run that finds listings not yet in `listings.csv` writes an immutable snapshot of just those new
   listings to `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
@@ -25,6 +25,12 @@ For a new step, show the file structure first, then implement.
 - `listings.csv` is the current view: after merging, rows not seen for 3 days (`STALE_AFTER` in `storage.py`)
   are removed; they stay in the snapshots of the runs that saw them. A run that finds nothing
   (all scrapers failed) writes no snapshot and prunes nothing.
+- `district` is always one of the city's official districts, or empty. `aptsearch/districts.py` maps neighbourhoods
+  (nieruchomosci-online reports those), spelling variants and small typos to the 5 official Wrocław districts
+  (`normalize_district`, applied in `main.run` to scraped listings and to the rows already in `listings.csv`).
+  A name it cannot match becomes empty and is logged as "Unknown district names", so add it to the table. Only
+  Wrocław has a table; other cities keep the site's text. The table was built from Morizon/Otodom data and
+  cross-checked against pl.wikipedia "Podział administracyjny Wrocławia".
 - Filters live in `config.yaml` (`city`, `max_price`, `min_area`, `min_rooms`, `districts`). Only matching listings are saved.
 - A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv` and `archive/` only if they changed (`permissions: contents: write`).
 
