@@ -1,0 +1,167 @@
+[
+ {
+  "addedAt": "2026-11-03",
+  "refreshedAt": null,
+  "advertisementText": "Cztery pokoje, Krzyki, balkon, garaż",
+  "area": "76",
+  "floorFormatted": "piętro 2/3",
+  "highlightText": "",
+  "id": 1543278246,
+  "idOnFrontend": "mzn2048328751",
+  "isTopPromoted": false,
+  "isHighlighted": false,
+  "isRecommended": false,
+  "location": {
+   "location": [
+    "dolnośląskie",
+    "Wrocław",
+    "Krzyki"
+   ],
+   "street": "Obrońców Poczty Gdańskiej"
+  },
+  "numberOfRooms": "4 pokoje",
+  "photosNumber": 13,
+  "promotionPoints": 0,
+  "has3dView": false,
+  "hasVideo": false,
+  "price": {
+   "amount": "3800.00",
+   "currency": "PLN"
+  },
+  "priceFormatted": "3 800 zł",
+  "priceM2": {
+   "amount": "50.00",
+   "currency": "PLN"
+  },
+  "priceM2Formatted": "50 zł/m²",
+  "title": "mieszkanie do wynajęcia",
+  "url": "/oferta/wynajem-mieszkanie-wroclaw-krzyki-obroncow-poczty-gdanskiej-76m2-mzn2048328751",
+  "servicePromocenaIsActive": false,
+  "omnibusPreviousSalePrice": null,
+  "omnibusPreviousLowestPrice": null
+ },
+ {
+  "addedAt": "2026-11-03",
+  "refreshedAt": null,
+  "advertisementText": "Zamknięte osiedle przy Hubskiej, nowe budownictwo",
+  "area": "34",
+  "floorFormatted": "piętro 2/6",
+  "highlightText": "",
+  "id": 1543278233,
+  "idOnFrontend": "mzn2048328738",
+  "isTopPromoted": false,
+  "isHighlighted": false,
+  "isRecommended": false,
+  "location": {
+   "location": [
+    "dolnośląskie",
+    "Wrocław",
+    "Krzyki",
+    "Huby"
+   ],
+   "street": "Hubska"
+  },
+  "numberOfRooms": "2 pokoje",
+  "photosNumber": 7,
+  "promotionPoints": 0,
+  "has3dView": false,
+  "hasVideo": false,
+  "price": {
+   "amount": "3000.00",
+   "currency": "PLN"
+  },
+  "priceFormatted": "3 000 zł",
+  "priceM2": {
+   "amount": "87.87",
+   "currency": "PLN"
+  },
+  "priceM2Formatted": "88 zł/m²",
+  "title": "mieszkanie do wynajęcia",
+  "url": "/oferta/wynajem-mieszkanie-wroclaw-krzyki-hubska-34m2-mzn2048328738",
+  "servicePromocenaIsActive": false,
+  "omnibusPreviousSalePrice": null,
+  "omnibusPreviousLowestPrice": null
+ },
+ {
+  "addedAt": "2026-11-03",
+  "refreshedAt": null,
+  "advertisementText": "Borek | 3 pokoje | Ogrody Hallera | Balkon | Garaż",
+  "area": "61",
+  "floorFormatted": "piętro 2/4",
+  "highlightText": "",
+  "id": 1543278069,
+  "idOnFrontend": "mzn2048328574",
+  "isTopPromoted": false,
+  "isHighlighted": false,
+  "isRecommended": false,
+  "location": {
+   "location": [
+    "dolnośląskie",
+    "Wrocław",
+    "Krzyki",
+    "Borek"
+   ],
+   "street": null
+  },
+  "numberOfRooms": "3 pokoje",
+  "photosNumber": 17,
+  "promotionPoints": 0,
+  "has3dView": false,
+  "hasVideo": false,
+  "price": {
+   "amount": "3500.00",
+   "currency": "PLN"
+  },
+  "priceFormatted": "3 500 zł",
+  "priceM2": {
+   "amount": "57.38",
+   "currency": "PLN"
+  },
+  "priceM2Formatted": "57 zł/m²",
+  "title": "mieszkanie do wynajęcia",
+  "url": "/oferta/wynajem-mieszkanie-wroclaw-krzyki-61m2-mzn2048328574",
+  "servicePromocenaIsActive": false,
+  "omnibusPreviousSalePrice": null,
+  "omnibusPreviousLowestPrice": null
+ },
+ {
+  "addedAt": "2026-11-03",
+  "refreshedAt": null,
+  "advertisementText": "Edge case",
+  "area": "50",
+  "floorFormatted": "piętro 2/5",
+  "highlightText": "",
+  "id": 1543278192,
+  "idOnFrontend": "mzn0000000001",
+  "isTopPromoted": false,
+  "isHighlighted": false,
+  "isRecommended": false,
+  "location": {
+   "location": [
+    "dolnośląskie",
+    "Wrocław"
+   ],
+   "street": "Nowowiejska"
+  },
+  "numberOfRooms": "kawalerka",
+  "photosNumber": 9,
+  "promotionPoints": 0,
+  "has3dView": false,
+  "hasVideo": false,
+  "price": {
+   "amount": "900.00",
+   "currency": "EUR"
+  },
+  "priceFormatted": "2 500 zł",
+  "priceM2": {
+   "amount": "50.00",
+   "currency": "PLN"
+  },
+  "priceM2Formatted": "50 zł/m²",
+  "title": "mieszkanie do wynajęcia",
+  "url": "/oferta/edge-mzn0000000001",
+  "servicePromocenaIsActive": false,
+  "omnibusPreviousSalePrice": null,
+  "omnibusPreviousLowestPrice": null
+ }
+]
