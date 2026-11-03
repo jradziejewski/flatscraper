@@ -18,9 +18,14 @@ For a new step, show the file structure first, then implement.
 - Results merge into `listings.csv`, keyed by `(site, id)`:
   - new rows get `first_seen=now`
   - existing rows update `price_pln` and `last_seen`
-  - rows are never deleted
+  - `merge()` itself never deletes rows
+- Every run with at least one result also writes an immutable snapshot of the listings it saw to
+  `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
+- `listings.csv` is the current view: after merging, rows not seen for 3 days (`STALE_AFTER` in `storage.py`)
+  are removed; they stay in the snapshots of the runs that saw them. A run that finds nothing
+  (all scrapers failed) writes no snapshot and prunes nothing.
 - Filters live in `config.yaml` (`city`, `max_price`, `min_area`, `min_rooms`, `districts`). Only matching listings are saved.
-- A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv` only if it changed (`permissions: contents: write`).
+- A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv` and `archive/` only if they changed (`permissions: contents: write`).
 
 ## Scraping rules
 
@@ -67,7 +72,10 @@ Planned layout:
 ## Known consequences of the spec
 
 - `last_seen` changes on every successful run, so "commit only if changed" will commit nearly every run.
-- Filtering happens before merging, so a saved listing whose price rises above `max_price` stops getting `price_pln` and `last_seen` updates.
+- Filtering happens before merging, so a saved listing whose price rises above `max_price` stops getting `price_pln` and `last_seen` updates, and is removed from `listings.csv` after 3 days.
+- A listing that comes back after being pruned is treated as new: its `first_seen` resets. The earlier `first_seen` survives only in old snapshots.
+- Each site is fetched only to a page cap, so a still-live listing can fall out of the window and be pruned after 3 days.
+- Snapshots add about 3 files (~150 KB each, compressed well by git) per day, i.e. ~1,100 files a year.
 
 ## Commands
 
