@@ -2,7 +2,7 @@
 
 Scrapes Polish rental listings into `listings.csv` in this repo. Runs on GitHub Actions cron.
 
-Keep it minimal: no server, no database, no UI.
+Keep it minimal: no server, no database. The only UI is one static page (`index.html` + `app.js`): no build step, no dependencies.
 
 ## Working agreement
 
@@ -33,6 +33,14 @@ For a new step, show the file structure first, then implement.
 - Be polite: realistic User-Agent, small delays, cap the number of pages per run.
 - Prefer embedded JSON (e.g. `__NEXT_DATA__`) or JSON APIs over HTML parsing where sites have them.
 - One failing site must not break the run: log and continue.
+
+## Viewing the listings
+
+- `index.html` + `app.js` is a static, Polish-language page served by GitHub Pages: search, filters, sortable columns, "NOWE" badge for listings first seen in the last 24 h, card layout on phones. Live at https://jradziejewski.github.io/flatscraper/.
+- It fetches `listings.csv` from `raw.githubusercontent.com` (CORS-enabled, cached ~5 min) and falls back to the relative `listings.csv`. So it never needs redeploying when the bot commits new data.
+- One-time setup: repo Settings → Pages → Source "Deploy from a branch" → `main`, folder `/ (root)`. `.nojekyll` skips the Jekyll build.
+- Listing fields come from scraped sites, so `app.js` fills the page with `textContent` only (never `innerHTML`) and links only `http(s)` URLs. A test enforces this.
+- Local preview: `python -m http.server`, then open http://localhost:8000. Page tests (`tests/test_site.py`) use `node` and are skipped when it is missing.
 
 ## Step 1 (current)
 
