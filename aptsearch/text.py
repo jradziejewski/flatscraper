@@ -10,7 +10,16 @@ def city_slug(city: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text).strip("-")
 
 
-_STREET_PREFIX = re.compile(r"^(?:(?:ul|al|pl|os)\.\s*|(?:ulica|aleja|plac|osiedle)\s+)", re.IGNORECASE)
+def photo_url(raw) -> str | None:
+    """A thumbnail URL as the sites send it, or None. Only http(s) strings are kept: the value ends up in
+    an <img src> on the page, and a photo is optional, so anything odd is dropped rather than failing the listing."""
+    if not isinstance(raw, str):
+        return None
+    url = raw.strip()
+    return url if url.lower().startswith(("http://", "https://")) else None
+
+
+_STREET_PREFIX =re.compile(r"^(?:(?:ul|al|pl|os)\.\s*|(?:ulica|aleja|plac|osiedle)\s+)", re.IGNORECASE)
 
 
 def clean_street(raw: str | None) -> str | None:

@@ -1,6 +1,6 @@
 import pytest
 
-from aptsearch.text import city_slug, clean_street
+from aptsearch.text import city_slug, clean_street, photo_url
 
 
 @pytest.mark.parametrize("raw, expected", [
@@ -28,6 +28,15 @@ def test_clean_street_keeps_names_that_merely_start_like_a_prefix():
 
 def test_clean_street_is_idempotent():
     assert clean_street(clean_street("ul. Przyjaźni")) == "Przyjaźni"
+
+
+def test_photo_url_keeps_only_http_urls():
+    assert photo_url("https://img.test/a.jpg") == "https://img.test/a.jpg"
+    assert photo_url("  http://img.test/a.jpg ") == "http://img.test/a.jpg"
+    assert photo_url("HTTPS://img.test/a.jpg") == "HTTPS://img.test/a.jpg"
+    for bad in (None, "", "   ", 5, ["https://x"], {"a": 1}, "javascript:alert(1)", "data:image/png;base64,AAAA",
+                "//img.test/a.jpg", "ftp://img.test/a.jpg", "/relative.jpg"):
+        assert photo_url(bad) is None
 
 
 def test_city_slug():

@@ -32,6 +32,16 @@ def test_parse_offers():
     assert edge.area_m2 is None and edge.rooms is None
 
 
+def test_photo_placeholders_are_replaced_with_a_thumbnail_size():
+    first, *_, edge = olx.parse_offers(OFFERS)
+    link = OFFERS[0]["photos"][0]["link"]
+    assert "{width}x{height}" in link  # what the API sends
+    assert first.photo == link.replace("{width}x{height}", "320x240") and "{" not in first.photo
+    assert edge.photo is None  # no photos: the listing is still returned
+    for odd in ([], [{}], [{"link": None}], [{"link": "ftp://x"}], None):
+        assert olx.parse_offer({**OFFERS[0], "photos": odd}).photo is None
+
+
 def test_posted_at_is_converted_to_utc():
     offer = {**OFFERS[0], "created_time": "2026-10-23T14:34:54+02:00"}
     assert olx.parse_offer(offer).posted_at == "2026-10-23T12:34:54Z"

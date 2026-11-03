@@ -30,6 +30,16 @@ def test_parse_page():
     assert edge.price_pln is None and edge.rooms is None and edge.title == "Edge case"
 
 
+def test_photo_comes_from_the_offer_image():
+    span_tile, anchor_tile, *_ = no.parse_page(HTML)
+    assert span_tile.photo == "https://i.st-nieruchomosci-online.pl/ks3dz9l/mieszkanie-wroclaw.jpg"
+    assert anchor_tile.photo == "https://i.st-nieruchomosci-online.pl/h198ssl/mieszkanie-wroclaw.jpg"
+    offer = no.extract_offers(HTML)[0]
+    for odd in (None, "", 5, "javascript:alert(1)"):
+        assert no.parse_offer({**offer, "image": odd}, {}).photo is None
+    assert no.parse_offer({k: v for k, v in offer.items() if k != "image"}, {}).photo is None
+
+
 def test_extract_offers_requires_ld_json():
     assert len(no.extract_offers(HTML)) == 4
     with pytest.raises(ValueError):

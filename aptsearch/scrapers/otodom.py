@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from .. import http
 from ..config import Config
 from ..models import Listing
-from ..text import clean_street
+from ..text import clean_street, photo_url
 
 log = logging.getLogger(__name__)
 
@@ -59,6 +59,13 @@ def _location(item: dict, level: str) -> str | None:
     return None
 
 
+def _photo(item: dict) -> str | None:
+    try:
+        return photo_url(item["images"][0]["small"])
+    except (KeyError, IndexError, TypeError):
+        return None
+
+
 def parse_item(item: dict) -> Listing:
     price = item.get("totalPrice") or {}
     area = item.get("areaInSquareMeters")
@@ -72,6 +79,7 @@ def parse_item(item: dict) -> Listing:
         rooms=ROOM_VALUES.get(item.get("roomsNumber")),
         district=_location(item, "district"),
         street=clean_street((((item.get("location") or {}).get("address") or {}).get("street") or {}).get("name")),
+        photo=_photo(item),
         city=_location(item, "city_or_village"),
         posted_at=item.get("dateCreated"),
     )

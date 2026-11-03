@@ -85,6 +85,15 @@ def test_parse_nodes():
     assert edge.city == "Wrocław" and edge.title == "Edge case"
 
 
+def test_photo_url_is_built_from_the_photo_id_and_name():
+    first, *_, edge = mz.parse_nodes(NODES)
+    p = NODES[0]["photos"][0]
+    assert first.photo == f"https://img1.staticmorizon.com.pl/thumb/{p['id']}/3x2_s:fill_and_crop/{p['name']}.jpg"
+    assert edge.photo is None  # no photos: the listing is still returned
+    for odd in ([], [{}], [{"id": "x"}], None, "x"):
+        assert mz.parse_node({**NODES[0], "photos": odd}).photo is None
+
+
 def test_parse_node_unescapes_title():
     node = {**NODES[0], "advertisementText": "Spa &amp; Gym | Pierwszy najem"}
     assert mz.parse_node(node).title == "Spa & Gym | Pierwszy najem"

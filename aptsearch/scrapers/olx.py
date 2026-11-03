@@ -8,7 +8,7 @@ from .. import http
 from ..config import Config
 from ..models import Listing
 from ..storage import utc_iso
-from ..text import city_slug
+from ..text import city_slug, photo_url
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +18,7 @@ MAX_PAGES = 5
 PAGE_SIZE = 40
 DELAY_S = 2.0
 ROOMS = ["one", "two", "three", "four"]  # "four" means 4 or more
+THUMB_W, THUMB_H = 320, 240
 
 
 def get_json(url: str) -> dict:
@@ -45,6 +46,15 @@ def build_url(ids: dict, cfg: Config, offset: int) -> str:
     return f"{API}/offers/?{urlencode(params)}"
 
 
+def _photo(offer: dict) -> str | None:
+    """OLX photo links carry {width}x{height} placeholders; ask for a thumbnail-sized image."""
+    try:
+        link = offer["photos"][0]["link"]
+        return photo_url(link.replace("{width}", str(THUMB_W)).replace("{height}", str(THUMB_H)))
+    except (KeyError, IndexError, TypeError, AttributeError):
+        return None
+
+
 def parse_offer(offer: dict) -> Listing:
     params = {p["key"]: p.get("value") or {} for p in offer.get("params") or []}
     price = params.get("price", {})
@@ -61,6 +71,7 @@ def parse_offer(offer: dict) -> Listing:
         area_m2=float(area) if area else None,
         rooms=ROOMS.index(room) + 1 if room in ROOMS else None,
         district=(loc.get("district") or {}).get("name"),
+        photo=_photo(offer),
         city=(loc.get("city") or {}).get("name"),
         posted_at=utc_iso(datetime.fromisoformat(created)) if created else None,
     )

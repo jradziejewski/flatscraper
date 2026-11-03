@@ -8,12 +8,13 @@ from urllib.parse import urlencode
 from .. import http
 from ..config import Config
 from ..models import Listing
-from ..text import city_slug, clean_street
+from ..text import city_slug, clean_street, photo_url
 
 log = logging.getLogger(__name__)
 
 SITE = "morizon"
 BASE = "https://www.morizon.pl"
+IMG_BASE = "https://img1.staticmorizon.com.pl"
 MAX_PAGES = 5
 PAGE_SIZE = 35
 DELAY_S = 2.0
@@ -84,6 +85,15 @@ def extract_properties(html: str) -> dict:
     raise ValueError("morizon: listing data not found in __NUXT_DATA__")
 
 
+def _photo(node: dict) -> str | None:
+    """Morizon lists photo ids, not URLs; this is the thumbnail URL its own pages use (450x300)."""
+    try:
+        first = node["photos"][0]
+        return photo_url(f"{IMG_BASE}/thumb/{first['id']}/3x2_s:fill_and_crop/{first['name']}.jpg")
+    except (KeyError, IndexError, TypeError):
+        return None
+
+
 def parse_node(node: dict) -> Listing:
     price = node.get("price") or {}
     area = node.get("area")
@@ -99,6 +109,7 @@ def parse_node(node: dict) -> Listing:
         rooms=int(rooms.group()) if rooms else None,
         district=where[2] if len(where) > 2 else None,
         street=clean_street((node.get("location") or {}).get("street")),
+        photo=_photo(node),
         city=where[1] if len(where) > 1 else None,
         posted_at=node.get("addedAt"),
     )

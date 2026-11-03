@@ -8,7 +8,7 @@ from urllib.parse import quote
 from .. import http
 from ..config import Config
 from ..models import Listing
-from ..text import clean_street
+from ..text import clean_street, photo_url
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +69,7 @@ def parse_offer(offer: dict, tiles: dict) -> Listing:
         rooms=item.get("numberOfRooms") or None,
         district=district,
         street=clean_street((item.get("address") or {}).get("streetAddress")),
+        photo=photo_url(offer.get("image")),
         city=city,
     )
 

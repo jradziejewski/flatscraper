@@ -32,6 +32,15 @@ def test_parse_items(ads):
     assert edge.area_m2 is None and edge.district is None
 
 
+def test_photo_is_the_first_small_image_and_optional(ads):
+    first, *_, edge = otodom.parse_items(ads)
+    assert first.photo == ads["items"][0]["images"][0]["small"]
+    assert first.photo.startswith("https://") and "olxcdn.com" in first.photo
+    assert edge.photo is None  # no images: the listing is still returned
+    for odd in ([], [{}], [{"small": None}], [{"small": "javascript:alert(1)"}], None, "x"):
+        assert otodom.parse_item({**ads["items"][0], "images": odd}).photo is None
+
+
 def test_extract_search_ads_from_html(ads):
     page = {"props": {"pageProps": {"data": {"searchAds": ads}}}}
     html = f'<html><script id="__NEXT_DATA__" type="application/json">{json.dumps(page)}</script></html>'

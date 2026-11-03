@@ -12,6 +12,7 @@ class Listing:
     rooms: int | None = None
     district: str | None = None
     street: str | None = None
+    photo: str | None = None
     city: str | None = None
     posted_at: str | None = None
     first_seen: str = ""

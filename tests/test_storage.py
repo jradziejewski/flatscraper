@@ -107,7 +107,7 @@ def test_street_round_trips_and_old_csv_without_the_column_still_loads(tmp_path)
     rows = merge({}, [mk(street="Hubska"), mk(id="2")], T1)
     path = tmp_path / "l.csv"
     save_listings(rows, path)
-    assert "district,street,city" in path.read_text(encoding="utf-8").splitlines()[0]
+    assert "district,street,photo,city" in path.read_text(encoding="utf-8").splitlines()[0]
     assert load_listings(path) == rows
     # a file written before the street column existed (what the first run after an upgrade finds)
     old = tmp_path / "old.csv"
@@ -120,6 +120,36 @@ def test_street_round_trips_and_old_csv_without_the_column_still_loads(tmp_path)
     assert loaded.street is None and loaded.district == "Krzyki" and loaded.price_pln == 3000
     save_listings(load_listings(old), tmp_path / "upgraded.csv")  # and it can be saved in the new layout
     assert load_listings(tmp_path / "upgraded.csv")[("otodom", "1")] == loaded
+
+
+def test_photo_round_trips_byte_identically_and_old_csv_without_the_column_still_loads(tmp_path):
+    url = "https://img.test/a,b.jpg?x=1&y=2"  # commas and ampersands must survive CSV quoting
+    rows = merge({}, [mk(photo=url), mk(id="2")], T1)
+    path = tmp_path / "l.csv"
+    save_listings(rows, path)
+    first = path.read_bytes()
+    loaded = load_listings(path)
+    assert loaded == rows and loaded[("otodom", "1")].photo == url and loaded[("otodom", "2")].photo is None
+    save_listings(loaded, path)
+    assert path.read_bytes() == first
+    # a file from before the photo column (street present, photo absent): what the first run after this upgrade finds
+    old = tmp_path / "old.csv"
+    old.write_text(
+        "site,id,url,title,price_pln,area_m2,rooms,district,street,city,posted_at,first_seen,last_seen\n"
+        "otodom,1,http://x/1,Flat,3000,40.0,2,Krzyki,Hubska,Wrocław,,2026-01-01T07:00:00Z,2026-01-01T07:00:00Z\n",
+        encoding="utf-8",
+    )
+    assert load_listings(old)[("otodom", "1")].photo is None
+    assert load_listings(old)[("otodom", "1")].street == "Hubska"
+
+
+def test_merge_fills_a_missing_photo_but_never_erases_a_known_one():
+    rows = merge({}, [mk(id="1", photo=None), mk(id="2", photo="https://img.test/2.jpg")], T1)
+    rows = merge(rows, [mk(id="1", photo="https://img.test/1.jpg"), mk(id="2", photo=None)], T2)
+    assert rows[("otodom", "1")].photo == "https://img.test/1.jpg"  # filled in (e.g. rows from before the column)
+    assert rows[("otodom", "2")].photo == "https://img.test/2.jpg"  # an empty value does not erase it
+    rows = merge(rows, [mk(id="2", photo="https://img.test/new.jpg")], T2)
+    assert rows[("otodom", "2")].photo == "https://img.test/new.jpg"  # a fresh value wins: portals rotate photo URLs
 
 
 def test_merge_fills_a_missing_street_but_never_erases_a_known_one():
