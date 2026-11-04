@@ -39,6 +39,15 @@ def test_photo_url_keeps_only_http_urls():
         assert photo_url(bad) is None
 
 
+def test_plain_text_strips_markup_and_keeps_words_apart():
+    from aptsearch.text import plain_text
+
+    assert plain_text("<p><b>ul. Hubska</b></p><p>12 &amp; więcej</p>") == "ul. Hubska 12 & więcej"
+    assert plain_text("a<br>b<br/>c<li>d</li>e") == "a b c d e"        # block breaks must not glue words together
+    assert plain_text("ul.&nbsp;Komedy\n\n 16") == "ul. Komedy 16"
+    assert plain_text(None) == plain_text("") == ""
+
+
 def test_city_slug():
     assert city_slug("Wrocław") == "wroclaw"
     assert city_slug("Zielona Góra") == "zielona-gora"

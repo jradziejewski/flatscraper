@@ -3,6 +3,16 @@ import re
 import unicodedata
 
 
+def plain_text(markup: str | None) -> str:
+    """Text of an HTML snippet (a listing description): tags dropped, entities decoded, one line. Block breaks become spaces,
+    so "<p>ul. Hubska</p><p>12</p>" does not glue words together."""
+    if not markup:
+        return ""
+    text = re.sub(r"<\s*(?:br|/p|/li|/div|/h\d)\s*/?>", " ", markup, flags=re.IGNORECASE)
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", html.unescape(text)).strip()
+
+
 def city_slug(city: str) -> str:
     """'Wrocław' -> 'wroclaw', 'Zielona Góra' -> 'zielona-gora' (URL slug used by the sites)."""
     text = city.casefold().replace("ł", "l")
