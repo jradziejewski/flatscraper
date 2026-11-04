@@ -160,15 +160,54 @@ def test_the_page_cap_and_the_spacing_between_fetches(monkeypatch):
     assert out[("otodom", "4")].street is None and "otodom:4" not in cache   # waits for the next run
 
 
-def test_failed_fetches_are_not_cached_and_too_many_stop_the_run(monkeypatch, caplog):
+def test_failed_fetches_are_not_cached_and_one_portals_failures_do_not_starve_the_others(monkeypatch, caplog):
     patch_readers(monkeypatch)
     boom = OSError("blocked")
-    pages = Pages({("otodom", str(i)): boom for i in range(1, 7)})
+    texts = {("morizon", str(i)): boom for i in range(1, 7)}          # one portal that fails every time...
+    texts[("otodom", "1")] = "ul. Hubska 5"                            # ...sorts before another that works
+    pages = Pages(texts)
     cache = {}
+    listings = rows(*(row(site="morizon", id=str(i)) for i in range(1, 7)), row(id="1"))
     with caplog.at_level(logging.WARNING):
-        out = fill_addresses(rows(*(row(id=str(i)) for i in range(1, 7))), cache, fetch=pages, sleep=lambda s: None)
-    assert len(pages.calls) == details.MAX_FAILURES and cache == {}           # it gave up instead of hammering the site
-    assert all(r.street is None for r in out.values()) and "blocked" in caplog.text
+        out = fill_addresses(listings, cache, fetch=pages, sleep=lambda s: None)
+    assert [c for c in pages.calls if c[0] == "morizon"] == [("morizon", str(i)) for i in range(1, details.MAX_FAILURES + 1)]   # gave up on it
+    assert out[("otodom", "1")].street == "Hubska" and cache == {"otodom:1": ["Hubska", "5"]}                      # but the other portal was served
+    assert "blocked" in caplog.text and not any(k.startswith("morizon") for k in cache)                           # failures are not cached
+
+
+def test_a_listing_the_portal_has_removed_is_a_final_answer_not_a_failure(monkeypatch):
+    import urllib.error
+
+    patch_readers(monkeypatch)
+    gone = urllib.error.HTTPError("https://x.test", 404, "Not Found", {}, None)
+    busy = urllib.error.HTTPError("https://x.test", 503, "Unavailable", {}, None)
+    pages = Pages({("otodom", "1"): gone, ("otodom", "2"): busy, ("otodom", "3"): "ul. Hubska 5"})
+    cache = {}
+    out = fill_addresses(rows(row(id="1"), row(id="2"), row(id="3")), cache, fetch=pages, sleep=lambda s: None)
+    assert cache == {"otodom:1": None, "otodom:3": ["Hubska", "5"]}   # 404 is remembered, 503 is retried next run
+    assert out[("otodom", "3")].street == "Hubska"
+    again = Pages({("otodom", "2"): "ul. Legnicka 1"})
+    fill_addresses(rows(row(id="1"), row(id="2"), row(id="3")), cache, fetch=again, sleep=lambda s: None)
+    assert again.calls == [("otodom", "2")]                          # only the one that failed transiently
+
+
+def test_olx_pages_report_the_real_status_after_a_curl_failure(monkeypatch):
+    import subprocess
+    import urllib.error
+
+    def failing(url, **kwargs):
+        raise subprocess.CalledProcessError(22, ["curl"])
+
+    monkeypatch.setattr("aptsearch.http.get_curl", failing)
+    monkeypatch.setattr("aptsearch.http.curl_status", lambda url, **kw: 404)
+    with pytest.raises(urllib.error.HTTPError) as gone:
+        details.fetch_page(row(site="olx", id="42"))
+    assert gone.value.code == 404 and "42" in gone.value.url                 # a removed offer
+    monkeypatch.setattr("aptsearch.http.curl_status", lambda url, **kw: 0)
+    with pytest.raises(subprocess.CalledProcessError):                       # no answer at all: the original error, a plain failure
+        details.fetch_page(row(site="olx", id="42"))
+    monkeypatch.setattr("aptsearch.http.get_curl", lambda url, **kw: '{"data": {}}')
+    assert details.fetch_page(row(site="olx", id="42")) == '{"data": {}}'    # success: no status check
 
 
 def test_an_unreadable_page_counts_as_a_failure_not_a_crash(monkeypatch):

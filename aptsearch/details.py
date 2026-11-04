@@ -16,7 +16,10 @@ Each page is fetched at most once: the answer, including "no street found" (null
 import json
 import logging
 import re
+import subprocess
 import time
+import urllib.error
+from collections import Counter
 from dataclasses import replace
 from pathlib import Path
 
@@ -31,7 +34,8 @@ log = logging.getLogger(__name__)
 CACHE_PATH = "addresscache.json"
 DELAY_S = 2.0  # between page fetches, like the scrapers
 DEFAULT_LIMIT = 25  # pages per run: the backfill is one-off, later runs only meet a few new gaps
-MAX_FAILURES = 3  # a run that fails this many fetches stops: something is wrong, do not hammer the site
+MAX_FAILURES = 3  # a portal that fails this many fetches in a run is left alone until the next run: something is wrong there
+GONE = (404, 410)  # the portal says the listing no longer exists: a final answer, not a failure
 
 Cache = dict[str, list[str | None] | None]
 
@@ -104,7 +108,15 @@ READERS = {"otodom": read_otodom, "morizon": read_morizon, "nieruchomosci": read
 def fetch_page(row) -> str:
     """The page for a row; OLX answers only `curl` (see http.get_curl) and its JSON API has the full offer."""
     if row.site == "olx":
-        return http.get_curl(f"{olx.API}/offers/{row.id}/")
+        url = f"{olx.API}/offers/{row.id}/"
+        try:
+            return http.get_curl(url)
+        except subprocess.CalledProcessError as exc:
+            # curl only says "failed": ask once for the real status, so a removed offer (404) is told from a block (403, 429)
+            status = http.curl_status(url)
+            if status:
+                raise urllib.error.HTTPError(url, status, "curl failed", {}, None) from exc
+            raise
     return http.get(row.url)
 
 
@@ -138,7 +150,8 @@ def fill_addresses(
     `skip`: keys whose full text was already read from the list (OLX rows of this run). Updates `cache` in place."""
     fetch = fetch or fetch_page
     out = dict(listings)
-    fetched = failures = 0
+    fetched = 0
+    failures: Counter = Counter()  # per portal: one site's dead links must not starve the others
     for key in sorted(listings):
         row = listings[key]
         reader = READERS.get(row.site)
@@ -146,16 +159,24 @@ def fill_addresses(
             continue
         ck = f"{row.site}:{row.id}"
         if ck not in cache:
-            if fetched >= limit or failures >= MAX_FAILURES:
+            if fetched >= limit or failures[row.site] >= MAX_FAILURES:
                 continue
-            if fetched + failures:
+            if fetched + sum(failures.values()):
                 sleep(DELAY_S)
             city = row.city or default_city
             try:
                 found = find_address(reader(fetch(row), city), city)
+            except urllib.error.HTTPError as exc:
+                if exc.code in GONE:  # removed from the portal: nothing to read, and nothing to ask again
+                    fetched += 1
+                    cache[ck] = None
+                else:
+                    failures[row.site] += 1
+                    log.warning("details: %s %s failed (HTTP %s)", row.site, row.id, exc.code)
+                continue
             except Exception as exc:  # a changed page or a blocked request must not break the run
-                failures += 1
-                log.warning("details: %s %s failed (%s: %s)", row.site, row.id, type(exc).__name__, exc)
+                failures[row.site] += 1
+                log.warning("details: %s %s failed (%s: %s)", row.site, row.id, type(exc).__name__, str(exc)[:120])
                 continue
             fetched += 1
             cache[ck] = [found.street, found.house] if found else None
@@ -166,7 +187,8 @@ def fill_addresses(
     for ck in [k for k in cache if k not in live]:  # the listing is gone: forget it, the file stays small
         del cache[ck]
     waiting = sum(1 for k, r in listings.items() if not r.street and r.site in READERS and k not in skip and f"{r.site}:{r.id}" not in cache)
-    log.info("details: %d page(s) read this run, %d failed, %d row(s) without a street still waiting", fetched, failures, waiting)
+    log.info("details: %d page(s) read this run, %d failed%s, %d row(s) without a street still waiting", fetched, sum(failures.values()),
+             f" ({dict(failures)})" if failures else "", waiting)
     return out
 
 
