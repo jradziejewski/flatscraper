@@ -247,6 +247,44 @@ function safeUrl(u) {
   return /^https?:\/\//i.test(u || "") ? u : null;
 }
 
+// ---------- photos ----------
+
+/** Same picture at two sizes per portal, so phones (full-width cards) get a sharp one and desktop keeps the small one.
+ *  `small` is what the scraper stored; the larger variant is the same CDN path with a bigger size token. */
+const PHOTO_VARIANTS = [
+  { find: /(\/image;s=)320x240$/, to: "$1640x480", widths: [320, 640] },                // OLX
+  { find: /(;s=)314x236(;q=\d+)$/, to: "$1655x491$2", widths: [314, 655] },             // Otodom
+  { find: /(\/3x2_)s(:fill_and_crop\/)/, to: "$1m$2", widths: [450, 600] },             // Morizon
+];
+const PHOTO_SIZES = "(max-width: 700px) 100vw, 120px";
+
+/** {src, srcset} for an <img>, or null when there is no usable (http/https) photo. srcset is null when the portal
+ *  has no larger variant (nieruchomosci-online). Everything that reaches an <img> goes through here. */
+function photoSources(url) {
+  const src = safeUrl(url);
+  if (!src) return null;
+  for (const v of PHOTO_VARIANTS) {
+    if (!v.find.test(src)) continue;
+    const large = safeUrl(src.replace(v.find, v.to));
+    if (large && large !== src) return { src, srcset: `${src} ${v.widths[0]}w, ${large} ${v.widths[1]}w` };
+  }
+  return { src, srcset: null };
+}
+
+// ---------- active filters (shown as removable chips) ----------
+
+/** One chip per active filter of the filter panel (not the search text or the view). `key` says which control to clear. */
+function activeFilterChips(f) {
+  const chips = [];
+  if (f.site) chips.push({ key: "site", value: f.site, label: SITE_NAMES[f.site] || f.site });
+  for (const d of f.districts || []) chips.push({ key: "district", value: d, label: d === NO_DISTRICT ? "Brak dzielnicy" : d });
+  if (f.maxPrice != null) chips.push({ key: "maxPrice", value: f.maxPrice, label: `do ${formatPrice(f.maxPrice)}` });
+  if (f.minArea != null) chips.push({ key: "minArea", value: f.minArea, label: `od ${formatArea(f.minArea)}` });
+  if (f.minRooms != null) chips.push({ key: "minRooms", value: f.minRooms, label: `od ${f.minRooms} pok.` });
+  if (f.onlyNew) chips.push({ key: "onlyNew", value: true, label: "Tylko nowe" });
+  return chips;
+}
+
 // ---------- per-device storage (localStorage / sessionStorage are injected so tests can fake them) ----------
 
 const LAST_VISIT_KEY = "flatscraper:v1:lastVisit";
@@ -449,6 +487,7 @@ function describeSince(ms, now) {
 
 if (typeof module !== "undefined") {
   module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
+    photoSources, activeFilterChips,
     isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON,
     prefsFromState, sanitizePrefs, loadPrefs, savePrefs, PREFS_KEY,
     markKey, emptyMarks, loadMarks, saveMarks, setMark, markState, refreshSnapshots, goneViews, capMarks, sanitizeMarks, MAX_MARKS, FAVS_KEY, HIDDEN_KEY, VIEWS };
@@ -468,11 +507,20 @@ if (typeof document !== "undefined") {
 
   const SORT_PRESETS = {
     newest: ["firstSeen", "desc"],
+    oldest: ["firstSeen", "asc"],
     "price-asc": ["price", "asc"],
     "price-desc": ["price", "desc"],
     "area-desc": ["area", "desc"],
     "ppm-asc": ["ppm", "asc"],
+    "rooms-desc": ["rooms", "desc"],
   };
+
+  // The three views are radio buttons styled as a segmented control.
+  const getView = () => (document.querySelector('input[name="show"]:checked') || {}).value || "current";
+  function setView(view) {
+    const radio = document.querySelector(`input[name="show"][value="${VIEWS.includes(view) ? view : "current"}"]`);
+    if (radio) radio.checked = true;
+  }
 
   function readFilters() {
     const n = (id) => (($(id).value || "").trim() === "" ? null : Number($(id).value));
@@ -481,7 +529,7 @@ if (typeof document !== "undefined") {
       districts: [...document.querySelectorAll("#districtPanel input:checked")].map((i) => i.value),
       maxPrice: n("maxPrice"), minArea: n("minArea"), minRooms: n("minRooms"),
       onlyNew: $("onlyNew").checked, since: state.baseline,
-      view: $("show").value, marks: state.marks,
+      view: getView(), marks: state.marks,
     };
   }
 
@@ -492,23 +540,67 @@ if (typeof document !== "undefined") {
     return node;
   }
 
-  function cell(cls, text, label) {
-    const td = el("td", { className: cls }, text);
-    td.dataset.label = label;
-    return td;
+  // ----- filter panel: a dropdown under the toolbar on desktop, a bottom sheet on phones -----
+
+  function setPanel(open) {
+    $("filterPanel").hidden = !open;
+    $("backdrop").hidden = !open; // only visible on phones (CSS)
+    $("filtersToggle").setAttribute("aria-expanded", String(open));
+    document.body.classList.toggle("sheet-open", open);
+    if (open) $("site").focus({ preventScroll: true });
+  }
+  const panelOpen = () => !$("filterPanel").hidden;
+
+  function clearPanelFilters() {
+    $("site").value = "";
+    document.querySelectorAll("#districtPanel input").forEach((i) => { i.checked = false; });
+    $("maxPrice").value = "";
+    $("minArea").value = "";
+    $("minRooms").value = "";
+    $("onlyNew").checked = false;
   }
 
-  function siteCell(r) {
-    const td = el("td", { className: "site" });
-    td.dataset.label = "Portal";
+  /** Clear the one control a chip stands for. */
+  function removeFilter(chip) {
+    if (chip.key === "district") {
+      document.querySelectorAll("#districtPanel input").forEach((i) => { if (i.value === chip.value) i.checked = false; });
+    } else if (chip.key === "onlyNew") $("onlyNew").checked = false;
+    else $(chip.key).value = "";
+    render();
+  }
+
+  function renderChips(filters) {
+    const chips = activeFilterChips(filters);
+    const frag = document.createDocumentFragment();
+    chips.forEach((chip) => {
+      const b = el("button", { type: "button", className: "chip-x" }, `${chip.label} ✕`);
+      b.setAttribute("aria-label", `Usuń filtr: ${chip.label}`);
+      b.addEventListener("click", () => removeFilter(chip));
+      frag.append(b);
+    });
+    if (chips.length > 1) {
+      const all = el("button", { type: "button", className: "chip-clear" }, "Wyczyść wszystkie");
+      all.addEventListener("click", () => { clearPanelFilters(); render(); });
+      frag.append(all);
+    }
+    $("chips").replaceChildren(frag);
+    $("chips").hidden = chips.length === 0;
+    $("filterCount").textContent = String(chips.length);
+    $("filterCount").hidden = chips.length === 0;
+  }
+
+  // ----- rows -----
+
+  function portalChips(r) {
+    const box = el("div", { className: "portals" });
     r.members.forEach((m) => {
       const name = SITE_NAMES[m.site] || m.site;
       const href = safeUrl(m.url);
-      td.append(href
+      box.append(href
         ? el("a", { className: "chip", href, target: "_blank", rel: "noopener noreferrer" }, name)
         : el("span", { className: "chip" }, name));
     });
-    return td;
+    return box;
   }
 
   let toastTimer = null;
@@ -547,7 +639,7 @@ if (typeof document !== "undefined") {
     return td;
   }
 
-  /** Fixed-size box, so rows don't jump while pictures load. A missing or broken picture leaves the empty box. */
+  /** Fixed-size box, so rows don't jump while pictures load. A missing or dead image leaves a plain placeholder. */
   function photoCell(r) {
     const td = el("td", { className: "photo" });
     const href = safeUrl(r.url);
@@ -556,37 +648,58 @@ if (typeof document !== "undefined") {
       ? el("a", { className: "thumb", href, target: "_blank", rel: "noopener noreferrer", tabIndex: -1 })
       : el("span", { className: "thumb" });
     box.setAttribute("aria-hidden", "true");
-    const src = safeUrl(r.photo);
-    if (src) {
-      const img = el("img", {
-        src, alt: "", width: 96, height: 72, loading: "lazy", decoding: "async", referrerPolicy: "no-referrer",
+    const sources = photoSources(r.photo);
+    if (sources) {
+      const img = el("img", { src: sources.src, alt: "", loading: "lazy", decoding: "async", referrerPolicy: "no-referrer" });
+      if (sources.srcset) { img.srcset = sources.srcset; img.sizes = PHOTO_SIZES; }
+      img.addEventListener("error", () => {
+        if (img.hasAttribute("srcset")) { // the larger variant failed: fall back to the stored picture once
+          img.removeAttribute("srcset");
+          img.removeAttribute("sizes");
+          img.src = sources.src;
+          return;
+        }
+        img.remove(); // portals rotate image URLs; keep the placeholder
+        td.classList.add("no-photo");
       });
-      img.addEventListener("error", () => img.remove()); // portals rotate image URLs; keep the empty box
       box.append(img);
-    }
+    } else td.classList.add("no-photo");
     td.append(box);
+    return td;
+  }
+
+  /** Title (with the NOWE badge), a muted line "district · street · added", and the portals. */
+  function mainCell(r, now) {
+    const td = el("td", { className: "main" });
+    const line = el("div", { className: "line" });
+    const href = safeUrl(r.url);
+    const title = r.title || "(bez tytułu)";
+    if (isNew(r, now, state.baseline)) line.append(el("span", { className: "badge" }, "NOWE"));
+    line.append(href
+      ? el("a", { className: "title-link", href, target: "_blank", rel: "noopener noreferrer" }, title)
+      : el("span", { className: "title-link" }, title));
+    const when = r.gone ? `ostatnio widziano: ${relativeTime(r.lastSeen, now)}` : relativeTime(r.firstSeen, now);
+    td.append(line, el("div", { className: "meta" }, [r.district, r.street, when].filter(Boolean).join(" · ")), portalChips(r));
+    return td;
+  }
+
+  function priceCell(r) {
+    const td = el("td", { className: "price" });
+    td.append(el("span", { className: "price-main" }, formatPrice(r.price)));
+    if (r.ppm != null) td.append(el("span", { className: "price-sub" }, formatPrice(r.ppm).replace(" zł", " zł/m²")));
     return td;
   }
 
   function renderRow(r, now, showing) {
     const mark = markState(r, state.marks);
     const tr = el("tr", { className: r.gone ? "is-gone" : mark === "hidden" ? "is-hidden" : "" });
-    const titleTd = el("td", { className: "title" });
-    const href = safeUrl(r.url);
-    const title = r.title || "(bez tytułu)";
-    if (isNew(r, now, state.baseline)) titleTd.append(el("span", { className: "badge" }, "NOWE"));
-    titleTd.append(href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, title) : el("span", {}, title));
     tr.append(
-      actionsCell(r, mark, showing),
       photoCell(r),
-      titleTd,
-      cell("num price", formatPrice(r.price), "Cena"),
-      cell("num area", formatArea(r.area), "Powierzchnia"),
-      cell("num ppm", r.ppm == null ? "—" : formatPrice(r.ppm).replace(" zł", " zł/m²"), "zł/m²"),
-      cell("num rooms", r.rooms == null ? "—" : String(r.rooms), "Pokoje"),
-      cell("district", r.district || "—", "Dzielnica"),
-      siteCell(r),
-      cell("added", r.gone ? `ostatnio widziano: ${relativeTime(r.lastSeen, now)}` : relativeTime(r.firstSeen, now), "Dodano"),
+      mainCell(r, now),
+      priceCell(r),
+      el("td", { className: "num area" }, formatArea(r.area)),
+      el("td", { className: "num rooms" }, r.rooms == null ? "—" : String(r.rooms)),
+      actionsCell(r, mark, showing),
     );
     return tr;
   }
@@ -598,21 +711,21 @@ if (typeof document !== "undefined") {
     const pool = filters.view === "fav" ? state.views.concat(gone) : state.views;
     const rows = sortRows(applyFilters(pool, filters, now), state.sort.key, state.sort.dir);
     const countMarked = (mode) => state.views.filter((v) => markState(v, state.marks) === mode).length;
-    document.querySelector("#show option[value=fav]").textContent = `Ulubione (${countMarked("fav") + gone.length})`;
-    document.querySelector("#show option[value=hidden]").textContent = `Ukryte (${countMarked("hidden")})`;
-    updateDistrictSummary(filters.districts);
-    const body = $("rows");
+    $("favTab").textContent = `Ulubione (${countMarked("fav") + gone.length})`;
+    $("hiddenTab").textContent = `Ukryte (${countMarked("hidden")})`;
+    renderChips(filters);
     const frag = document.createDocumentFragment();
     rows.forEach((r) => frag.append(renderRow(r, now, filters.view)));
-    body.replaceChildren(frag);
+    $("rows").replaceChildren(frag);
     const merged = state.rows.length - state.views.length;
     const newCount = state.views.filter((v) => isNew(v, now, state.baseline)).length;
     $("count").textContent = `Pokazano ${rows.length} z ${state.views.length}` +
       (merged > 0 ? ` · połączono ${merged} ${plural(merged, "duplikat", "duplikaty", "duplikatów")}` : "") +
       ` · ${state.baseline != null ? "nowe od ostatniej wizyty" : "nowe (24 h)"}: ${newCount}`;
+    $("panelDone").textContent = `Pokaż ${rows.length} ${plural(rows.length, "ogłoszenie", "ogłoszenia", "ogłoszeń")}`;
     $("empty").hidden = rows.length > 0;
     $("empty").textContent = filters.onlyNew && newCount === 0
-      ? "Nic nowego od ostatniej wizyty. Odznacz „Tylko nowe”, żeby zobaczyć wszystkie ogłoszenia."
+      ? "Nic nowego od ostatniej wizyty. Wyłącz „Tylko nowe”, żeby zobaczyć wszystkie ogłoszenia."
       : "Brak ogłoszeń spełniających kryteria.";
     document.querySelectorAll("th[data-key]").forEach((th) => {
       const active = th.dataset.key === state.sort.key;
@@ -631,7 +744,7 @@ if (typeof document !== "undefined") {
     $("minArea").value = p.minArea ?? "";
     $("minRooms").value = p.minRooms == null ? "" : String(p.minRooms);
     $("onlyNew").checked = p.onlyNew;
-    $("show").value = p.view;
+    setView(p.view);
     $("merge").checked = p.merge;
     state.sort = p.sort;
   }
@@ -653,17 +766,13 @@ if (typeof document !== "undefined") {
     if (counts.has(NO_DISTRICT)) keys.push(NO_DISTRICT);
     const frag = document.createDocumentFragment();
     keys.forEach((k) => {
-      const opt = el("label", { className: "opt" });
-      opt.append(el("input", { type: "checkbox", value: k }), el("span", {}, districtLabel(k)), el("span", { className: "cnt" }, String(counts.get(k))));
-      frag.append(opt);
+      const label = el("span", {}, districtLabel(k));
+      label.append(el("small", {}, String(counts.get(k))));
+      const tog = el("label", { className: "tog" });
+      tog.append(el("input", { type: "checkbox", value: k }), label);
+      frag.append(tog);
     });
     $("districtPanel").replaceChildren(frag);
-  }
-
-  function updateDistrictSummary(selected) {
-    $("districtSummary").textContent = selected.length === 0 ? "Wszystkie"
-      : selected.length <= 2 ? selected.map(districtLabel).join(", ")
-      : `${selected.length} wybrane`;
   }
 
   function fillSelect(select, values, labelOf = (v) => v) {
@@ -730,16 +839,18 @@ if (typeof document !== "undefined") {
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    ["q", "site", "district", "maxPrice", "minArea", "minRooms", "onlyNew", "show"].forEach((id) => {
+    ["q", "site", "maxPrice", "minArea", "minRooms", "onlyNew"].forEach((id) => {
       $(id).addEventListener("input", render);
     });
-    // close the district dropdown on an outside click or Escape
-    document.addEventListener("click", (e) => { if (!$("district").contains(e.target)) $("district").open = false; });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("district").open = false; });
-    $("clearFilters").addEventListener("click", () => {
-      $("filters").reset(); // also restores "Łącz duplikaty" to its default (on)
-      rebuild();
+    document.querySelectorAll('input[name="show"]').forEach((radio) => radio.addEventListener("change", render));
+    $("districtPanel").addEventListener("change", render);
+    $("filtersToggle").addEventListener("click", () => setPanel(!panelOpen()));
+    $("panelDone").addEventListener("click", () => { setPanel(false); $("filtersToggle").focus(); });
+    $("backdrop").addEventListener("click", () => setPanel(false));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && panelOpen()) { setPanel(false); $("filtersToggle").focus(); }
     });
+    $("clearFilters").addEventListener("click", () => { clearPanelFilters(); render(); });
     $("merge").addEventListener("input", rebuild);
     $("sort").addEventListener("change", (e) => {
       const preset = SORT_PRESETS[e.target.value];

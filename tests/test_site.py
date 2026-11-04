@@ -491,10 +491,77 @@ return {saved: marks.favs['olx:o'].photo, gone: gone.map(g => g.photo), reloaded
 
 def test_images_only_ever_get_a_checked_url():
     cell = re.search(r"function photoCell\(r\) \{.*?\n  \}\n", APP_JS, re.S).group(0)
-    assert 'safeUrl(r.photo)' in cell and re.search(r"\bsrc,", cell)  # src comes from the checked local, nothing else
+    # every src/srcset comes out of photoSources(), which runs the URL through safeUrl
+    assert "photoSources(r.photo)" in cell and "src: sources.src" in cell and "sources.srcset" in cell
+    assert not re.search(r"\.src\s*=\s*r\.|src:\s*r\.", cell)  # never straight from the row
     assert 'referrerPolicy: "no-referrer"' in cell and 'loading: "lazy"' in cell
-    assert '"error"' in cell  # a dead image URL falls back to the empty box
-    assert INDEX_HTML.count('class="photo"') == 1  # the header cell for the new column
+    assert '"error"' in cell  # a dead image URL falls back to the placeholder
+    helper = re.search(r"function photoSources\(url\) \{.*?\n\}\n", APP_JS, re.S).group(0)
+    assert helper.count("safeUrl(") >= 2  # the stored URL and the derived larger one
+    assert INDEX_HTML.count('class="photo"') == 1  # the header cell for the photo column
+
+
+@needs_node
+def test_photo_sources_offer_a_larger_variant_for_the_portals_that_have_one():
+    out = run_node("return input.map(u => lib.photoSources(u));", [
+        "https://ireland.apollo.olxcdn.com:443/v1/files/abc-PL/image;s=320x240",
+        "https://ireland.apollo.olxcdn.com/v1/files/JWT/image;s=314x236;q=80",
+        "https://img1.staticmorizon.com.pl/thumb/ID/3x2_s:fill_and_crop/mieszkanie-65-m.jpg",
+        "https://i.st-nieruchomosci-online.pl/h198ssl/mieszkanie-wroclaw.jpg",
+        "https://other.test/a.jpg?s=320x240",
+    ])
+    olx, otodom, morizon, nieruch, other = out
+    assert olx == {"src": "https://ireland.apollo.olxcdn.com:443/v1/files/abc-PL/image;s=320x240",
+                   "srcset": "https://ireland.apollo.olxcdn.com:443/v1/files/abc-PL/image;s=320x240 320w, "
+                             "https://ireland.apollo.olxcdn.com:443/v1/files/abc-PL/image;s=640x480 640w"}
+    assert otodom["srcset"].endswith("image;s=655x491;q=80 655w") and otodom["srcset"].startswith(otodom["src"] + " 314w")
+    assert morizon["srcset"].endswith("/3x2_m:fill_and_crop/mieszkanie-65-m.jpg 600w") and "/3x2_s:" in morizon["src"]
+    assert nieruch == {"src": "https://i.st-nieruchomosci-online.pl/h198ssl/mieszkanie-wroclaw.jpg", "srcset": None}  # one size only
+    assert other["srcset"] is None  # unknown URL shapes pass through untouched
+
+
+@needs_node
+def test_photo_sources_reject_anything_that_is_not_http():
+    out = run_node("return input.map(u => lib.photoSources(u));",
+                   [None, "", "javascript:alert(1)", "data:image/png;base64,AAAA", "//x.test/a.jpg", "ftp://x.test/a.jpg"])
+    assert out == [None] * 6
+
+
+@needs_node
+def test_active_filter_chips_describe_only_the_panel_filters():
+    out = run_node("""
+const label = (f) => lib.activeFilterChips(f).map(c => [c.key, c.value, c.label.replace(/\u00a0/g, ' ')]);
+return {
+  none: label({q: 'x', site: '', districts: [], maxPrice: null, minArea: null, minRooms: null, onlyNew: false, view: 'fav'}),
+  all: label({site: 'olx', districts: ['Krzyki', lib.NO_DISTRICT], maxPrice: 4000, minArea: 40, minRooms: 2, onlyNew: true}),
+  zero: label({maxPrice: 0, minArea: 0}),
+  missing: label({}),
+};""")
+    assert out["none"] == []  # the search text and the view are not "filters"
+    assert out["all"] == [
+        ["site", "olx", "OLX"], ["district", "Krzyki", "Krzyki"], ["district", "__none__", "Brak dzielnicy"],
+        ["maxPrice", 4000, "do 4000 zł"], ["minArea", 40, "od 40 m²"], ["minRooms", 2, "od 2 pok."], ["onlyNew", True, "Tylko nowe"],
+    ]
+    assert [c[0] for c in out["zero"]] == ["maxPrice", "minArea"]  # 0 is a value, not "empty"
+    assert out["missing"] == []
+
+
+def test_the_view_is_a_radio_group_not_a_select():
+    assert 'id="show"' not in INDEX_HTML
+    radios = re.findall(r'<input type="radio" name="show" value="(\w+)"', INDEX_HTML)
+    assert radios == ["current", "fav", "hidden"]
+    assert re.search(r'<input type="radio" name="show" value="current" checked>', INDEX_HTML)  # Aktualne is the default
+    # every sort option the dropdown offers is a preset the script knows (or the hidden "custom" one)
+    options = set(re.findall(r'<option value="([\w-]+)"', re.search(r'<select id="sort">.*?</select>', INDEX_HTML, re.S).group(0)))
+    presets = set(re.findall(r'^\s+"?([\w-]+)"?: \["\w+", "(?:asc|desc)"\],?$', APP_JS, re.M))
+    assert options - {"custom"} <= presets, options - presets
+
+
+def test_filter_panel_is_wired_for_keyboard_and_screen_readers():
+    assert re.search(r'<button id="filtersToggle"[^>]*aria-expanded="false"[^>]*aria-controls="filterPanel"', INDEX_HTML)
+    assert re.search(r'<div id="filterPanel"[^>]*\bhidden\b', INDEX_HTML)  # closed until opened
+    assert 'e.key === "Escape"' in APP_JS and '"aria-expanded"' in APP_JS  # Escape closes it, the state is announced
+    assert "[hidden] { display: none !important; }" in INDEX_HTML  # author display rules must not defeat `hidden`
 
 
 # ---------- favourites and hidden listings ----------

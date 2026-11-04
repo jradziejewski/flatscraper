@@ -6,137 +6,181 @@
 <title>Mieszkania do wynajęcia</title>
 <meta name="description" content="Aktualne ogłoszenia mieszkań na wynajem z Otodom, Morizon, OLX i Nieruchomosci-online.">
 <style>
+  /* ---------- design tokens ---------- */
   :root {
-    --bg: #f7f7f5; --surface: #ffffff; --fg: #1d1f23; --muted: #62666d; --line: #e3e3de;
-    --star: #b7791f; --accent: #1a5fd0; --accent-fg: #ffffff; --badge-bg: #d9f2e0; --badge-fg: #14532d; --warn: #9a5b00;
-    --radius: 10px;
+    --bg: #f3f2ee; --surface: #ffffff; --fg: #1b1d21; --muted: #5d626b; --line: #e3e1db; --line-strong: #cdcac2;
+    --accent: #1a5fd0; --accent-fg: #ffffff; --accent-soft: #e5edfb; --star: #b7791f;
+    --badge-bg: #d9f2e0; --badge-fg: #14532d; --warn: #9a5b00; --scrim: rgba(15, 17, 20, .45); --ph: #e8e6e0;
+    --shadow: 0 1px 2px rgba(20, 22, 26, .06), 0 6px 18px rgba(20, 22, 26, .06);
+    --r-lg: 14px; --r-md: 10px; --ctl: 40px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #14161a; --surface: #1c1f25; --fg: #e8e9ec; --muted: #9a9fa8; --line: #2d3139;
-      --star: #f5c451; --accent: #7aa8ff; --accent-fg: #0b1220; --badge-bg: #1d4a2c; --badge-fg: #b7efc9; --warn: #f0b24a;
+      --bg: #121418; --surface: #1b1e24; --fg: #e8e9ec; --muted: #9a9fa8; --line: #2b2f37; --line-strong: #3b404a;
+      --accent: #7aa8ff; --accent-fg: #0b1220; --accent-soft: #22324f; --star: #f5c451;
+      --badge-bg: #1d4a2c; --badge-fg: #b7efc9; --warn: #f0b24a; --scrim: rgba(0, 0, 0, .6); --ph: #262a31;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .3);
     }
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body {
-    margin: 0; background: var(--bg); color: var(--fg);
+    margin: 0; background: var(--bg); color: var(--fg); -webkit-text-size-adjust: 100%;
     font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-  main { max-width: 1280px; margin: 0 auto; padding: 20px 16px 48px; }
-  h1 { font-size: 1.35rem; margin: 0 0 2px; }
-  .sub { color: var(--muted); margin: 0 0 16px; font-size: .9rem; }
+  main { max-width: 1180px; margin: 0 auto; padding: 22px 16px 56px; }
+  h1 { font-size: 1.5rem; letter-spacing: -.01em; margin: 0 0 2px; }
+  .sub { color: var(--muted); margin: 0 0 6px; font-size: .9rem; }
   .sub .warn { color: var(--warn); font-weight: 600; }
   a { color: var(--accent); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-
   #status { padding: 40px 0; text-align: center; color: var(--muted); }
-  button, input, select {
-    font: inherit; color: inherit; background: var(--surface);
-    border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
-  }
-  button { cursor: pointer; }
-  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 
-  form#filters {
-    display: grid; gap: 10px; align-items: end; margin-bottom: 10px;
-    grid-template-columns: 1.5fr 1fr 1.3fr 1fr 1.1fr 1fr 1.3fr auto auto;
+  /* ---------- controls: one height, one border, one radius ---------- */
+  button, input, select { font: inherit; color: inherit; }
+  input[type=search], input[type=number], select, .btn {
+    min-height: var(--ctl); padding: 0 12px; background: var(--surface);
+    border: 1px solid var(--line-strong); border-radius: var(--r-md);
   }
-  form#filters label, form#filters .field { display: flex; flex-direction: column; gap: 3px; font-size: .78rem; color: var(--muted); min-width: 0; }
-  form#filters input:not([type=checkbox]), form#filters select { width: 100%; }
-  .multi { position: relative; }
-  .multi details { position: static; }
-  .multi summary {
-    list-style: none; cursor: pointer; background: var(--surface); color: var(--fg); font-size: 1rem;
-    border: 1px solid var(--line); border-radius: 8px; padding: 7px 28px 7px 10px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative;
-  }
-  .multi summary::-webkit-details-marker { display: none; }
-  .multi summary::after { content: "▾"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); }
-  .multi .panel {
-    position: absolute; z-index: 10; top: calc(100% + 4px); left: 0; min-width: 100%; width: max-content; max-width: 90vw;
-    max-height: 300px; overflow: auto; padding: 6px; background: var(--surface); color: var(--fg);
-    border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
-  }
-  .opt { flex-direction: row !important; align-items: center; gap: 8px !important; padding: 5px 6px; border-radius: 6px; font-size: .92rem !important; color: var(--fg) !important; cursor: pointer; }
-  .opt:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
-  .opt input { width: auto; }
-  .opt .cnt { margin-left: auto; padding-left: 14px; color: var(--muted); font-size: .8rem; }
-  .checks { display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; max-width: 210px; }
-  label.check { flex-direction: row !important; align-items: center; gap: 6px !important; color: var(--fg) !important; font-size: .9rem !important; }
-  label.check small { display: block; color: var(--muted); font-size: .75rem; line-height: 1.2; }
-  label.check input { width: auto; }
-  .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin: 6px 0 8px; color: var(--muted); font-size: .9rem; }
-  .sort-mobile { display: none; }
+  input[type=search], input[type=number], select { width: 100%; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+  .btn[aria-expanded="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-size: .75rem; font-weight: 700; line-height: 20px; text-align: center; }
 
-  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
-  thead th { position: sticky; top: 0; background: var(--surface); text-align: left; font-weight: 600; font-size: .8rem; border-bottom: 1px solid var(--line); padding: 0; }
+  /* ---------- toolbar (sticky): search · filters · sort · view ---------- */
+  form#filters { display: contents; } /* so the toolbar can stick for the whole page, not just its form */
+  .toolbar { position: sticky; top: 0; z-index: 15; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 0; background: var(--bg); }
+  .toolbar .search { flex: 1 1 240px; min-width: 0; }
+  .toolbar .sort { flex: 0 0 auto; }
+  .toolbar .sort select { width: auto; padding-right: 8px; }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-md); }
+  .seg label { position: relative; flex: 1; }
+  .seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .seg span { display: block; padding: 0 12px; line-height: 32px; border-radius: 8px; color: var(--muted); font-size: .92rem; white-space: nowrap; text-align: center; }
+  .seg input:checked + span { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- filter panel ---------- */
+  .panel {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 18px; align-items: end;
+    margin: 2px 0 12px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow);
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; font-size: .8rem; color: var(--muted); }
+  .field.wide, .checks, .panel-actions { grid-column: 1 / -1; }
+  .tog-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tog { position: relative; }
+  .tog input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .tog span { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--fg); font-size: .9rem; }
+  .tog small { color: var(--muted); font-size: .76rem; }
+  .tog input:checked + span { background: var(--accent-soft); border-color: var(--accent); }
+  .tog input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+  label.check { display: flex; align-items: center; gap: 8px; color: var(--fg); font-size: .92rem; cursor: pointer; }
+  label.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+  label.check small { color: var(--muted); font-size: .78rem; }
+  .panel-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* ---------- active filters + count ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
+  .chip-x { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--fg); font-size: .88rem; cursor: pointer; }
+  .chip-clear { min-height: 32px; padding: 0 8px; border: 0; background: none; color: var(--accent); font-size: .88rem; cursor: pointer; text-decoration: underline; }
+  #count { margin: 2px 0 10px; color: var(--muted); font-size: .88rem; }
+
+  /* ---------- list (desktop): photo | title + meta | price | m² | rooms | ★ ✕ ---------- */
+  .list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-weight: 600; font-size: .78rem; color: var(--muted); padding: 0; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--fg) 3%, var(--surface)); }
+  thead th.main-h { padding: 10px 10px; }
   thead th button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 10px 10px; cursor: pointer; color: var(--muted); }
   thead th button:hover { color: var(--fg); }
   thead th button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   th[aria-sort="ascending"] button::after { content: " ▲"; font-size: .7em; }
   th[aria-sort="descending"] button::after { content: " ▼"; font-size: .7em; }
   th[aria-sort="ascending"] button, th[aria-sort="descending"] button { color: var(--fg); }
-  th.num, td.num { text-align: right; }
-  th.num button { text-align: right; }
-  tbody td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th.num { text-align: right; }
+  tbody td { padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
   tbody tr:last-child td { border-bottom: 0; }
-  tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-  td.title { min-width: 240px; overflow-wrap: anywhere; } /* long slash-joined words must wrap, not widen the table */
-  td.title a { text-decoration: none; font-weight: 500; }
-  td.title a:hover { text-decoration: underline; }
-  td.price { font-weight: 600; white-space: nowrap; }
-  td.num, td.added { white-space: nowrap; }
-  td.ppm, td.added, td.district { color: var(--muted); }
-  .chip { display: inline-block; margin: 0 4px 3px 0; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; font-size: .82rem; white-space: nowrap; color: var(--accent); text-decoration: none; }
-  a.chip:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); border-color: var(--accent); }
-  .badge { display: inline-block; margin-right: 8px; padding: 1px 7px; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .03em; background: var(--badge-bg); color: var(--badge-fg); vertical-align: 1px; }
-  td.photo { width: 1%; padding-right: 0; }
-  .thumb { display: block; width: 96px; height: 72px; border-radius: 6px; overflow: hidden; background: var(--line); }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+  td.photo { width: 1%; padding: 12px 4px 12px 14px; }
+  th.photo { width: 1%; }
+  .thumb { display: block; width: 120px; height: 90px; border-radius: 8px; overflow: hidden; background: var(--ph); }
   .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  td.actions { white-space: nowrap; width: 1%; padding-right: 0; }
-  .act { all: unset; box-sizing: border-box; cursor: pointer; min-width: 30px; padding: 4px 6px; text-align: center; font-size: 1.15rem; line-height: 1; border-radius: 6px; color: var(--muted); }
-  .act:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--fg); }
+  td.main { min-width: 0; overflow-wrap: anywhere; }
+  .line { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .title-link { color: var(--fg); font-weight: 600; font-size: 1rem; text-decoration: none; }
+  a.title-link:hover { color: var(--accent); text-decoration: underline; }
+  .badge { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .03em; background: var(--badge-bg); color: var(--badge-fg); vertical-align: 1px; }
+  .meta { margin-top: 2px; color: var(--muted); font-size: .85rem; }
+  .portals { margin-top: 6px; }
+  .chip { display: inline-block; margin: 0 4px 2px 0; padding: 1px 9px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: .78rem; white-space: nowrap; color: var(--accent); text-decoration: none; }
+  a.chip:hover { background: var(--accent-soft); border-color: var(--accent); }
+  td.price { white-space: nowrap; text-align: right; padding-right: 16px; }
+  .price-main { display: block; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .price-sub { display: block; color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.actions { width: 1%; white-space: nowrap; padding-right: 14px; }
+  .act { all: unset; box-sizing: border-box; cursor: pointer; width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; line-height: 1; border-radius: 8px; color: var(--muted); }
+  .act:hover { background: var(--accent-soft); color: var(--fg); }
   .act:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .act.fav[aria-pressed="true"] { color: var(--star); }
   tr.is-hidden td:not(.actions), tr.is-gone td:not(.actions) { opacity: .55; }
-  tr.is-gone td.added { font-style: italic; }
-  #toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 20; display: flex; align-items: center; gap: 12px;
-    max-width: calc(100vw - 24px); padding: 10px 14px; background: var(--fg); color: var(--bg); border-radius: 10px; box-shadow: 0 6px 24px rgba(0, 0, 0, .3); }
-  #toast[hidden] { display: none; }
-  #toast button { all: unset; cursor: pointer; font-weight: 700; color: var(--bg); text-decoration: underline; padding: 6px 8px; }
-  #toast button:focus-visible { outline: 2px solid var(--bg); outline-offset: 2px; }
+  tr.is-gone .meta { font-style: italic; }
   #empty { text-align: center; color: var(--muted); padding: 32px 0; }
 
-  @media (max-width: 860px) {
-    form#filters { grid-template-columns: 1fr 1fr 1fr; }
-    form#filters label.search { grid-column: 1 / -1; }
-  }
+  #toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 12px;
+    max-width: calc(100vw - 24px); padding: 10px 14px; background: var(--fg); color: var(--bg); border-radius: 10px; box-shadow: 0 6px 24px rgba(0, 0, 0, .3); }
+  #toast button { all: unset; cursor: pointer; font-weight: 700; color: var(--bg); text-decoration: underline; padding: 6px 8px; }
+  #toast button:focus-visible { outline: 2px solid var(--bg); outline-offset: 2px; }
+  #backdrop { position: fixed; inset: 0; z-index: 35; background: var(--scrim); }
+
+  @media (min-width: 701px) { #backdrop { display: none !important; } }
+  @media (max-width: 860px) { .panel { grid-template-columns: 1fr 1fr; } }
+
+  /* ---------- phones: the same markup becomes cards (photo on top) and the panel a bottom sheet ---------- */
   @media (max-width: 700px) {
     main { padding: 14px 12px 40px; }
-    form#filters { grid-template-columns: 1fr 1fr; }
-    .sort-mobile { display: flex; align-items: center; gap: 6px; }
-    .multi .panel { left: auto; right: 0; max-width: calc(100vw - 24px); } /* the district box is in the right column */
-    thead { display: none; }
-    table, tbody { display: block; background: none; border: 0; }
-    /* card: photo | title | actions / price · area · rooms · zł/m² / district · portal · added */
-    tbody tr {
-      display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 14px; margin-bottom: 10px; padding: 10px 12px;
-      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    h1 { font-size: 1.3rem; }
+    .toolbar { position: static; margin: 0 -12px; padding: 8px 12px; gap: 8px; } /* three rows here: too tall to keep stuck */
+    .toolbar .search { flex: 1 1 100%; }
+    .toolbar .btn { flex: 0 0 auto; }
+    .toolbar .sort { flex: 1 1 0; }
+    .toolbar .sort select { width: 100%; }
+    .seg { order: 3; flex: 1 1 100%; }
+    .panel {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; margin: 0; max-height: 88vh; overflow: auto;
+      border-radius: 18px 18px 0 0; border-width: 1px 0 0; grid-template-columns: 1fr 1fr; padding: 18px 16px 0;
     }
-    tbody tr::after { content: ""; flex: 0 0 100%; height: 0; order: 7; } /* forced line break */
+    .panel-actions { position: sticky; bottom: 0; margin: 0 -16px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--line); }
+    .panel-actions .primary { flex: 1; }
+    body.sheet-open { overflow: hidden; }
+
+    .list { background: none; border: 0; box-shadow: none; border-radius: 0; overflow: visible; }
+    thead { display: none; }
+    table, tbody { display: block; }
+    tbody tr {
+      position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-bottom: 14px; padding-bottom: 14px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); overflow: hidden;
+    }
     tbody tr:hover { background: var(--surface); }
-    tbody td { display: block; padding: 0; border: 0; text-align: left; }
-    /* first line: 96px photo + title + a column of two 42px buttons, with two 14px gaps. The title's basis is exactly
-       what is left, so the price row cannot squeeze onto this line. */
-    td.photo { order: 0; flex: 0 0 96px; width: auto; align-self: flex-start; }
-    td.title { order: 1; flex: 1 1 calc(100% - 166px); min-width: 0; align-self: flex-start; margin-bottom: 4px; font-size: 1rem; }
-    td.actions { order: 2; flex: 0 0 42px; width: auto; align-self: flex-start; display: flex; flex-direction: column; margin: -4px -6px 0 0; }
-    .act { min-width: 42px; min-height: 42px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
-    td.price { order: 3; } td.area { order: 4; } td.rooms { order: 5; } td.ppm { order: 6; }
-    td.district { order: 8; } td.site { order: 9; } td.added { order: 10; }
-    td.district, td.site, td.added { font-size: .85rem; }
+    tbody td { display: block; padding: 0; border: 0; }
+    td.photo { order: 0; flex: 0 0 100%; width: auto; padding: 0; margin-bottom: 10px; }
+    .thumb { width: 100%; height: auto; aspect-ratio: 3 / 2; max-height: 230px; border-radius: 0; }
+    td.no-photo .thumb { aspect-ratio: auto; height: 52px; }
+    td.price { order: 1; flex: 0 0 100%; display: flex; align-items: baseline; gap: 10px; padding: 0 14px; text-align: left; }
+    .price-main { display: inline; font-size: 1.4rem; }
+    .price-sub { display: inline; font-size: .85rem; }
+    td.area { order: 2; padding-left: 14px; }
+    td.rooms { order: 3; }
+    td.area::after { content: "·"; margin-left: 10px; color: var(--muted); }
     td.rooms::after { content: " pok."; }
+    td.main { order: 4; flex: 0 0 100%; padding: 6px 14px 0; }
+    td.main .badge { position: absolute; top: 12px; left: 12px; z-index: 2; margin: 0; padding: 3px 10px; font-size: .72rem; box-shadow: 0 1px 4px rgba(0, 0, 0, .25); }
+    td.actions { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; gap: 8px; width: auto; padding: 0; }
+    .act { width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; color: var(--fg); background: color-mix(in srgb, var(--surface) 88%, transparent); box-shadow: 0 1px 5px rgba(0, 0, 0, .3); }
+    .act.fav[aria-pressed="true"] { color: var(--star); }
   }
 </style>
 </head>
@@ -147,83 +191,87 @@
 
   <div id="status">
     <p id="status-text">Ładowanie…</p>
-    <button id="retry" class="primary" type="button" hidden>Spróbuj ponownie</button>
+    <button id="retry" class="btn primary" type="button" hidden>Spróbuj ponownie</button>
     <noscript><p>Ta strona wymaga włączonego JavaScriptu.</p></noscript>
   </div>
 
   <div id="app" hidden>
     <form id="filters" autocomplete="off" onsubmit="return false">
-      <label class="search">Szukaj
-        <input id="q" type="search" placeholder="Tytuł lub dzielnica">
-      </label>
-      <label>Portal
-        <select id="site"><option value="">Wszystkie</option></select>
-      </label>
-      <div class="field multi">
-        <span id="districtLabel">Dzielnica</span>
-        <details id="district">
-          <summary id="districtSummary" aria-labelledby="districtLabel districtSummary">Wszystkie</summary>
-          <div id="districtPanel" class="panel" role="group" aria-labelledby="districtLabel"></div>
-        </details>
+      <div class="toolbar">
+        <label class="search"><span class="sr-only">Szukaj</span>
+          <input id="q" type="search" placeholder="Szukaj: tytuł lub dzielnica">
+        </label>
+        <button id="filtersToggle" class="btn" type="button" aria-expanded="false" aria-controls="filterPanel">Filtry <span id="filterCount" class="count" hidden></span></button>
+        <label class="sort"><span class="sr-only">Sortuj</span>
+          <select id="sort">
+            <option value="newest">Najnowsze</option>
+            <option value="oldest">Najstarsze</option>
+            <option value="price-asc">Cena: rosnąco</option>
+            <option value="price-desc">Cena: malejąco</option>
+            <option value="area-desc">Powierzchnia: malejąco</option>
+            <option value="ppm-asc">zł/m²: rosnąco</option>
+            <option value="rooms-desc">Pokoje: malejąco</option>
+            <option value="custom" hidden>Własne</option>
+          </select>
+        </label>
+        <div class="seg" role="radiogroup" aria-label="Pokaż">
+          <label><input type="radio" name="show" value="current" checked><span>Aktualne</span></label>
+          <label><input type="radio" name="show" value="fav"><span id="favTab">Ulubione</span></label>
+          <label><input type="radio" name="show" value="hidden"><span id="hiddenTab">Ukryte</span></label>
+        </div>
       </div>
-      <label>Cena do (zł)
-        <input id="maxPrice" type="number" inputmode="numeric" min="0" step="100">
-      </label>
-      <label>Powierzchnia od (m²)
-        <input id="minArea" type="number" inputmode="numeric" min="0" step="5">
-      </label>
-      <label>Pokoje od
-        <select id="minRooms">
-          <option value="">Dowolnie</option><option value="1">1</option><option value="2">2</option>
-          <option value="3">3</option><option value="4">4</option>
-        </select>
-      </label>
-      <label>Pokaż
-        <select id="show">
-          <option value="current">Aktualne</option>
-          <option value="fav">Ulubione</option>
-          <option value="hidden">Ukryte</option>
-        </select>
-      </label>
-      <div class="checks">
-        <label class="check"><input id="onlyNew" type="checkbox"><span>Tylko nowe <small id="onlyNewHint">(24 h)</small></span></label>
-        <label class="check"><input id="merge" type="checkbox" checked> Łącz duplikaty</label>
+
+      <div id="filterPanel" class="panel" role="group" aria-label="Filtry" hidden>
+        <label class="field">Portal
+          <select id="site"><option value="">Wszystkie</option></select>
+        </label>
+        <label class="field">Cena do (zł)
+          <input id="maxPrice" type="number" inputmode="numeric" min="0" step="100">
+        </label>
+        <label class="field">Powierzchnia od (m²)
+          <input id="minArea" type="number" inputmode="numeric" min="0" step="5">
+        </label>
+        <label class="field">Pokoje od
+          <select id="minRooms">
+            <option value="">Dowolnie</option><option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+          </select>
+        </label>
+        <div class="field wide">
+          <span id="districtLabel">Dzielnica</span>
+          <div id="districtPanel" class="tog-group" role="group" aria-labelledby="districtLabel"></div>
+        </div>
+        <div class="checks">
+          <label class="check"><input id="onlyNew" type="checkbox"><span>Tylko nowe <small id="onlyNewHint">(24 h)</small></span></label>
+          <label class="check"><input id="merge" type="checkbox" checked><span>Łącz duplikaty</span></label>
+        </div>
+        <div class="panel-actions">
+          <button id="clearFilters" class="btn" type="button">Wyczyść filtry</button>
+          <button id="panelDone" class="btn primary" type="button">Pokaż wyniki</button>
+        </div>
       </div>
-      <button id="clearFilters" type="button">Wyczyść filtry</button>
     </form>
+    <div id="backdrop" hidden></div>
 
-    <div class="bar">
-      <span id="count" aria-live="polite"></span>
-      <label class="sort-mobile">Sortuj
-        <select id="sort">
-          <option value="newest">Najnowsze</option>
-          <option value="price-asc">Cena: rosnąco</option>
-          <option value="price-desc">Cena: malejąco</option>
-          <option value="area-desc">Powierzchnia: malejąco</option>
-          <option value="ppm-asc">zł/m²: rosnąco</option>
-          <option value="custom" hidden>Własne</option>
-        </select>
-      </label>
+    <div id="chips" class="chips" hidden></div>
+    <p id="count" aria-live="polite"></p>
+
+    <div class="list">
+      <table>
+        <caption class="sr-only">Ogłoszenia mieszkań na wynajem</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="photo"><span class="sr-only">Zdjęcie</span></th>
+            <th scope="col" class="main-h">Ogłoszenie</th>
+            <th scope="col" data-key="price" class="num"><button type="button">Cena</button></th>
+            <th scope="col" data-key="area" class="num"><button type="button">Pow.</button></th>
+            <th scope="col" data-key="rooms" class="num"><button type="button">Pokoje</button></th>
+            <th scope="col" class="actions"><span class="sr-only">Akcje</span></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
     </div>
-
-    <table>
-      <caption class="sr-only">Ogłoszenia mieszkań na wynajem</caption>
-      <thead>
-        <tr>
-          <th scope="col" class="actions"><span class="sr-only">Akcje</span></th>
-          <th scope="col" class="photo"><span class="sr-only">Zdjęcie</span></th>
-          <th scope="col" data-key="title"><button type="button">Tytuł</button></th>
-          <th scope="col" data-key="price" class="num"><button type="button">Cena</button></th>
-          <th scope="col" data-key="area" class="num"><button type="button">Pow.</button></th>
-          <th scope="col" data-key="ppm" class="num"><button type="button">zł/m²</button></th>
-          <th scope="col" data-key="rooms" class="num"><button type="button">Pokoje</button></th>
-          <th scope="col" data-key="district"><button type="button">Dzielnica</button></th>
-          <th scope="col" data-key="site"><button type="button">Portal</button></th>
-          <th scope="col" data-key="firstSeen"><button type="button">Dodano</button></th>
-        </tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
     <p id="empty" hidden>Brak ogłoszeń spełniających kryteria.</p>
   </div>
 </main>
