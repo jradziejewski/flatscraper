@@ -1,6 +1,6 @@
 # Progress and handoff notes
 
-Read this first in a new session, then `CLAUDE.md` (the spec and rules). Last updated 2026-11-04, after Step 12b.
+Read this first in a new session, then `CLAUDE.md` (the spec and rules). Last updated 2026-11-04, after Step 13.
 
 ## What this is
 A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three times a day, writes `listings.csv`
@@ -8,7 +8,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 - Repo: `jradziejewski/flatscraper` (public). Page: https://jradziejewski.github.io/flatscraper/ (GitHub Pages, branch `main`, folder `/`).
 - Config: `config.yaml` = Wrocław, max 5000 zł, min 30 m², min 2 rooms, all districts.
 
-## Status: everything below is built and tested. Steps 1-12 are pushed; Step 12b (revamp) is committed locally, **not pushed yet**
+## Status: everything below is built and tested. Steps 1-12c are pushed; Step 13 (map) is committed locally, **not pushed yet**
 | Step | What |
 |---|---|
 | 1 | Skeleton, `Listing` model, CSV merge, config with filters |
@@ -20,6 +20,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 | 10 | `street` column + duplicate merging across portals on the page (Strict) |
 | 11 | Per-device page features: new since last visit, remembered filters, favourites/hide with undo |
 | 12 | `photo` column (thumbnail URL from each portal's list data) + thumbnails on the page |
+| 13 | Map for each flat: `lat/lon/geo` columns, OLX coordinates, street geocoding through OSM (`geocode.py`, `geocache.json`), expandable OSM map on the page |
 | 12b | Page revamp: toolbar + filter panel/bottom sheet + removable filter chips, clean desktop list, phone cards with the photo on top, design tokens, larger-photo `srcset`; desktop thumbnails 180x135 (`.thumb` in `index.html` and `PHOTO_SIZES` in `app.js` must agree, a test checks it) |
 
 **Not yet seen live:** the Actions bot has not run since the pushes of Steps 10 and 11, so the CSV on GitHub still has no `street`
@@ -31,15 +32,16 @@ whole CSV once (big diff, expected).
 ## Map of the code
 ```
 main.py                  run(): scrapers -> normalize districts -> filter -> merge -> snapshot new -> prune -> save
-aptsearch/models.py      Listing (site,id,url,title,price_pln,area_m2,rooms,district,street,photo,city,posted_at,first_seen,last_seen)
+aptsearch/models.py      Listing (site,id,url,title,price_pln,area_m2,rooms,district,street,photo,lat,lon,geo,city,posted_at,first_seen,last_seen)
 aptsearch/config.py      Config, load_config() (unknown keys fail), matches() (missing values pass)
 aptsearch/storage.py     load/merge/save, prune (STALE_AFTER 3 days), save_snapshot; reads old CSVs without the street/photo columns
 aptsearch/districts.py   WROCLAW table (59 neighbourhoods) + normalize_district(); unknown -> None, logged by main.py
+aptsearch/geocode.py     clean_point, load/save_cache (geocache.json), lookup + fill_street_coordinates (Nominatim), `python -m aptsearch.geocode` backfill
 aptsearch/text.py        city_slug, clean_street, photo_url (http(s) only)
 aptsearch/http.py        get() (urllib, browser UA) and get_curl() (OLX only: urllib gets 403)
 aptsearch/scrapers/      otodom, nieruchomosci, morizon, olx; SCRAPERS list in __init__.py
 index.html, app.js       the page; pure functions exported for node tests, DOM code only in a browser
-tests/                   173 tests (pytest); test_site.py drives app.js through node
+tests/                   198 tests (pytest); test_site.py drives app.js through node
 .github/workflows/scrape.yml
 archive/YYYY-MM/*.csv    immutable snapshots of new listings
 ```
@@ -79,6 +81,17 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
   Verify with the throwaway preview server: `?do=open|chips|fav` style hooks were injected by the server at `DOMContentLoaded`+1.5 s
   (not `load`: the server holds `load` for 3 s and the screenshot fires on it).
 
+- **Map (13) facts, measured 2026-11-04:** OLX gives `map.lat/lon` on every offer but only `radius 0 + show_detailed` offers are exact (75 of 302 rows);
+  the rest are blurred (radius 8 or 1) and are `geo=area`: wide view, no pin. Otodom/Morizon/nieruchomosci have no coordinates in list data, so the
+  street is geocoded: 241 of 249 distinct streets resolved; the 8 misses are mostly scraped text that is not a street ("mieszkanie na gaju - balkon
+  - nowe budownictwo"), a typo and "Jana Pawła II" style names. 674 of 830 rows had a location after the backfill. OSM rules that matter: Nominatim
+  allows 1 request per second with an identifying User-Agent and caching; the tile servers refuse requests without a Referer (403 tile), and a
+  browser-looking User-Agent with a forged Referer gets an "Access blocked" (418) tile, so never fetch tiles with scripts. The map iframe needs WebGL.
+  **Not verified here:** that tiles draw (this machine has no GPU/WebGL browser); only the pin, caption, links and layout were checked in screenshots.
+  If a map looks blank on a device, the fallback is a static grid of `<img>` tiles (no WebGL, not interactive).
+- **Street coordinates are the middle of a street**, never a house number, and the page says so in the caption. Same-named streets in other cities are
+  rejected by the bounding box. A street not in `geocache.json` waits for the next run (cap 40 per run).
+
 ## How we work (user preferences)
 - **One step at a time.** Show the file layout first, plan, get approval, implement, then stop and wait. Plan mode is used for this;
   `ExitPlanMode` is the approval point.
@@ -108,7 +121,7 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
   bot's own commits count). Pushes to `main` by the bot mean: `git pull --rebase` before starting work.
 
 ## Backlog (agreed order, each needs its own plan + approval)
-**Step 13: monthly fee + floor.** Fee (czynsz) is in list data for OLX (`params` key `rent`, 98/104) and Otodom (`rentPrice.value`,
+**Step 14: monthly fee + floor.** Fee (czynsz) is in list data for OLX (`params` key `rent`, 98/104) and Otodom (`rentPrice.value`,
 65/74); Morizon and nieruchomosci have none, so "total per month" can only be shown for about half the rows ("czynsz nieznany"
 otherwise; a merged flat can take the fee from whichever portal has it). Median fee ≈ 890 zł on 2800 zł (+32%). Floor: OLX
 `floor_select`, Otodom `floorNumber`, Morizon `floorFormatted`. Pets/furnished/parking/lift exist on a single portal only: not worth filters.

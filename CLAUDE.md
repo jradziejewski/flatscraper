@@ -14,14 +14,16 @@ For a new step, show the file structure first, then implement.
 - Python 3.12. Deps managed with uv (or pip + requirements.txt).
 - Scrapers for otodom.pl, morizon.pl, olx.pl and nieruchomosci-online.pl. Poland, rentals only; city and filters come from config.
 - Every scraper returns the same `Listing` dataclass:
-  `site, id, url, title, price_pln, area_m2, rooms, district, street, photo, city, posted_at, first_seen, last_seen`.
+  `site, id, url, title, price_pln, area_m2, rooms, district, street, photo, lat, lon, geo, city, posted_at, first_seen, last_seen`.
   `street` is the street name without "ul."/"al." (`text.clean_street`), empty where a site gives none (OLX).
   `photo` is the URL of the first list thumbnail, taken from the list data each scraper already fetches (no extra
   requests); only http(s) URLs are kept (`text.photo_url`), empty where a site sends none.
-  `load_listings` still reads older CSVs that lack the `street` or `photo` column.
+  `lat`, `lon` and `geo` are a location with its precision: `geo` is `point` (the real address, only when OLX shows one: `show_detailed`
+  and radius 0), `street` (the middle of the street, no house number) or `area` (OLX blurs most offers to a circle of several km).
+  `load_listings` still reads older CSVs that lack the `street`, `photo` or location columns.
 - Results merge into `listings.csv`, keyed by `(site, id)`:
   - new rows get `first_seen=now`
-  - existing rows update `price_pln`, `district`, `street`, `photo` and `last_seen`; an empty price, district, street or photo never overwrites a known one
+  - existing rows update `price_pln`, `district`, `street`, `photo`, the location (`lat`, `lon`, `geo` move together) and `last_seen`; an empty price, district, street, photo or location never overwrites a known one
   - `merge()` itself never deletes rows
 - Every run that finds listings not yet in `listings.csv` writes an immutable snapshot of just those new
   listings to `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
@@ -35,8 +37,14 @@ For a new step, show the file structure first, then implement.
   A name it cannot match becomes empty and is logged as "Unknown district names", so add it to the table. Only
   Wrocław has a table; other cities keep the site's text. The table was built from Morizon/Otodom data and
   cross-checked against pl.wikipedia "Podział administracyjny Wrocławia".
+- **Locations:** OLX sends coordinates (`scrapers/olx.py`). For the other portals `aptsearch/geocode.py` turns the street into a point through
+  OpenStreetMap's Nominatim, after the merge and before the snapshot: at most 40 lookups per run, one per second, with a User-Agent that names the
+  repo (no personal address), hits outside the city's bounding box (`CITY_BOXES`, Wrocław only) rejected, and every answer, including "not found"
+  (`null`), cached in `geocache.json` (committed, so a street is looked up once). Geocoding is a nicety: a failure is logged and the run goes on.
+  `python -m aptsearch.geocode` fills the whole `listings.csv` in one go (the backfill). Street coordinates derive from OpenStreetMap data,
+  © OpenStreetMap contributors, ODbL.
 - Filters live in `config.yaml` (`city`, `max_price`, `min_area`, `min_rooms`, `districts`). Only matching listings are saved.
-- A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv` and `archive/` only if they changed (`permissions: contents: write`).
+- A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv`, `geocache.json` and `archive/` only if they changed (`permissions: contents: write`).
 
 ## Scraping rules
 
@@ -61,6 +69,12 @@ For a new step, show the file structure first, then implement.
   Favourites keep the photo URL in their snapshot. Scraped thumbnails: Otodom `images[0].small`, Morizon `photos[0]` built into its
   `3x2_s` thumb URL, nieruchomosci ld+json `image`, OLX `photos[0].link` with `{width}x{height}` = 320x240. The page hot-links the
   portals' CDNs; nothing is copied into this repo.
+- **Map:** a "Mapa ▾" button next to the portals opens one map at a time as an extra row under the listing (the bottom of the card on phones),
+  only for rows that have a location; a merged row uses its most precise one (`bestLocation`: point > street > area). It is an OpenStreetMap
+  embed iframe built by `mapEmbedUrl` from numbers only, created only when opened (nothing is requested from OSM before that), with
+  `sandbox="allow-scripts allow-same-origin"`. The caption says how exact the pin is, an `area` gets a wide view and no pin, and links open the
+  place in Google Maps or OSM. Do not set `referrerpolicy="no-referrer"` on it: OSM's tile servers answer 403 "Access blocked" without a Referer.
+  The embed page is MapLibre/WebGL, which headless Firefox without a GPU cannot draw (the pin, buttons and attribution still show).
 - **Per-device features** (browser `localStorage`/`sessionStorage`, keys `flatscraper:v1:*`; nothing is sent anywhere and nothing is shared between devices; every access is wrapped in try/catch and falls back to memory when storage is blocked):
   - *New since last visit*: the baseline is the newest `last_seen` in the data she saw last time (not the wall clock, because the raw CSV is cached for ~5 min), fixed for the tab session so a refresh keeps the badges. First visit: falls back to "first seen in the last 24 h".
   - *Remembered filters and sort* (not the search text; a remembered "Ukryte" view is not restored). Values are sanitized against the current data on load.
