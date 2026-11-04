@@ -14,16 +14,18 @@ For a new step, show the file structure first, then implement.
 - Python 3.12. Deps managed with uv (or pip + requirements.txt).
 - Scrapers for otodom.pl, morizon.pl, olx.pl and nieruchomosci-online.pl. Poland, rentals only; city and filters come from config.
 - Every scraper returns the same `Listing` dataclass:
-  `site, id, url, title, price_pln, area_m2, rooms, district, street, photo, lat, lon, geo, city, posted_at, first_seen, last_seen`.
-  `street` is the street name without "ul."/"al." (`text.clean_street`), empty where a site gives none (OLX).
+  `site, id, url, title, price_pln, area_m2, rooms, district, street, house, photo, lat, lon, geo, city, posted_at, first_seen, last_seen`.
+  `street` is the street name without "ul."/"al." (`text.clean_street`), from the portal's own field, or from the listing's text where the portal
+  gives none (OLX never does): see "Street and house number from the text" below. `house` is the building number ("16", "92A"), only ever from text.
   `photo` is the URL of the first list thumbnail, taken from the list data each scraper already fetches (no extra
   requests); only http(s) URLs are kept (`text.photo_url`), empty where a site sends none.
-  `lat`, `lon` and `geo` are a location with its precision: `geo` is `point` (the real address, only when OLX shows one: `show_detailed`
-  and radius 0), `street` (the middle of the street, no house number) or `area` (OLX blurs most offers to a circle of several km).
-  `load_listings` still reads older CSVs that lack the `street`, `photo` or location columns.
+  `lat`, `lon` and `geo` are a location with its precision, worst to best (`GEO_LEVELS` in `models.py`): `area` (OLX blurs most offers to a circle
+  of several km), `street` (the middle of the street), `point` (the pin OLX shows when it has `show_detailed` and radius 0; in business listings it was
+  off by km), `address` (a building geocoded from a house number the seller wrote in the text; it beats OLX's own pin).
+  `load_listings` still reads older CSVs that lack the `street`, `house`, `photo` or location columns.
 - Results merge into `listings.csv`, keyed by `(site, id)`:
   - new rows get `first_seen=now`
-  - existing rows update `price_pln`, `district`, `street`, `photo`, the location (`lat`, `lon`, `geo` move together) and `last_seen`; an empty price, district, street, photo or location never overwrites a known one
+  - existing rows update `price_pln`, `district`, `street`, `house`, `photo`, the location (`lat`, `lon`, `geo` move together) and `last_seen`; an empty price, district, street, house, photo or location never overwrites a known one, and a location is only replaced by an equally or more precise one (OLX's blurred area must not undo a building)
   - `merge()` itself never deletes rows
 - Every run that finds listings not yet in `listings.csv` writes an immutable snapshot of just those new
   listings to `archive/YYYY-MM/YYYY-MM-DDTHH-MM-SSZ.csv` (same columns and sort order as `listings.csv`).
@@ -41,8 +43,18 @@ For a new step, show the file structure first, then implement.
   OpenStreetMap's Nominatim, after the merge and before the snapshot: at most 40 lookups per run, one per second, with a User-Agent that names the
   repo (no personal address), hits outside the city's bounding box (`CITY_BOXES`, Wrocław only) rejected, and every answer, including "not found"
   (`null`), cached in `geocache.json` (committed, so a street is looked up once). Geocoding is a nicety: a failure is logged and the run goes on.
+  A row with a house number gets an address lookup (`"Street 16, City"`), accepted only if the answer carries that house number on a road with the
+  street's name (Nominatim otherwise quietly answers with the street itself); no building found falls back to the street point.
   `python -m aptsearch.geocode` fills the whole `listings.csv` in one go (the backfill). Street coordinates derive from OpenStreetMap data,
   © OpenStreetMap contributors, ODbL.
+- **Street and house number from the text** (`aptsearch/address.py`, `streets.py`, `data/streets_wroclaw.json`): OLX sends the full description on every
+  offer, Morizon the first ~300 characters, Otodom and nieruchomosci only the title in the list. `find_address` needs a cue word (`ul.`, `ulicy`, `al.`,
+  `plac`...) right before a name that is in the city's street list (2,571 Wrocław names from one Overpass query: `python -m aptsearch.streets`), matched by
+  word stem so inflected forms work ("Białowieskiej" gives "Białowieska"; the geocoder only understands the base form). It skips a street named after
+  blisko/obok/w pobliżu (a neighbour), the city's own name, a square or estate not introduced by przy/na and without a number (landmark lists), and numbers
+  that are rooms, areas or ranges. A title starting with "<Street> <number>" needs no cue but must be in the base form. `resolve()`: the portal's street
+  always wins and the text only adds the number; when the portal has none, the text's street fills the gap. Only Wrocław has a list. A wrong street is worse
+  than none (it misleads the map and the duplicate merging), so every rule errs towards finding nothing.
 - Filters live in `config.yaml` (`city`, `max_price`, `min_area`, `min_rooms`, `districts`). Only matching listings are saved.
 - A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv`, `geocache.json` and `archive/` only if they changed (`permissions: contents: write`).
 
@@ -75,7 +87,7 @@ For a new step, show the file structure first, then implement.
   portals' CDNs; nothing is copied into this repo.
 - **Map:** a "Mapa ▾" button next to the portals opens one map at a time as an extra row under the listing (the bottom of the card on phones),
   only for rows that have a location; a merged row uses its most precise one (`bestLocation`: point > street > area). It is an OpenStreetMap
-  embed iframe built by `mapEmbedUrl` from numbers only, created only when opened (nothing is requested from OSM before that), with
+  embed iframe built by `mapEmbedUrl` from numbers only (a building gets a close window), created only when opened (nothing is requested from OSM before that), with
   `sandbox="allow-scripts allow-same-origin"`. The caption says how exact the pin is, an `area` gets a wide view and no pin, and links open the
   place in Google Maps or OSM. Do not set `referrerpolicy="no-referrer"` on it: OSM's tile servers answer 403 "Access blocked" without a Referer.
   The embed page is MapLibre/WebGL, which headless Firefox without a GPU cannot draw (the pin, buttons and attribution still show).

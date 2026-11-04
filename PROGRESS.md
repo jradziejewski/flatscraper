@@ -20,6 +20,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 | 10 | `street` column + duplicate merging across portals on the page (Strict) |
 | 11 | Per-device page features: new since last visit, remembered filters, favourites/hide with undo |
 | 12 | `photo` column (thumbnail URL from each portal's list data) + thumbnails on the page |
+| 15A | Street + house number from titles and descriptions (`streets.py`, `address.py`), building-level map pins (`geo=address`); detail pages for gaps (15B) not built yet |
 | 13 | Map for each flat: `lat/lon/geo` columns, OLX coordinates, street geocoding through OSM (`geocode.py`, `geocache.json`), expandable OSM map on the page |
 | 12b | Page revamp: toolbar + filter panel/bottom sheet + removable filter chips, clean desktop list, phone cards with the photo on top, design tokens, larger-photo `srcset`; desktop thumbnails 180x135 (`.thumb` in `index.html` and `PHOTO_SIZES` in `app.js` must agree, a test checks it) |
 
@@ -32,16 +33,18 @@ whole CSV once (big diff, expected).
 ## Map of the code
 ```
 main.py                  run(): scrapers -> normalize districts -> filter -> merge -> snapshot new -> prune -> save
-aptsearch/models.py      Listing (site,id,url,title,price_pln,area_m2,rooms,district,street,photo,lat,lon,geo,city,posted_at,first_seen,last_seen)
+aptsearch/models.py      Listing (site,id,url,title,price_pln,area_m2,rooms,district,street,house,photo,lat,lon,geo,city,posted_at,first_seen,last_seen)
 aptsearch/config.py      Config, load_config() (unknown keys fail), matches() (missing values pass)
 aptsearch/storage.py     load/merge/save, prune (STALE_AFTER 3 days), save_snapshot; reads old CSVs without the street/photo columns
 aptsearch/districts.py   WROCLAW table (59 neighbourhoods) + normalize_district(); unknown -> None, logged by main.py
+aptsearch/streets.py     Wrocław street list (data/streets_wroclaw.json from OSM) + stem matcher; `python -m aptsearch.streets` refreshes it
+aptsearch/address.py     find_address / resolve: street + house number from text
 aptsearch/geocode.py     clean_point, load/save_cache (geocache.json), lookup + fill_street_coordinates (Nominatim), `python -m aptsearch.geocode` backfill
 aptsearch/text.py        city_slug, clean_street, photo_url (http(s) only)
 aptsearch/http.py        get() (urllib, browser UA) and get_curl() (OLX only: urllib gets 403)
 aptsearch/scrapers/      otodom, nieruchomosci, morizon, olx; SCRAPERS list in __init__.py
 index.html, app.js       the page; pure functions exported for node tests, DOM code only in a browser
-tests/                   199 tests (pytest); test_site.py drives app.js through node
+tests/                   275 tests (pytest); test_site.py drives app.js through node
 .github/workflows/scrape.yml
 archive/YYYY-MM/*.csv    immutable snapshots of new listings
 ```
@@ -95,6 +98,17 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
 - **Opened listings (12d):** greyed with CSS `:visited` (user's choice over remembering clicks in `localStorage`, which would allow an
   "Obejrzane" tag and a hide-viewed filter but only count clicks made on this page). Verified with a headless Firefox profile that first
   visited one listing URL, then loaded the page.
+
+- **Text addresses (15A), measured 2026-11-04:** street coverage 456/830 rows (55%) -> 673/853 (79%); OLX 0% -> 79% of the offers seen in a run; house numbers
+  on 79 rows, 71 of 73 address lookups resolved to a building. Extraction precision: Morizon rows with a known street 14/14 right where one was found;
+  nieruchomosci titles 137/137; the Otodom/Morizon title disagreements were mostly portal typos or junk ("Komandroska", "Białowieska / Balkon").
+  **OLX's own "exact" pin is not ground truth:** against the 21 OLX offers with an exact pin and a text address, the pin was closer to our building in 12
+  and closer to the street midpoint in 9; the two big gaps (2.6 and 3.4 km) were business listings whose text states the address outright ("położone przy
+  ul. Racławickiej 95"). Hence `address` ranks above `point`. A crude regex got only 9/15 right; the dictionary + stem + cue design 14/15 (the miss was
+  the city word, now a stop rule).
+- **Known limits of the extractor:** a title that starts with an inflected surname and has no cue ("Madalińskiego 57, garaż") is not guessed; a street only
+  named in a landmark list is skipped; `merge()` never erases a street, so after changing the extraction rules, regenerate from a clean CSV (restore it
+  with git, rerun `main.py`) rather than expecting old wrong streets to heal.
 
 ## How we work (user preferences)
 - **One step at a time.** Show the file layout first, plan, get approval, implement, then stop and wait. Plan mode is used for this;
