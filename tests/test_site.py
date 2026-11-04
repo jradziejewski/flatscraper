@@ -520,6 +520,14 @@ def test_photo_sources_offer_a_larger_variant_for_the_portals_that_have_one():
     assert other["srcset"] is None  # unknown URL shapes pass through untouched
 
 
+def test_srcset_sizes_hint_matches_the_desktop_thumbnail_width():
+    # `sizes` tells the browser how wide the picture is on desktop; if the CSS width changes and this does not,
+    # desktop silently downloads the wrong variant
+    desktop = re.search(r"\n  \.thumb \{ display: block; width: (\d+)px;", INDEX_HTML).group(1)
+    sizes = re.search(r'const PHOTO_SIZES = "\(max-width: 700px\) 100vw, (\d+)px"', APP_JS).group(1)
+    assert desktop == sizes == "180"
+
+
 @needs_node
 def test_photo_sources_reject_anything_that_is_not_http():
     out = run_node("return input.map(u => lib.photoSources(u));",

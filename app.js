@@ -256,7 +256,7 @@ const PHOTO_VARIANTS = [
   { find: /(;s=)314x236(;q=\d+)$/, to: "$1655x491$2", widths: [314, 655] },             // Otodom
   { find: /(\/3x2_)s(:fill_and_crop\/)/, to: "$1m$2", widths: [450, 600] },             // Morizon
 ];
-const PHOTO_SIZES = "(max-width: 700px) 100vw, 120px";
+const PHOTO_SIZES = "(max-width: 700px) 100vw, 180px"; // keep in step with `.thumb` on desktop in index.html
 
 /** {src, srcset} for an <img>, or null when there is no usable (http/https) photo. srcset is null when the portal
  *  has no larger variant (nieruchomosci-online). Everything that reaches an <img> goes through here. */
