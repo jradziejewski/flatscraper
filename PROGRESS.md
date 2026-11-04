@@ -41,7 +41,7 @@ aptsearch/text.py        city_slug, clean_street, photo_url (http(s) only)
 aptsearch/http.py        get() (urllib, browser UA) and get_curl() (OLX only: urllib gets 403)
 aptsearch/scrapers/      otodom, nieruchomosci, morizon, olx; SCRAPERS list in __init__.py
 index.html, app.js       the page; pure functions exported for node tests, DOM code only in a browser
-tests/                   198 tests (pytest); test_site.py drives app.js through node
+tests/                   199 tests (pytest); test_site.py drives app.js through node
 .github/workflows/scrape.yml
 archive/YYYY-MM/*.csv    immutable snapshots of new listings
 ```
@@ -91,6 +91,10 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
   If a map looks blank on a device, the fallback is a static grid of `<img>` tiles (no WebGL, not interactive).
 - **Street coordinates are the middle of a street**, never a house number, and the page says so in the caption. Same-named streets in other cities are
   rejected by the bounding box. A street not in `geocache.json` waits for the next run (cap 40 per run).
+
+- **Opened listings (12d):** greyed with CSS `:visited` (user's choice over remembering clicks in `localStorage`, which would allow an
+  "Obejrzane" tag and a hide-viewed filter but only count clicks made on this page). Verified with a headless Firefox profile that first
+  visited one listing URL, then loaded the page.
 
 ## How we work (user preferences)
 - **One step at a time.** Show the file layout first, plan, get approval, implement, then stop and wait. Plan mode is used for this;

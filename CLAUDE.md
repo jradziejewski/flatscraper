@@ -60,6 +60,10 @@ For a new step, show the file structure first, then implement.
   on desktop; the other filters live in a panel (a dropdown on desktop, a bottom sheet on phones), and active filters show as
   removable chips under the toolbar. No web fonts or libraries; light and dark theme follow the system. Live at https://jradziejewski.github.io/flatscraper/.
 - **Duplicates:** the same flat is often listed on several portals, so the page merges those rows ("Łącz duplikaty", on by default; off shows every listing). Strict rule (`groupDuplicates` in `app.js`): same price, area (rounded to a whole m²), rooms and district on different portals, plus evidence of the same place, which means the same street (one name's distinctive words contained in the other's, so "Sikorskiego" matches "gen. Władysława Sikorskiego"). A row without a street (OLX) matches only if its title or URL names the other row's street. Different streets never merge, two listings from one portal are never combined, and a merged row links to every portal's listing. Nothing is removed from the data; merging is display only. It is the only place that decides what counts as the same flat, so alerts or exports would need the same rule.
+- **Opened listings:** a title or portal chip you have already opened turns grey (`a.title-link:visited`, `a.chip:visited`, token `--visited`).
+  It is pure CSS, so it uses the browser's history: it also counts visits made on the portal itself, nothing is stored by the page, and
+  it resets with the browser history. Browsers only allow colour changes on `:visited` and keep it unreadable from scripts, so there is no
+  "viewed" tag or filter. Keep the `:visited` rules before `:hover`.
 - **Photos:** `photoCell` in `app.js`. 180×135 on desktop; full-width 3:2 (max 230 px) at the top of the phone card, with NOWE and ★ ✕
   overlaid. `photoSources` gives each `<img>` a `srcset` with a larger variant for Otodom, OLX and Morizon (same CDN path, bigger size
   token), so phones fetch a sharp image and desktop the small one; nieruchomosci has one size. The image is lazy-loaded, sent with
