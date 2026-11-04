@@ -19,7 +19,7 @@ from .text import clean_street
 
 CUE = re.compile(
     rf"(?<![{LETTERS}])(?:ul\.|ulic[aąęyi](?![{LETTERS}])|al\.|alei(?![{LETTERS}])|aleja(?![{LETTERS}])|aleją(?![{LETTERS}])"
-    rf"|pl\.|placu(?![{LETTERS}])|plac(?![{LETTERS}])|os\.|osiedle(?![{LETTERS}]))\s*",
+    rf"|pl\.|placu(?![{LETTERS}])|plac(?![{LETTERS}])|os\.|osiedle(?![{LETTERS}])|osiedlu(?![{LETTERS}]))\s*",
     re.IGNORECASE,
 )
 TOKEN = re.compile(rf"[{LETTERS}0-9][{LETTERS}0-9.\-]*")
@@ -74,7 +74,8 @@ def _tokens_after(text: str, pos: int) -> list[re.Match]:
     return out
 
 
-KINDS = (("pl", "Plac"), ("plac", "Plac"), ("al", "Aleja"), ("alei", "Aleja"), ("aleja", "Aleja"), ("aleją", "Aleja"), ("os", "Osiedle"), ("osiedle", "Osiedle"))
+KINDS = (("pl", "Plac"), ("plac", "Plac"), ("placu", "Plac"), ("al", "Aleja"), ("alei", "Aleja"), ("aleja", "Aleja"), ("aleją", "Aleja"),
+         ("os", "Osiedle"), ("osiedle", "Osiedle"), ("osiedlu", "Osiedle"))
 
 
 def _kind(cue: str) -> str | None:
@@ -100,11 +101,16 @@ def _after_cue(text: str, index: StreetIndex) -> list[tuple[Address, bool]]:
             if len(chosen) < span:
                 continue
             ws = [w for t in chosen for w in words(t.group()) if distinctive(w)]
-            street = _canonical(index, ws, _kind(cue.group()))
+            kind = _kind(cue.group())
+            street = _canonical(index, ws, kind)
             if not street:
                 continue
             last = max(i for i, t in enumerate(chosen) if any(distinctive(w) for w in words(t.group())))
             house = parse_house(text, chosen[last].end())
+            # "centrum/Piwna/pl. Grunwaldzki/Politechnika" lists landmarks: a square or estate counts as the flat's address
+            # only when it has a house number or the text says the flat is "przy"/"na" it
+            if kind in ("Plac", "Osiedle") and not house and not re.search(r"\b(?:przy|na)\s*$", text[max(0, cue.start() - 12) : cue.start()], re.IGNORECASE):
+                continue
             strong = not NEARBY.search(text[max(0, cue.start() - 40) : cue.start()])
             found.append((Address(street, house), strong))
             break

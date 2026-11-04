@@ -14,6 +14,7 @@ from aptsearch.address import Address, find_address, parse_house, resolve
     ("ul. Gen. Sikorskiego 12", ("Generała Władysława Sikorskiego", "12")),         # the short "Gen." is ignored, the name is canonical
     ("al. Kromera 52", ("Marcina Kromera", "52")),
     ("pl. Grunwaldzki 22", ("Grunwaldzki", "22")),                                  # the square, not the street Grunwaldzka
+    ("mieszkanie przy placu Grunwaldzkim w centrum", ("Grunwaldzki", None)),        # locative -im/-ym endings, and "przy" vouches for a square
     ("ul. Grunwaldzkiej 12", ("Grunwaldzka", "12")),
     ("przy ulicy Miedzianej we Wrocławiu", ("Miedziana", None)),                    # a street, no number
     ("Kawalerka, Krzyki, ul.Braterska, ogródek", ("Braterska", None)),
@@ -34,6 +35,7 @@ def test_finds_the_street_and_house_the_text_names(text, expected):
     "Jasne 3-pokojowe mieszkanie z balkonem",                  # "Jasne" resembles the street Jasna, but it is a room count and no cue
     "Piękne 3-pokojowe mieszkanie na Jagodnie",
     "Mieszkanie w Głównej części miasta",                      # a street-like word without a cue word
+    "w centrum/Piwna/pl. Grunwaldzki/Politechnika/Uniwersytet",  # a list of landmarks: a square without "przy"/"na" or a number
     "Madalińskiego 57, garaż, 2 pokoje",                       # inflected and no cue word: deliberately not guessed
     "ul. Nieistniejąca 12",                                    # not in the street list
     "mieszkanie we Wrocławiu, ul. Wrocławia",                  # the city's own name

@@ -26,6 +26,7 @@ def test_stem_strips_one_case_ending_but_keeps_short_words_whole():
     assert stem("Białowieskiej") == stem("Białowieska") == "białowiesk"
     assert stem("Madalińskiego") == stem("Madaliński") == "madalińsk"
     assert stem("Komedy") == "komed" and stem("Kościuszki") == "kościuszk"
+    assert stem("Grunwaldzkim") == stem("Grunwaldzki") == "grunwaldzk"            # locative -im / -ym
     assert stem("Sad") == "sad" and stem("Lipa") == "lipa"  # stripping would leave fewer than 4 letters
 
 

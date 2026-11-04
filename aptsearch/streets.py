@@ -22,7 +22,7 @@ DATA_DIR = Path(__file__).parent / "data"
 OVERPASS = "https://overpass-api.de/api/interpreter"
 
 # Longest first, so "iego" is tried before "ego" and "go". A stem must keep at least MIN_STEM letters.
-CASE_ENDINGS = ("iego", "ego", "iej", "ej", "ymi", "imi", "ich", "ach", "ami", "owi", "em", "om", "ą", "ę", "y", "i", "a", "u", "o", "e")
+CASE_ENDINGS = ("iego", "ego", "iej", "ej", "ymi", "imi", "ich", "ach", "ami", "owi", "em", "om", "im", "ym", "ą", "ę", "y", "i", "a", "u", "o", "e")
 MIN_STEM = 4
 LETTERS = r"A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż"
 
