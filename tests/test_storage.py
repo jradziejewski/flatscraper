@@ -107,7 +107,7 @@ def test_street_round_trips_and_old_csv_without_the_column_still_loads(tmp_path)
     rows = merge({}, [mk(street="Hubska"), mk(id="2")], T1)
     path = tmp_path / "l.csv"
     save_listings(rows, path)
-    assert "district,street,photo,lat,lon,geo,city" in path.read_text(encoding="utf-8").splitlines()[0]
+    assert "district,street,house,photo,lat,lon,geo,city" in path.read_text(encoding="utf-8").splitlines()[0]
     assert load_listings(path) == rows
     # a file written before the street column existed (what the first run after an upgrade finds)
     old = tmp_path / "old.csv"
@@ -180,6 +180,47 @@ def test_merge_moves_the_location_as_a_set_and_never_erases_it():
     assert (rows[("otodom", "2")].lat, rows[("otodom", "2")].geo) == (51.3, "point")   # a fresh value wins
     rows = merge(rows, [mk(id="2", lat=40.0, lon=None, geo="point")], T2)
     assert (rows[("otodom", "2")].lat, rows[("otodom", "2")].lon) == (51.3, 17.3)       # half a point is ignored
+
+
+def test_house_round_trips_and_old_csv_without_it_still_loads(tmp_path):
+    rows = merge({}, [mk(street="Hubska", house="12"), mk(id="2", street="Hubska")], T1)
+    path = tmp_path / "l.csv"
+    save_listings(rows, path)
+    first = path.read_bytes()
+    loaded = load_listings(path)
+    assert loaded == rows and loaded[("otodom", "1")].house == "12" and loaded[("otodom", "2")].house is None
+    save_listings(loaded, path)
+    assert path.read_bytes() == first
+    old = tmp_path / "old.csv"
+    old.write_text(
+        "site,id,url,title,price_pln,area_m2,rooms,district,street,photo,lat,lon,geo,city,posted_at,first_seen,last_seen\n"
+        "otodom,1,http://x/1,Flat,3000,40.0,2,Krzyki,Hubska,,51.1,17.0,street,Wrocław,,2026-01-01T07:00:00Z,2026-01-01T07:00:00Z\n",
+        encoding="utf-8",
+    )
+    row = load_listings(old)[("otodom", "1")]
+    assert row.house is None and row.street == "Hubska" and row.geo == "street"
+
+
+def test_merge_fills_a_house_number_but_never_erases_one():
+    rows = merge({}, [mk(id="1", street="Hubska"), mk(id="2", street="Hubska", house="12")], T1)
+    rows = merge(rows, [mk(id="1", street="Hubska", house="7"), mk(id="2", street="Hubska")], T2)
+    assert rows[("otodom", "1")].house == "7" and rows[("otodom", "2")].house == "12"
+
+
+def test_a_location_is_never_replaced_by_a_less_precise_one():
+    building = dict(lat=51.1, lon=17.0, geo="address")
+    rows = merge({}, [mk(id="1", **building), mk(id="2", lat=51.2, lon=17.2, geo="street")], T1)
+    # OLX sends its blurred "area" on every scrape: it must not undo a building found from the text
+    rows = merge(rows, [mk(id="1", lat=51.5, lon=17.5, geo="area"), mk(id="2", lat=51.3, lon=17.3, geo="area")], T2)
+    assert (rows[("otodom", "1")].lat, rows[("otodom", "1")].geo) == (51.1, "address")
+    assert (rows[("otodom", "2")].lat, rows[("otodom", "2")].geo) == (51.2, "street")
+    # an equal or better one does replace it: street -> point -> address
+    rows = merge(rows, [mk(id="2", lat=51.4, lon=17.4, geo="point")], T2)
+    assert (rows[("otodom", "2")].lat, rows[("otodom", "2")].geo) == (51.4, "point")
+    rows = merge(rows, [mk(id="2", lat=51.45, lon=17.45, geo="point")], T2)
+    assert rows[("otodom", "2")].lat == 51.45                                           # same level: the fresh value
+    rows = merge(rows, [mk(id="2", **building)], T2)
+    assert rows[("otodom", "2")].geo == "address"
 
 
 def test_merge_fills_a_missing_street_but_never_erases_a_known_one():

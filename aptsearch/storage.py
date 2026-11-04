@@ -3,7 +3,7 @@ from dataclasses import asdict, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from .models import FIELDS, Listing
+from .models import FIELDS, Listing, geo_rank
 
 Key = tuple[str, str]
 
@@ -36,6 +36,7 @@ def load_listings(path: str | Path = "listings.csv") -> dict[Key, Listing]:
                 rooms=_opt(row["rooms"], int),
                 district=row["district"] or None,
                 street=row.get("street") or None,  # CSVs written before this column existed
+                house=row.get("house") or None,
                 photo=row.get("photo") or None,  # same for photo
                 lat=_opt(row.get("lat") or "", float),  # and for the location columns
                 lon=_opt(row.get("lon") or "", float),
@@ -53,8 +54,9 @@ def merge(
     existing: dict[Key, Listing], scraped: list[Listing], now: datetime
 ) -> dict[Key, Listing]:
     """New rows get first_seen=now; known rows update price_pln, district, street, photo, location and last_seen.
-    A None price, district, street, photo or location never overwrites a known one. Rows are never deleted.
-    lat, lon and geo move together: they only mean something as a set."""
+    A None price, district, street, house, photo or location never overwrites a known one. Rows are never deleted.
+    lat, lon and geo move together: they only mean something as a set, and a location is only replaced by an equally or
+    more precise one (OLX's blurred area must not overwrite a building found from the text)."""
     ts = utc_iso(now)
     result = dict(existing)
     for lst in scraped:
@@ -67,9 +69,11 @@ def merge(
             district = lst.district if lst.district is not None else old.district
             street = lst.street if lst.street is not None else old.street
             photo = lst.photo if lst.photo is not None else old.photo
-            where = (lst.lat, lst.lon, lst.geo) if lst.lat is not None and lst.lon is not None else (old.lat, old.lon, old.geo)
+            house = lst.house if lst.house is not None else old.house
+            better = lst.lat is not None and lst.lon is not None and geo_rank(lst.geo) >= geo_rank(old.geo)
+            where = (lst.lat, lst.lon, lst.geo) if better else (old.lat, old.lon, old.geo)
             result[key] = replace(
-                old, price_pln=price, district=district, street=street, photo=photo,
+                old, price_pln=price, district=district, street=street, house=house, photo=photo,
                 lat=where[0], lon=where[1], geo=where[2], last_seen=ts,
             )
     return result
