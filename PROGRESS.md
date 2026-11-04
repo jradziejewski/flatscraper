@@ -20,7 +20,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 | 10 | `street` column + duplicate merging across portals on the page (Strict) |
 | 11 | Per-device page features: new since last visit, remembered filters, favourites/hide with undo |
 | 12 | `photo` column (thumbnail URL from each portal's list data) + thumbnails on the page |
-| 12b | Page revamp: toolbar + filter panel/bottom sheet + removable filter chips, clean desktop list, phone cards with the photo on top, design tokens, larger-photo `srcset` |
+| 12b | Page revamp: toolbar + filter panel/bottom sheet + removable filter chips, clean desktop list, phone cards with the photo on top, design tokens, larger-photo `srcset`; desktop thumbnails 180x135 (`.thumb` in `index.html` and `PHOTO_SIZES` in `app.js` must agree, a test checks it) |
 
 **Not yet seen live:** the Actions bot has not run since the pushes of Steps 10 and 11, so the CSV on GitHub still has no `street`
 column and the page shows no merged duplicates yet. After the next run (06:00/12:00/18:00 UTC, or run it from Actions → scrape →
@@ -39,7 +39,7 @@ aptsearch/text.py        city_slug, clean_street, photo_url (http(s) only)
 aptsearch/http.py        get() (urllib, browser UA) and get_curl() (OLX only: urllib gets 403)
 aptsearch/scrapers/      otodom, nieruchomosci, morizon, olx; SCRAPERS list in __init__.py
 index.html, app.js       the page; pure functions exported for node tests, DOM code only in a browser
-tests/                   172 tests (pytest); test_site.py drives app.js through node
+tests/                   173 tests (pytest); test_site.py drives app.js through node
 .github/workflows/scrape.yml
 archive/YYYY-MM/*.csv    immutable snapshots of new listings
 ```
