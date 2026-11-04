@@ -42,6 +42,28 @@ def test_photo_placeholders_are_replaced_with_a_thumbnail_size():
         assert olx.parse_offer({**OFFERS[0], "photos": odd}).photo is None
 
 
+def test_coordinates_are_exact_only_when_olx_shows_the_real_address():
+    first, second, third, edge = olx.parse_offers(OFFERS)
+    m = OFFERS[0]["map"]
+    assert m["radius"] == 0 and m["show_detailed"] is True
+    assert (first.lat, first.lon, first.geo) == (round(m["lat"], 6), round(m["lon"], 6), "point")
+    assert second.geo == "area" and OFFERS[1]["map"]["radius"] == 8   # blurred on purpose by OLX
+    assert third.geo == "area" and OFFERS[2]["map"]["show_detailed"] is False
+    assert (edge.lat, edge.lon, edge.geo) == (None, None, None)       # no map object: the listing is still returned
+
+
+def test_odd_map_values_are_ignored_not_fatal():
+    base = OFFERS[0]
+    for odd in ({}, None, "x", {"lat": "x", "lon": 1}, {"lat": 51.1, "lon": None}, {"lat": 10.0, "lon": 16.9, "radius": 0, "show_detailed": True},
+                {"lat": float("nan"), "lon": 16.9}):
+        listing = olx.parse_offer({**base, "map": odd})
+        assert (listing.lat, listing.lon, listing.geo) == (None, None, None), odd
+    # exact needs BOTH show_detailed and radius 0
+    assert olx.parse_offer({**base, "map": {**base["map"], "show_detailed": False}}).geo == "area"
+    assert olx.parse_offer({**base, "map": {**base["map"], "radius": 8}}).geo == "area"
+    assert olx.parse_offer({**base, "map": {k: v for k, v in base["map"].items() if k != "radius"}}).geo == "area"
+
+
 def test_posted_at_is_converted_to_utc():
     offer = {**OFFERS[0], "created_time": "2026-10-23T14:34:54+02:00"}
     assert olx.parse_offer(offer).posted_at == "2026-10-23T12:34:54Z"

@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 
 from .. import http
 from ..config import Config
+from ..geocode import clean_point
 from ..models import Listing
 from ..storage import utc_iso
 from ..text import city_slug, photo_url
@@ -55,6 +56,20 @@ def _photo(offer: dict) -> str | None:
         return None
 
 
+def _location(offer: dict) -> tuple[float | None, float | None, str | None]:
+    """(lat, lon, geo). Only offers with `show_detailed` and radius 0 carry the real address point; the rest are blurred
+    by OLX on purpose (a circle of several km), so they are "area": good for "which part of town", not for a pin."""
+    try:
+        where = offer["map"]
+        point = clean_point(where["lat"], where["lon"])
+        if point is None:
+            return None, None, None
+        exact = where.get("show_detailed") is True and where.get("radius") == 0
+        return point[0], point[1], "point" if exact else "area"
+    except (KeyError, TypeError, AttributeError):
+        return None, None, None
+
+
 def parse_offer(offer: dict) -> Listing:
     params = {p["key"]: p.get("value") or {} for p in offer.get("params") or []}
     price = params.get("price", {})
@@ -62,6 +77,7 @@ def parse_offer(offer: dict) -> Listing:
     room = params.get("rooms", {}).get("key")
     loc = offer.get("location") or {}
     created = offer.get("created_time")
+    lat, lon, geo = _location(offer)
     return Listing(
         site=SITE,
         id=str(offer["id"]),
@@ -72,6 +88,9 @@ def parse_offer(offer: dict) -> Listing:
         rooms=ROOMS.index(room) + 1 if room in ROOMS else None,
         district=(loc.get("district") or {}).get("name"),
         photo=_photo(offer),
+        lat=lat,
+        lon=lon,
+        geo=geo,
         city=(loc.get("city") or {}).get("name"),
         posted_at=utc_iso(datetime.fromisoformat(created)) if created else None,
     )

@@ -151,7 +151,14 @@
      "height": 960,
      "link": "https://ireland.apollo.olxcdn.com:443/v1/files/426hwvh7s0n02-PL/image;s={width}x{height}"
     }
-   ]
+   ],
+   "map": {
+    "zoom": 16,
+    "lat": 51.16188857,
+    "lon": 16.90027333,
+    "radius": 0,
+    "show_detailed": true
+   }
   },
   {
    "id": 1108591509,
@@ -295,7 +302,14 @@
      "height": 1536,
      "link": "https://ireland.apollo.olxcdn.com:443/v1/files/thtx47lblguh2-PL/image;s={width}x{height}"
     }
-   ]
+   ],
+   "map": {
+    "zoom": 13,
+    "lat": 51.13072334,
+    "lon": 16.98273867,
+    "radius": 8,
+    "show_detailed": false
+   }
   },
   {
    "id": 1088399327,
@@ -437,7 +451,14 @@
      "height": 1536,
      "link": "https://ireland.apollo.olxcdn.com:443/v1/files/65lpwzzo2xd33-PL/image;s={width}x{height}"
     }
-   ]
+   ],
+   "map": {
+    "zoom": 12,
+    "lat": 51.13161698,
+    "lon": 16.96098925,
+    "radius": 1,
+    "show_detailed": false
+   }
   },
   {
    "id": 1,
