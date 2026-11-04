@@ -62,7 +62,7 @@ For a new step, show the file structure first, then implement.
   `python -m aptsearch.details` backfills. Streets in running text near a landmark (school, shop, stop, park), in a contact block (phone label, phone
   number, postal code) or named after "agency" are not the flat's. Bare street names in titles are not trusted (too many ordinary words).
 - Filters live in `config.yaml` (`city`, `max_price`, `min_area`, `min_rooms`, `districts`). Only matching listings are saved.
-- A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv`, `geocache.json`, `addresscache.json` and `archive/` only if they changed (`permissions: contents: write`).
+- A GitHub Actions workflow runs on cron (`17 6,12,18 * * *` UTC = 07:17/13:17/19:17 Warsaw in winter; minute 17 on purpose, GitHub drops runs at the top of the hour) and can be started by hand (`workflow_dispatch`). It commits `listings.csv`, `geocache.json`, `addresscache.json` and `archive/` only if they changed (`permissions: contents: write`).
 
 ## Scraping rules
 
@@ -77,7 +77,7 @@ For a new step, show the file structure first, then implement.
   The toolbar (search, "Filtry" button with an active-filter count, sort, Aktualne/Ulubione/Ukryte tabs) is always visible and sticky
   on desktop; the other filters live in a panel (a dropdown on desktop, a bottom sheet on phones), and active filters show as
   removable chips under the toolbar. No web fonts or libraries; light and dark theme follow the system. Live at https://jradziejewski.github.io/flatscraper/.
-- **Duplicates:** the same flat is often listed on several portals, so the page merges those rows ("Łącz duplikaty", on by default; off shows every listing). Strict rule (`groupDuplicates` in `app.js`): same price, area (rounded to a whole m²), rooms and district on different portals, plus evidence of the same place, which means the same street (one name's distinctive words contained in the other's, so "Sikorskiego" matches "gen. Władysława Sikorskiego"). A row without a street (OLX) matches only if its title or URL names the other row's street. Different streets never merge, two listings from one portal are never combined, and a merged row links to every portal's listing. Nothing is removed from the data; merging is display only. It is the only place that decides what counts as the same flat, so alerts or exports would need the same rule.
+- **Duplicates:** the same flat is often listed on several portals, so the page merges those rows ("Łącz duplikaty", on by default; off shows every listing). Strict rule (`groupDuplicates` in `app.js`): same price, area (rounded to a whole m²), rooms and district on different portals, plus evidence of the same place, which means the same street (one name's distinctive words contained in the other's, so "Sikorskiego" matches "gen. Władysława Sikorskiego"). A row without a street matches only if its title or URL names the other row's street (OLX rows now mostly have a text-derived street and merge by the normal rule). Different streets never merge, two listings from one portal are never combined, and a merged row links to every portal's listing. Nothing is removed from the data; merging is display only. It is the only place that decides what counts as the same flat, so alerts or exports would need the same rule.
 - **Opened listings:** a title or portal chip you have already opened turns grey (`a.title-link:visited`, `a.chip:visited`, token `--visited`).
   It is pure CSS, so it uses the browser's history: it also counts visits made on the portal itself, nothing is stored by the page, and
   it resets with the browser history. Browsers only allow colour changes on `:visited` and keep it unreadable from scripts, so there is no
@@ -92,7 +92,7 @@ For a new step, show the file structure first, then implement.
   `3x2_s` thumb URL, nieruchomosci ld+json `image`, OLX `photos[0].link` with `{width}x{height}` = 320x240. The page hot-links the
   portals' CDNs; nothing is copied into this repo.
 - **Map:** a "Mapa ▾" button next to the portals opens one map at a time as an extra row under the listing (the bottom of the card on phones),
-  only for rows that have a location; a merged row uses its most precise one (`bestLocation`: point > street > area). It is an OpenStreetMap
+  only for rows that have a location; a merged row uses its most precise one (`bestLocation`: address > point > street > area). It is an OpenStreetMap
   embed iframe built by `mapEmbedUrl` from numbers only (a building gets a close window), created only when opened (nothing is requested from OSM before that), with
   `sandbox="allow-scripts allow-same-origin"`. The caption says how exact the pin is, an `area` gets a wide view and no pin, and links open the
   place in Google Maps or OSM. Do not set `referrerpolicy="no-referrer"` on it: OSM's tile servers answer 403 "Access blocked" without a Referer.
@@ -106,30 +106,24 @@ For a new step, show the file structure first, then implement.
 - Listing fields come from scraped sites, so `app.js` fills the page with `textContent` only (never `innerHTML`) and links only `http(s)` URLs. A test enforces this.
 - Local preview: `python -m http.server`, then open http://localhost:8000. Page tests (`tests/test_site.py`) use `node` and are skipped when it is missing.
 
-## Step 1 (current)
-
-Project skeleton, `config.yaml`, `Listing` model, CSV merge logic with a small test, and a `main.py` that runs a list of scrapers (empty for now). No scrapers and no workflow yet.
-
-Planned layout:
+## Layout
 
 ```
 .
-├── pyproject.toml
-├── .python-version
-├── .gitignore
-├── config.yaml
-├── main.py                 # runs scrapers, filters, merges, saves
-├── listings.csv            # generated, committed
+├── main.py                 # run(): scrapers -> districts -> filter -> merge -> listing pages -> geocode -> snapshot -> prune -> save
+├── config.yaml  pyproject.toml  .python-version
+├── listings.csv            # generated, committed (the current view)
+├── geocache.json           # generated, committed: street/building -> coordinates (or null)
+├── addresscache.json       # generated, committed: listing page already read -> street+house (or null)
+├── archive/YYYY-MM/*.csv   # immutable snapshots of listings new in a run
+├── index.html  app.js      # the static page
 ├── aptsearch/
-│   ├── __init__.py
-│   ├── config.py           # Config dataclass, load_config(), matches()
-│   ├── models.py           # Listing dataclass
-│   ├── storage.py          # load_listings(), merge(), save_listings()
-│   └── scrapers/
-│       └── __init__.py     # SCRAPERS = []
-└── tests/
-    ├── test_storage.py
-    └── test_main.py
+│   ├── models.py config.py storage.py districts.py text.py http.py
+│   ├── streets.py address.py details.py geocode.py
+│   ├── data/streets_wroclaw.json
+│   └── scrapers/           # otodom, morizon, olx, nieruchomosci (SCRAPERS in __init__.py)
+├── tests/                  # pytest; test_site.py drives app.js through node; fixtures/ are trimmed real responses
+└── .github/workflows/scrape.yml
 ```
 
 ## Implementation defaults
@@ -156,5 +150,11 @@ Planned layout:
 uv sync
 uv run pytest
 uv run python main.py
+# one-off backfills (rate-limited, each rewrites listings.csv and its cache)
+uv run python -m aptsearch.streets    # refresh the street list from OSM
+uv run python -m aptsearch.geocode    # coordinates for every street / building
+uv run python -m aptsearch.details    # read the listing page of rows still without a street
 ```
+
+`PROGRESS.md` holds the current state, the open issue (the scheduled run does not fire), measurements and the backlog: read it first.
 
