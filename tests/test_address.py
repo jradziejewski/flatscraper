@@ -24,6 +24,11 @@ from aptsearch.address import Address, find_address, parse_house, resolve
     # a street with a number beats an earlier street without one; a neighbour ("obok", "blisko") is never the flat's street
     ("Mieszkanie 2 pokoje, ul. Hubska, obok ul. Legnickiej 5", ("Hubska", None)),
     ("w pobliżu ul. Legnickiej 5 znajduje się ul. Hubska 7", ("Hubska", "7")),
+    ("Szkoła i sklepy są blisko. Mieszkanie przy ul. Hubskiej 12", ("Hubska", "12")),   # a landmark in an earlier sentence does not count
+    ("Mieszkanie przy ul. Hubskiej 12, blisko szkoły i parku", ("Hubska", "12")),        # ...nor one that comes after the street
+    ("Apartament z miejscem parkingowym, ul. Opoczyńska", ("Opoczyńska", None)),         # a parking space is not a park
+    ("Mieszkanie 4 piętro, 60 metrów, ul. Hubska 3", ("Hubska", "3")),                     # "metrów" is not the metro
+    ("Mieszkanie przy ul. Kościelnej 9 w centrum", ("Kościelna", "9")),                     # a street called Kościelna is not a church
 ])
 def test_finds_the_street_and_house_the_text_names(text, expected):
     assert find_address(text) == Address(*expected)
@@ -32,6 +37,8 @@ def test_finds_the_street_and_house_the_text_names(text, expected):
 @pytest.mark.parametrize("text", [
     "", None, "Mieszkanie do wynajęcia, 3 pokoje, balkon",
     "Mieszkanie blisko ul. Legnickiej, tramwaj pod domem",     # only a neighbour is named
+    "Dobry dojazd do American School of Wrocław, International High School przy ul. Racławickiej.",   # a school, not the flat
+    "Przystanek tramwajowy przy ul. Legnickiej, sklep Biedronka przy ul. Hubskiej 3",                # shops and stops are landmarks
     "Jasne 3-pokojowe mieszkanie z balkonem",                  # "Jasne" resembles the street Jasna, but it is a room count and no cue
     "Piękne 3-pokojowe mieszkanie na Jagodnie",
     "Mieszkanie w Głównej części miasta",                      # a street-like word without a cue word

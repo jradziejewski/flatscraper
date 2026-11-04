@@ -24,11 +24,16 @@ CUE = re.compile(
 )
 TOKEN = re.compile(rf"[{LETTERS}0-9][{LETTERS}0-9.\-]*")
 # "ul.Komedy": a glued cue; the cue regex copes, the capital letter check below does not need a space either
-NEARBY = re.compile(
-    r"(?:blisko|bliskość|obok|pobliż\w*|niedaleko|nieopodal|sąsiedztw\w*|dojazd\w*|skrzyżowani\w*|róg|rogu|między|"
-    r"tramwaj\w*|przystan\w*|sklep\w*)\W{0,3}(?:\w+\W{1,3}){0,2}$",
-    re.IGNORECASE,
+# Words that mean the street named next to them is a neighbour, not the flat's own street: "blisko ul. X", "dojazd do szkoły
+# przy ul. X". Long descriptions name many schools, shops and stops, so these matter more as the text gets longer. A landmark
+# word counts only within 3 words of the cue and never across a sentence end ("Szkoła jest blisko. Mieszkanie przy ul. X" is fine).
+LANDMARKS = (
+    r"blisko|bliskość|obok|pobliż\w*|niedaleko|nieopodal|sąsiedztw\w*|dojazd\w*|skrzyżowani\w*|róg|rogu|między|"
+    r"szkoł\w*|school|przedszkol\w*|żłob\w*|uczelni\w*|uniwersytet\w*|politechnik\w*|szpital\w*|przychodni\w*|apte\w*|"
+    r"sklep\w*|market\w*|biedronk\w*|lidl|żabk\w*|kaufland|galeri\w*|park(?:u|owi|iem|i|y|ach|ów)?(?![\w])|kości(?:oł|ół)\w*|kościele|stacj\w*|przystan\w*|tramwaj\w*|"
+    r"autobus\w*|metro(?![\w])|dworc\w*|dworzec|lotnisk\w*|biur[ao]|urzęd\w*|urząd"
 )
+NEARBY = re.compile(rf"(?:{LANDMARKS})[^\w.!?]{{0,3}}(?:\w+[^\w.!?]{{1,3}}){{0,3}}$", re.IGNORECASE)
 # words after a number that show it is not a house number ("Komedy 45 m2", "ul. Hubska 3 pokoje")
 UNITS = re.compile(r"(?:m\b|m2|m²|mkw|pok\w*|zł|pln|piętr\w*|p\.|osob\w*|os\.|mies\w*|lat\w*|dni|kg|%)", re.IGNORECASE)
 HOUSE = re.compile(r"[ \t]*(\d{1,3}[A-Za-z]?)(?![A-Za-z0-9])(?:[ \t]*/[ \t]*\d{1,3}[A-Za-z]?)?")
@@ -111,7 +116,7 @@ def _after_cue(text: str, index: StreetIndex) -> list[tuple[Address, bool]]:
             # only when it has a house number or the text says the flat is "przy"/"na" it
             if kind in ("Plac", "Osiedle") and not house and not re.search(r"\b(?:przy|na)\s*$", text[max(0, cue.start() - 12) : cue.start()], re.IGNORECASE):
                 continue
-            strong = not NEARBY.search(text[max(0, cue.start() - 40) : cue.start()])
+            strong = not NEARBY.search(text[max(0, cue.start() - 70) : cue.start()])
             found.append((Address(street, house), strong))
             break
     return found
