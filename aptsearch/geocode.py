@@ -118,12 +118,13 @@ def fill_street_coordinates(
             out[key] = replace(row, lat=hit[0], lon=hit[1], geo="street")
     if skipped_cities:
         log.info("geocode: no city box for %s, skipped (add it to CITY_BOXES)", sorted(skipped_cities))
-    pending = sum(
-        1 for r in out.values()
+    waiting = {  # distinct streets (many flats share one), not rows
+        cache_key(r.street, r.city or default_city)
+        for r in out.values()
         if r.lat is None and r.street and (r.city or default_city or "").casefold() in CITY_BOXES
         and cache_key(r.street, r.city or default_city) not in cache
-    )
-    log.info("geocode: %d lookup(s) this run, %d street(s) still waiting", looked_up, pending)
+    }
+    log.info("geocode: %d lookup(s) this run, %d street(s) still waiting", looked_up, len(waiting))
     return out
 
 
