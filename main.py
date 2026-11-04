@@ -5,10 +5,24 @@ from pathlib import Path
 
 from aptsearch.config import load_config, matches
 from aptsearch.districts import normalize_district
+from aptsearch.geocode import fill_street_coordinates, load_cache, save_cache
 from aptsearch.scrapers import SCRAPERS
 from aptsearch.storage import load_listings, merge, prune, save_listings, save_snapshot
 
 log = logging.getLogger("aptsearch")
+
+
+def with_street_coordinates(listings, default_city, cache_path):
+    """Add street-level coordinates (cached in geocache.json). A nicety: any failure is logged and the run goes on."""
+    try:
+        cache = load_cache(cache_path)
+        before = dict(cache)
+        listings = fill_street_coordinates(listings, cache, default_city=default_city)
+        if cache != before:
+            save_cache(cache, cache_path)
+    except Exception:
+        log.exception("Geocoding failed; continuing without new coordinates")
+    return listings
 
 
 def run(scrapers=SCRAPERS, config_path="config.yaml", csv_path="listings.csv", now=None, archive_dir=None):
@@ -32,6 +46,7 @@ def run(scrapers=SCRAPERS, config_path="config.yaml", csv_path="listings.csv", n
     found = [l for l in found if matches(l, cfg)]
     existing = {k: with_official_district(l) for k, l in load_listings(csv_path).items()}
     merged = merge(existing, found, now)
+    merged = with_street_coordinates(merged, cfg.city, Path(csv_path).parent / "geocache.json")
     pruned = 0
     if found:  # on a total outage keep everything: no snapshot, no pruning
         new_keys = {(l.site, l.id) for l in found} - set(existing)

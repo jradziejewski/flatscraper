@@ -37,6 +37,9 @@ def load_listings(path: str | Path = "listings.csv") -> dict[Key, Listing]:
                 district=row["district"] or None,
                 street=row.get("street") or None,  # CSVs written before this column existed
                 photo=row.get("photo") or None,  # same for photo
+                lat=_opt(row.get("lat") or "", float),  # and for the location columns
+                lon=_opt(row.get("lon") or "", float),
+                geo=row.get("geo") or None,
                 city=row["city"] or None,
                 posted_at=row["posted_at"] or None,
                 first_seen=row["first_seen"],
@@ -49,8 +52,9 @@ def load_listings(path: str | Path = "listings.csv") -> dict[Key, Listing]:
 def merge(
     existing: dict[Key, Listing], scraped: list[Listing], now: datetime
 ) -> dict[Key, Listing]:
-    """New rows get first_seen=now; known rows update price_pln, district, street, photo and last_seen.
-    A None price, district, street or photo never overwrites a known one. Rows are never deleted."""
+    """New rows get first_seen=now; known rows update price_pln, district, street, photo, location and last_seen.
+    A None price, district, street, photo or location never overwrites a known one. Rows are never deleted.
+    lat, lon and geo move together: they only mean something as a set."""
     ts = utc_iso(now)
     result = dict(existing)
     for lst in scraped:
@@ -63,7 +67,11 @@ def merge(
             district = lst.district if lst.district is not None else old.district
             street = lst.street if lst.street is not None else old.street
             photo = lst.photo if lst.photo is not None else old.photo
-            result[key] = replace(old, price_pln=price, district=district, street=street, photo=photo, last_seen=ts)
+            where = (lst.lat, lst.lon, lst.geo) if lst.lat is not None and lst.lon is not None else (old.lat, old.lon, old.geo)
+            result[key] = replace(
+                old, price_pln=price, district=district, street=street, photo=photo,
+                lat=where[0], lon=where[1], geo=where[2], last_seen=ts,
+            )
     return result
 
 

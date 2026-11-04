@@ -146,3 +146,55 @@ def test_other_cities_keep_their_district_text(tmp_path):
     cfg, out, _ = setup(tmp_path)  # city: Warszawa
     run([lambda _: [Listing(site="s", id="1", url="u", title="t", city="Warszawa", district="Mokotów")]], cfg, out, NOW)
     assert load_listings(out)[("s", "1")].district == "Mokotów"
+
+
+# ---------- street coordinates ----------
+
+def geo_setup(tmp_path):
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text("city: Wrocław\n")
+    return cfg, tmp_path / "l.csv", tmp_path / "geocache.json"
+
+
+def test_run_geocodes_new_streets_before_the_snapshot_and_caches_them(tmp_path, monkeypatch):
+    import json
+
+    cfg, out, cache_file = geo_setup(tmp_path)
+    calls = []
+
+    def fake_get(url, **kwargs):
+        calls.append(url)
+        return json.dumps([{"lat": "51.1", "lon": "17.03"}])
+
+    monkeypatch.setattr("aptsearch.http.get", fake_get)
+    monkeypatch.setattr("aptsearch.geocode.DELAY_S", 0)
+    scraper = lambda _: [listing("1", street="Hubska", city="Wrocław"), listing("2", street="Hubska", city="Wrocław")]
+    run([scraper], cfg, out, NOW)
+    assert len(calls) == 1  # one street
+    rows = load_listings(out)
+    assert {(r.lat, r.lon, r.geo) for r in rows.values()} == {(51.1, 17.03, "street")}
+    snapshot = load_listings(tmp_path / "archive" / "2026-11" / "2026-11-03T06-00-00Z.csv")
+    assert all(r.lat == 51.1 for r in snapshot.values())  # the archive already has the location
+    assert json.loads(cache_file.read_text(encoding="utf-8")) == {"wrocław|hubska": [51.1, 17.03]}
+    run([scraper], cfg, out, NOW + timedelta(hours=6))
+    assert len(calls) == 1  # the cache answers from now on
+
+
+def test_a_failing_geocoder_does_not_break_the_run(tmp_path, monkeypatch):
+    cfg, out, cache_file = geo_setup(tmp_path)
+
+    def boom(url, **kwargs):
+        raise OSError("offline")
+
+    monkeypatch.setattr("aptsearch.http.get", boom)
+    run([lambda _: [listing("1", street="Hubska", city="Wrocław")]], cfg, out, NOW)
+    rows = load_listings(out)
+    assert list(rows) == [("s", "1")] and rows[("s", "1")].lat is None  # saved without a location
+    assert not cache_file.exists()  # nothing was learned, nothing is written
+
+
+def test_a_broken_cache_file_does_not_break_the_run(tmp_path):
+    cfg, out, cache_file = geo_setup(tmp_path)
+    cache_file.write_text("{not json", encoding="utf-8")
+    run([lambda _: [listing("1", street="Hubska", city="Wrocław")]], cfg, out, NOW)
+    assert list(load_listings(out)) == [("s", "1")]

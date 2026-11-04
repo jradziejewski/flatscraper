@@ -26,11 +26,11 @@ jobs:
 
       - run: uv run python main.py
 
-      - name: Commit listings.csv and the new archive snapshot if changed
+      - name: Commit listings.csv, geocache.json and the new archive snapshot if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add listings.csv archive/
+          git add listings.csv archive/ geocache.json
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0

@@ -7,10 +7,11 @@ USER_AGENT = (
 )
 
 
-def get(url: str, timeout: float = 20) -> str:
+def get(url: str, timeout: float = 20, user_agent: str = USER_AGENT) -> str:
+    """`user_agent` is only overridden for APIs that ask clients to identify themselves (the OSM geocoder)."""
     req = urllib.request.Request(
         url,
-        headers={"User-Agent": USER_AGENT, "Accept-Language": "pl,en;q=0.8"},
+        headers={"User-Agent": user_agent, "Accept-Language": "pl,en;q=0.8"},
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.read().decode("utf-8")
