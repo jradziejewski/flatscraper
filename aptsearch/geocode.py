@@ -15,7 +15,8 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 from . import http
-from .models import Listing
+from .models import Listing, geo_rank
+from .streets import distinctive, stem, words
 
 log = logging.getLogger(__name__)
 
@@ -46,8 +47,10 @@ def clean_point(lat, lon, box=POLAND) -> Point | None:
     return round(la, 6), round(lo, 6)
 
 
-def cache_key(street: str, city: str) -> str:
-    return f"{city.casefold()}|{street.casefold()}"
+def cache_key(street: str, city: str, house: str | None = None) -> str:
+    """"wrocław|hubska" for a street, "wrocław|hubska|12" for one building."""
+    key = f"{city.casefold()}|{street.casefold()}"
+    return f"{key}|{house.casefold()}" if house else key
 
 
 def load_cache(path: str | Path = CACHE_PATH) -> Cache:
@@ -69,62 +72,91 @@ def save_cache(cache: Cache, path: str | Path = CACHE_PATH) -> None:
     Path(path).write_text(text, encoding="utf-8")
 
 
-def lookup(street: str, city: str, fetch=None) -> Point | None:
-    """Ask Nominatim for one street. None means "not found in the city"; network errors are raised."""
+def lookup(street: str, city: str, fetch=None, house: str | None = None) -> Point | None:
+    """Ask Nominatim for a street, or with `house` for one building. None means "not found in the city"; network errors are raised.
+
+    A building counts only if the answer really carries the house number asked for, on a road with the street's name:
+    otherwise Nominatim quietly answers with the street itself, and that must not be passed off as a building."""
     fetch = fetch or http.get  # looked up at call time, so tests can replace http.get
-    query = urlencode({"q": f"{street}, {city}", "format": "jsonv2", "limit": 1, "countrycodes": "pl"})
-    hits = json.loads(fetch(f"{NOMINATIM}?{query}", user_agent=USER_AGENT))
+    params = {"q": f"{street} {house}, {city}" if house else f"{street}, {city}", "format": "jsonv2", "limit": 1, "countrycodes": "pl"}
+    if house:
+        params["addressdetails"] = 1
+    hits = json.loads(fetch(f"{NOMINATIM}?{urlencode(params)}", user_agent=USER_AGENT))
     for hit in hits[:1]:
         point = clean_point(hit.get("lat"), hit.get("lon"), CITY_BOXES[city.casefold()])
-        if point:
+        if point and (not house or _is_that_building(hit.get("address") or {}, street, house)):
             return point
     return None
+
+
+def _is_that_building(address: dict, street: str, house: str) -> bool:
+    got = str(address.get("house_number") or "").replace(" ", "").casefold()
+    road = address.get("road") or address.get("pedestrian") or address.get("footway") or ""
+    street_words = [w for w in words(street) if distinctive(w)]
+    road_words = [w for w in words(road) if distinctive(w)]
+    same_road = bool(street_words and road_words) and stem(street_words[-1]) == stem(road_words[-1])
+    return got == house.replace(" ", "").casefold() and same_road
 
 
 def fill_street_coordinates(
     listings: dict, cache: Cache, default_city: str | None = None,
     limit: int = DEFAULT_LIMIT, fetch=None, sleep=time.sleep,
 ) -> dict:
-    """Give rows that have a street but no coordinates the cached (or freshly looked-up) street point.
+    """Locate rows that have a street: a row with a house number gets its building (geo="address", better than anything else we
+    know), a row with only a street and no location gets the street's point (geo="street").
     Updates `cache` in place and returns a new dict. A failed request stops this run's lookups and is not cached."""
     out = dict(listings)
-    looked_up = 0
-    stopped = False
+    state = {"looked_up": 0, "stopped": False}
     skipped_cities: set[str] = set()
+
+    def ask(street: str, city: str, house: str | None = None) -> list[float] | None:
+        """The cached point (or None for "not found"); asks Nominatim only if it is unknown, there is budget and nothing failed yet."""
+        ck = cache_key(street, city, house)
+        if ck in cache:
+            return cache[ck]
+        if state["stopped"] or state["looked_up"] >= limit:
+            return None
+        if state["looked_up"]:
+            sleep(DELAY_S)
+        try:
+            point = lookup(street, city, fetch, house)
+        except Exception as exc:  # geocoding is a nicety: never let it break a run
+            log.warning("geocode: stopping after a failed lookup (%s: %s)", type(exc).__name__, exc)
+            state["stopped"] = True
+            return None
+        state["looked_up"] += 1
+        cache[ck] = list(point) if point else None
+        return cache[ck]
+
     for key in sorted(listings):
         row: Listing = listings[key]
-        if row.lat is not None or not row.street:
+        if not row.street:
             continue
         city = row.city or default_city
         if not city or city.casefold() not in CITY_BOXES:
             skipped_cities.add(city or "(none)")
             continue
-        ck = cache_key(row.street, city)
-        if ck not in cache:
-            if stopped or looked_up >= limit:
+        if row.house and geo_rank(row.geo) < geo_rank("address"):
+            hit = ask(row.street, city, row.house)
+            if hit:
+                out[key] = replace(row, lat=hit[0], lon=hit[1], geo="address")
                 continue
-            if looked_up:
-                sleep(DELAY_S)
-            try:
-                point = lookup(row.street, city, fetch)
-            except Exception as exc:  # geocoding is a nicety: never let it break a run
-                log.warning("geocode: stopping after a failed lookup (%s: %s)", type(exc).__name__, exc)
-                stopped = True
-                continue
-            looked_up += 1
-            cache[ck] = list(point) if point else None
-        hit = cache[ck]
-        if hit:
-            out[key] = replace(row, lat=hit[0], lon=hit[1], geo="street")
+        if row.lat is None:  # no building (no number, or none found): the street's point is better than nothing
+            hit = ask(row.street, city)
+            if hit:
+                out[key] = replace(row, lat=hit[0], lon=hit[1], geo="street")
     if skipped_cities:
         log.info("geocode: no city box for %s, skipped (add it to CITY_BOXES)", sorted(skipped_cities))
-    waiting = {  # distinct streets (many flats share one), not rows
-        cache_key(r.street, r.city or default_city)
-        for r in out.values()
-        if r.lat is None and r.street and (r.city or default_city or "").casefold() in CITY_BOXES
-        and cache_key(r.street, r.city or default_city) not in cache
-    }
-    log.info("geocode: %d lookup(s) this run, %d street(s) still waiting", looked_up, len(waiting))
+    waiting = set()  # distinct streets and buildings (many flats share one), not rows
+    for r in out.values():
+        city = r.city or default_city
+        if not r.street or (city or "").casefold() not in CITY_BOXES:
+            continue
+        if r.house and geo_rank(r.geo) < geo_rank("address") and cache_key(r.street, city, r.house) not in cache:
+            waiting.add(cache_key(r.street, city, r.house))
+        if r.lat is None and cache_key(r.street, city) not in cache:
+            waiting.add(cache_key(r.street, city))
+    log.info("geocode: %d lookup(s) this run, %d street(s)/address(es) still waiting", state["looked_up"], len(waiting))
     return out
 
 
