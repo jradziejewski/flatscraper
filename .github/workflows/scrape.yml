@@ -2,8 +2,9 @@ name: scrape
 
 on:
   schedule:
-    # UTC. 07:00/13:00/19:00 Warsaw in winter, 08:00/14:00/20:00 in summer.
-    - cron: "0 6,12,18 * * *"
+    # UTC. 07:17/13:17/19:17 Warsaw in winter, 08:17/14:17/20:17 in summer.
+    # Minute 17, not 0: GitHub delays or drops scheduled runs queued at the top of the hour, when load peaks.
+    - cron: "17 6,12,18 * * *"
   workflow_dispatch:
 
 permissions:

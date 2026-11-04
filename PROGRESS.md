@@ -13,7 +13,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 |---|---|
 | 1 | Skeleton, `Listing` model, CSV merge, config with filters |
 | 2-5 | Scrapers: Otodom (`__NEXT_DATA__`), nieruchomosci-online (ld+json + tiles), Morizon (Nuxt `__NUXT_DATA__`), OLX (JSON API, fetched via system `curl`) |
-| 6 | GitHub Actions workflow: cron `0 6,12,18 * * *` UTC (+ manual `workflow_dispatch`), commits `listings.csv` and `archive/` |
+| 6 | GitHub Actions workflow: cron `17 6,12,18 * * *` UTC (+ manual `workflow_dispatch`; moved off minute 0 on 2026-11-04 because the first scheduled slot, 06:00 UTC, never fired), commits `listings.csv` and `archive/` |
 | 7 | Archive: one snapshot per run holding only listings **new in that run**; listings not seen for 3 days are pruned from `listings.csv` |
 | 8 | Static Polish page (`index.html` + `app.js`), no dependencies |
 | 9 | District normalization to the 5 official districts (`aptsearch/districts.py`) |
