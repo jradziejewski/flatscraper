@@ -62,6 +62,7 @@ function normalize(record) {
     district: record.district || null,
     street: record.street || null,
     photo: safeUrl(record.photo), // listing data comes from scraped sites: only http(s) ever reaches an <img src>
+    ...parseLocation(record),
     city: record.city || null,
     firstSeen: ts(record.first_seen),
     lastSeen: ts(record.last_seen),
@@ -166,6 +167,7 @@ function toView(members) {
     ...rep,
     firstSeen: Number.isFinite(earliest) ? earliest : null, // a flat is only "new" if its earliest listing is
     photo: ordered.find((m) => m.photo)?.photo ?? null, // the first portal (by priority) that has a picture
+    loc: bestLocation(ordered),
     members: ordered,
     sites: ordered.map((m) => m.site),
     searchText: fold(`${members.map((m) => m.title).join(" ")} ${rep.district ?? ""}`),
@@ -271,6 +273,66 @@ function photoSources(url) {
   return { src, srcset: null };
 }
 
+// ---------- map ----------
+// Each listing may have a location with a precision level (set by the bot): "point" is the real address (OLX, when it
+// shows one), "street" is the middle of the street (geocoded, no house number), "area" is a blurred circle of several km.
+// The map is an OpenStreetMap iframe that is only created when a map is opened: nothing is requested before that.
+
+const GEO_LEVELS = ["area", "street", "point"]; // worst to best
+const GEO_TEXT = {
+  point: "lokalizacja z ogłoszenia",
+  street: "środek ulicy, numer domu nieznany",
+  area: "przybliżona okolica, portal ukrywa dokładny adres",
+};
+const MAP_SPAN = { point: [0.006, 0.0035], street: [0.006, 0.0035], area: [0.07, 0.04] }; // half-size of the view: [lon, lat] degrees
+
+/** {lat, lon, geo} when all three are present and sane, else all null: a half-known location is no location. */
+function parseLocation(record) {
+  const lat = num(record.lat), lon = num(record.lon);
+  const ok = lat != null && lon != null && Math.abs(lat) <= 90 && Math.abs(lon) <= 180 && GEO_LEVELS.includes(record.geo);
+  return ok ? { lat, lon, geo: record.geo } : { lat: null, lon: null, geo: null };
+}
+
+/** The most precise location among a flat's listings (a merged row may have an exact OLX point and a geocoded street). */
+function bestLocation(members) {
+  let best = null;
+  for (const m of members) {
+    if (m.lat == null || m.lon == null) continue;
+    if (!best || GEO_LEVELS.indexOf(m.geo) > GEO_LEVELS.indexOf(best.geo)) best = { lat: m.lat, lon: m.lon, geo: m.geo };
+  }
+  return best;
+}
+
+const validLoc = (loc) => !!loc && Number.isFinite(loc.lat) && Number.isFinite(loc.lon) && Math.abs(loc.lat) <= 90 &&
+  Math.abs(loc.lon) <= 180 && GEO_LEVELS.includes(loc.geo);
+const coord = (n) => n.toFixed(6);
+
+/** The OpenStreetMap embed for a location: numbers only, so nothing from a scraped site can end up in the URL.
+ *  A street or point gets a pin; an "area" gets a wide view and no pin, so it does not look more exact than it is. */
+function mapEmbedUrl(loc) {
+  if (!validLoc(loc)) return null;
+  const [dLon, dLat] = MAP_SPAN[loc.geo];
+  const bbox = [loc.lon - dLon, loc.lat - dLat, loc.lon + dLon, loc.lat + dLat].map(coord).join(",");
+  const marker = loc.geo === "area" ? "" : `&marker=${encodeURIComponent(`${coord(loc.lat)},${coord(loc.lon)}`)}`;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik${marker}`;
+}
+
+/** Links that open the same place in a full map app (Google's documented URL scheme opens the native app on phones). */
+function mapLinks(loc) {
+  if (!validLoc(loc)) return null;
+  const lat = coord(loc.lat), lon = coord(loc.lon), zoom = loc.geo === "area" ? 13 : 17;
+  return {
+    google: `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`,
+    osm: `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=${zoom}/${lat}/${lon}`,
+  };
+}
+
+/** "Krzyki · Hubska — środek ulicy, numer domu nieznany." Says how exact the pin is. */
+function mapCaption(loc, place) {
+  const text = GEO_TEXT[loc.geo];
+  return place ? `${place} — ${text}.` : `${text[0].toUpperCase()}${text.slice(1)}.`;
+}
+
 // ---------- active filters (shown as removable chips) ----------
 
 /** One chip per active filter of the filter panel (not the search text or the view). `key` says which control to clear. */
@@ -336,7 +398,7 @@ const emptyMarks = () => ({ favs: {}, hidden: {} });
 function snapshotOf(m, group, savedAt) {
   return {
     site: m.site, id: m.id, url: m.url, title: m.title, price: m.price, area: m.area, rooms: m.rooms,
-    district: m.district, street: m.street, photo: m.photo ?? null, firstSeen: m.firstSeen, lastSeen: m.lastSeen, group, savedAt,
+    district: m.district, street: m.street, photo: m.photo ?? null, lat: m.lat ?? null, lon: m.lon ?? null, geo: m.geo ?? null, firstSeen: m.firstSeen, lastSeen: m.lastSeen, group, savedAt,
   };
 }
 
@@ -369,6 +431,7 @@ function sanitizeMarks(favsRaw, hiddenRaw) {
         site: f.site, id: f.id, url: isText(f.url) ? f.url : "", title: f.title, price: numOrNull(f.price),
         area: numOrNull(f.area), rooms: numOrNull(f.rooms), district: isText(f.district) ? f.district : null,
         street: isText(f.street) ? f.street : null, photo: isText(f.photo) ? safeUrl(f.photo) : null,
+        ...parseLocation({ lat: numOrNull(f.lat), lon: numOrNull(f.lon), geo: f.geo }),
         firstSeen: numOrNull(f.firstSeen), lastSeen: numOrNull(f.lastSeen),
         group: Array.isArray(f.group) ? f.group.filter(isText) : [key], savedAt: numOrNull(f.savedAt) ?? 0,
       };
@@ -487,7 +550,7 @@ function describeSince(ms, now) {
 
 if (typeof module !== "undefined") {
   module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
-    photoSources, activeFilterChips,
+    photoSources, activeFilterChips, parseLocation, bestLocation, mapEmbedUrl, mapLinks, mapCaption, GEO_LEVELS,
     isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON,
     prefsFromState, sanitizePrefs, loadPrefs, savePrefs, PREFS_KEY,
     markKey, emptyMarks, loadMarks, saveMarks, setMark, markState, refreshSnapshots, goneViews, capMarks, sanitizeMarks, MAX_MARKS, FAVS_KEY, HIDDEN_KEY, VIEWS };
@@ -497,7 +560,7 @@ if (typeof module !== "undefined") {
 
 if (typeof document !== "undefined") {
   const $ = (id) => document.getElementById(id);
-  const state = { rows: [], views: [], baseline: null, visitStarted: false, prefsReady: false, marks: emptyMarks(), sort: { ...DEFAULT_SORT } };
+  const state = { rows: [], views: [], baseline: null, visitStarted: false, prefsReady: false, marks: emptyMarks(), sort: { ...DEFAULT_SORT }, openMap: null };
 
   function browserStorage(name) {
     try { const s = window[name]; s.getItem("flatscraper:probe"); return s; } catch { return memoryStorage(); }
@@ -668,6 +731,53 @@ if (typeof document !== "undefined") {
     return td;
   }
 
+  // ----- map: one map open at a time, as an extra row under its listing -----
+
+  const rowKey = (r) => markKey(r.members[0]);
+  const safeId = (key) => key.replace(/[^\w-]/g, "_");
+  const mapRowId = (key) => `map-${safeId(key)}`;
+  const mapButtonId = (key) => `mapbtn-${safeId(key)}`;
+
+  function toggleMap(r) {
+    const key = rowKey(r);
+    state.openMap = state.openMap === key ? null : key;
+    render();
+    const button = document.getElementById(mapButtonId(key));
+    if (button) button.focus({ preventScroll: true }); // render() replaced the button the keyboard was on
+    const row = state.openMap && document.getElementById(mapRowId(key));
+    if (row) row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  function mapButton(r) {
+    const key = rowKey(r), open = state.openMap === key;
+    const b = el("button", { type: "button", className: "chip map-btn", id: mapButtonId(key) }, open ? "Ukryj mapę ▴" : "Mapa ▾");
+    b.setAttribute("aria-expanded", String(open));
+    if (open) b.setAttribute("aria-controls", mapRowId(key));
+    b.addEventListener("click", () => toggleMap(r));
+    return b;
+  }
+
+  /** The row under an open listing: how exact the pin is, the map, and links to open it in a full map app. */
+  function mapRow(r) {
+    const src = mapEmbedUrl(r.loc), links = mapLinks(r.loc);
+    if (!src || !links) return null;
+    const tr = el("tr", { className: "map-row", id: mapRowId(rowKey(r)) });
+    const box = el("div", { className: "map-box" });
+    box.append(el("p", { className: "map-note" }, mapCaption(r.loc, [r.district, r.street].filter(Boolean).join(" · "))));
+    // Not "no-referrer", unlike the photos: OpenStreetMap's tile servers refuse requests without a Referer (403 "Access blocked"),
+    // and its usage policy asks for one. The default sends only this site's origin, never the path or any search text.
+    const frame = el("iframe", { className: "map-frame", src, title: `Mapa: ${r.title || "ogłoszenie"}`, loading: "lazy", referrerPolicy: "strict-origin-when-cross-origin" });
+    frame.setAttribute("sandbox", "allow-scripts allow-same-origin"); // OpenStreetMap's own page needs its scripts, nothing else
+    box.append(frame);
+    const open = (href, text) => el("a", { href, target: "_blank", rel: "noopener noreferrer" }, text);
+    const more = el("p", { className: "map-links" });
+    more.append(open(links.google, "Otwórz w Google Maps ↗"), open(links.osm, "Otwórz w OpenStreetMap ↗"));
+    box.append(more);
+    tr.append(el("td", { colSpan: 6 }));
+    tr.firstChild.append(box);
+    return tr;
+  }
+
   /** Title (with the NOWE badge), a muted line "district · street · added", and the portals. */
   function mainCell(r, now) {
     const td = el("td", { className: "main" });
@@ -679,7 +789,9 @@ if (typeof document !== "undefined") {
       ? el("a", { className: "title-link", href, target: "_blank", rel: "noopener noreferrer" }, title)
       : el("span", { className: "title-link" }, title));
     const when = r.gone ? `ostatnio widziano: ${relativeTime(r.lastSeen, now)}` : relativeTime(r.firstSeen, now);
-    td.append(line, el("div", { className: "meta" }, [r.district, r.street, when].filter(Boolean).join(" · ")), portalChips(r));
+    const portals = portalChips(r);
+    if (r.loc) portals.append(mapButton(r)); // no location, no button: the page never shows a map it cannot place
+    td.append(line, el("div", { className: "meta" }, [r.district, r.street, when].filter(Boolean).join(" · ")), portals);
     return td;
   }
 
@@ -692,7 +804,8 @@ if (typeof document !== "undefined") {
 
   function renderRow(r, now, showing) {
     const mark = markState(r, state.marks);
-    const tr = el("tr", { className: r.gone ? "is-gone" : mark === "hidden" ? "is-hidden" : "" });
+    const open = r.loc && state.openMap === rowKey(r);
+    const tr = el("tr", { className: [r.gone ? "is-gone" : mark === "hidden" ? "is-hidden" : "", open ? "is-open" : ""].filter(Boolean).join(" ") });
     tr.append(
       photoCell(r),
       mainCell(r, now),
@@ -714,8 +827,13 @@ if (typeof document !== "undefined") {
     $("favTab").textContent = `Ulubione (${countMarked("fav") + gone.length})`;
     $("hiddenTab").textContent = `Ukryte (${countMarked("hidden")})`;
     renderChips(filters);
+    if (state.openMap && !rows.some((r) => r.loc && rowKey(r) === state.openMap)) state.openMap = null; // its row is gone
     const frag = document.createDocumentFragment();
-    rows.forEach((r) => frag.append(renderRow(r, now, filters.view)));
+    rows.forEach((r) => {
+      frag.append(renderRow(r, now, filters.view));
+      const map = r.loc && state.openMap === rowKey(r) ? mapRow(r) : null;
+      if (map) frag.append(map);
+    });
     $("rows").replaceChildren(frag);
     const merged = state.rows.length - state.views.length;
     const newCount = state.views.filter((v) => isNew(v, now, state.baseline)).length;

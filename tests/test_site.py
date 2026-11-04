@@ -572,6 +572,113 @@ def test_filter_panel_is_wired_for_keyboard_and_screen_readers():
     assert "[hidden] { display: none !important; }" in INDEX_HTML  # author display rules must not defeat `hidden`
 
 
+# ---------- map ----------
+
+@needs_node
+def test_location_needs_lat_lon_and_a_known_precision():
+    out = run_node("""return input.map(r => { const o = lib.normalize({site: 'x', ...r}); return [o.lat, o.lon, o.geo]; });""", [
+        {"lat": "51.1", "lon": "17.03", "geo": "street"},
+        {"lat": "51.1", "lon": "17.03", "geo": "point"},
+        {"lat": "51.1", "lon": "17.03", "geo": "area"},
+        {"lat": "51.1", "lon": "17.03", "geo": ""},            # precision unknown
+        {"lat": "51.1", "lon": "17.03", "geo": "constructor"}, # not a level, however it looks
+        {"lat": "51.1", "lon": "", "geo": "street"},           # half a location is none
+        {"lat": "", "lon": "", "geo": ""},
+        {"lat": "99", "lon": "17.03", "geo": "street"},        # not on Earth
+        {"lat": "51.1", "lon": "x", "geo": "street"},
+        {},                                                    # an old CSV without the columns
+    ])
+    assert out[:3] == [[51.1, 17.03, "street"], [51.1, 17.03, "point"], [51.1, 17.03, "area"]]
+    assert out[3:] == [[None, None, None]] * 7
+
+
+@needs_node
+def test_a_merged_row_shows_its_most_precise_location():
+    flats = [
+        rec("otodom", "a", street="Hubska", lat="51.10", lon="17.00", geo="street"),   # geocoded street
+        rec("olx", "o", street="", title="Hubska 2 pokoje", lat="51.11", lon="17.01", geo="point"),  # exact point, merges via its title
+        rec("morizon", "m", price_pln="2000", lat="51.20", lon="17.10", geo="area"),
+        rec("nieruchomosci", "n", price_pln="2100"),                                    # no location at all
+    ]
+    out = run_node(f"const rows = {json.dumps(flats)}.map(lib.normalize);"
+                   "return lib.buildRows(rows, true).map(v => [v.members.map(m => m.site).sort(), v.loc]);")
+    by_first = {tuple(sites): loc for sites, loc in out}
+    assert by_first[("olx", "otodom")] == {"lat": 51.11, "lon": 17.01, "geo": "point"}  # point beats street, whichever portal it is from
+    assert by_first[("morizon",)] == {"lat": 51.2, "lon": 17.1, "geo": "area"}
+    assert by_first[("nieruchomosci",)] is None
+    equal = run_node("return lib.bestLocation([{lat: 1, lon: 2, geo: 'street'}, {lat: 3, lon: 4, geo: 'street'}, {lat: null, lon: null, geo: null}]);")
+    assert equal == {"lat": 1, "lon": 2, "geo": "street"}  # a tie keeps the first (portal priority)
+
+
+@needs_node
+def test_map_urls_are_built_from_numbers_only():
+    out = run_node("""
+const street = {lat: 51.1, lon: 17.03, geo: 'street'};
+const area = {lat: 51.13, lon: 16.98, geo: 'area'};
+return {street: lib.mapEmbedUrl(street), area: lib.mapEmbedUrl(area), links: lib.mapLinks(street), areaLinks: lib.mapLinks(area),
+        bad: [null, {}, {lat: 'x', lon: 1, geo: 'street'}, {lat: 51, lon: 17, geo: 'nope'}, {lat: 51, lon: 17}, {lat: 91, lon: 17, geo: 'point'},
+              {lat: NaN, lon: 17, geo: 'point'}, {lat: 51, lon: '17', geo: 'point'}].map(l => [lib.mapEmbedUrl(l), lib.mapLinks(l)])};
+""")
+    assert out["street"] == ("https://www.openstreetmap.org/export/embed.html?bbox=17.024000%2C51.096500%2C17.036000%2C51.103500"
+                             "&layer=mapnik&marker=51.100000%2C17.030000")
+    assert "marker" not in out["area"] and "bbox=16.910000%2C51.090000%2C17.050000%2C51.170000" in out["area"]  # wide view, no pin
+    assert out["links"] == {"google": "https://www.google.com/maps/search/?api=1&query=51.100000,17.030000",
+                            "osm": "https://www.openstreetmap.org/?mlat=51.100000&mlon=17.030000#map=17/51.100000/17.030000"}
+    assert out["areaLinks"]["osm"].endswith("#map=13/51.130000/16.980000")
+    assert out["bad"] == [[None, None]] * 8  # anything that is not a valid number pair gives no map and no links
+
+
+@needs_node
+def test_map_caption_says_how_exact_the_pin_is():
+    out = run_node("return ['point', 'street', 'area'].map(g => [lib.mapCaption({geo: g}, 'Krzyki · Hubska'), lib.mapCaption({geo: g}, '')]);")
+    assert out[0] == ["Krzyki · Hubska — lokalizacja z ogłoszenia.", "Lokalizacja z ogłoszenia."]
+    assert out[1][0] == "Krzyki · Hubska — środek ulicy, numer domu nieznany."
+    assert out[2][1].startswith("Przybliżona okolica")  # the honest wording for a blurred location
+
+
+@needs_node
+def test_favourites_keep_the_location_and_do_not_trust_stored_ones():
+    out = run_node(f"const rows = {json.dumps([rec('olx', 'o', lat='51.1', lon='17.0', geo='street')])}.map(lib.normalize);"
+                   """
+const views = lib.buildRows(rows, true);
+const marks = lib.setMark(lib.emptyMarks(), views[0], 'fav', 1);
+const gone = lib.goneViews(marks, []);
+const storage = lib.memoryStorage();
+lib.saveMarks(storage, marks);
+const reloaded = lib.loadMarks(storage);
+const refreshed = lib.refreshSnapshots(reloaded, rows);   // same data: must not look "changed" on every visit
+const evil = lib.sanitizeMarks({'olx:a': {site: 'olx', id: 'a', title: 't', lat: 'x', lon: 5, geo: 'street'},
+                                'olx:b': {site: 'olx', id: 'b', title: 't', lat: 51, lon: 17, geo: 'bogus'},
+                                'olx:c': {site: 'olx', id: 'c', title: 't', lat: 120, lon: 17, geo: 'point'},
+                                'olx:d': {site: 'olx', id: 'd', title: 't'}}, {});
+return {gone: gone.map(g => g.loc), reloaded: reloaded.favs['olx:o'].lat, changed: refreshed.changed,
+        evil: ['olx:a', 'olx:b', 'olx:c', 'olx:d'].map(k => [evil.favs[k].lat, evil.favs[k].geo])};
+""")
+    assert out == {"gone": [{"lat": 51.1, "lon": 17.0, "geo": "street"}], "reloaded": 51.1, "changed": False,
+                   "evil": [[None, None]] * 4}  # a favourite that left the CSV can still open its map
+
+
+def test_the_map_iframe_is_built_only_from_checked_numbers():
+    row = re.search(r"function mapRow\(r\) \{.*?\n  \}\n", APP_JS, re.S).group(0)
+    assert "src = mapEmbedUrl(r.loc)" in row and "{ className: \"map-frame\", src," in row  # nothing but the checked URL reaches src
+    # OSM's tile servers answer 403 to requests without a Referer, so the map must NOT be "no-referrer" like the photos are
+    assert 'referrerPolicy: "strict-origin-when-cross-origin"' in row and 'no-referrer"' not in row.split("const frame")[1].split("\n")[0] and 'loading: "lazy"' in row
+    assert 'setAttribute("sandbox", "allow-scripts allow-same-origin")' in row  # OSM's page needs scripts; nothing else is allowed
+    assert 'rel: "noopener noreferrer"' in row
+    embed = re.search(r"function mapEmbedUrl\(loc\) \{.*?\n\}\n", APP_JS, re.S).group(0)
+    assert "https://www.openstreetmap.org/export/embed.html" in embed and "r.title" not in embed
+    # nothing is requested from OpenStreetMap until a map is opened: the only iframe is created inside mapRow
+    assert INDEX_HTML.count("<iframe") == 0 and APP_JS.count('el("iframe"') == 1
+
+
+def test_a_map_button_exists_only_for_rows_with_a_location_and_is_a_real_button():
+    main = re.search(r"function mainCell\(r, now\) \{.*?\n  \}\n", APP_JS, re.S).group(0)
+    assert "if (r.loc) portals.append(mapButton(r))" in main
+    button = re.search(r"function mapButton\(r\) \{.*?\n  \}\n", APP_JS, re.S).group(0)
+    assert 'type: "button"' in button and '"aria-expanded"' in button
+    assert "openMap" in APP_JS and "state.openMap = null" in APP_JS  # one open at a time, closed when its row disappears
+
+
 # ---------- favourites and hidden listings ----------
 
 def view_rows(records):

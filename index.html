@@ -117,6 +117,14 @@
   .portals { margin-top: 6px; }
   .chip { display: inline-block; margin: 0 4px 2px 0; padding: 1px 9px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: .78rem; white-space: nowrap; color: var(--accent); text-decoration: none; }
   a.chip:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .chip.map-btn { background: var(--surface); font: inherit; font-size: .78rem; color: var(--fg); cursor: pointer; }
+  .chip.map-btn:hover, .chip.map-btn[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  tr.is-open td { border-bottom: 0; }
+  tr.map-row:hover { background: none; }
+  tr.map-row td { padding: 0 14px 16px 14px; }
+  .map-note { margin: 0 0 8px; color: var(--muted); font-size: .85rem; }
+  .map-frame { display: block; width: 100%; height: 320px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--ph); }
+  .map-links { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 8px 0 0; font-size: .85rem; }
   td.price { white-space: nowrap; text-align: right; padding-right: 16px; }
   .price-main { display: block; font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
   .price-sub { display: block; color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
@@ -181,6 +189,12 @@
     td.actions { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; gap: 8px; width: auto; padding: 0; }
     .act { width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; color: var(--fg); background: color-mix(in srgb, var(--surface) 88%, transparent); box-shadow: 0 1px 5px rgba(0, 0, 0, .3); }
     .act.fav[aria-pressed="true"] { color: var(--star); }
+
+    /* an open map continues the card above it */
+    tbody tr.is-open { margin-bottom: 0; border-bottom-color: transparent; border-bottom-left-radius: 0; border-bottom-right-radius: 0; box-shadow: none; }
+    tbody tr.map-row { display: block; margin: 0 0 14px; padding: 4px 14px 14px; border-top: 0; border-radius: 0 0 var(--r-lg) var(--r-lg); }
+    tr.map-row td { padding: 0; }
+    .map-frame { height: 260px; }
   }
 </style>
 </head>
