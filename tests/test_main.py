@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+from aptsearch import details
 from main import run
 from aptsearch.models import Listing
 from aptsearch.storage import load_listings, save_listings, save_snapshot
@@ -198,3 +199,60 @@ def test_a_broken_cache_file_does_not_break_the_run(tmp_path):
     cache_file.write_text("{not json", encoding="utf-8")
     run([lambda _: [listing("1", street="Hubska", city="Wrocław")]], cfg, out, NOW)
     assert list(load_listings(out)) == [("s", "1")]
+
+
+# ---------- street from the listing's own page ----------
+
+def test_run_reads_the_page_of_a_row_without_a_street_before_geocoding_and_caches_the_answer(tmp_path, monkeypatch):
+    import json
+
+    cfg, out, _ = geo_setup(tmp_path)
+    pages, geocoded = [], []
+
+    def fake_page(row):
+        pages.append(row.id)
+        return "mieszkanie przy ul. Hubskiej 12"
+
+    def fake_get(url, **kwargs):
+        geocoded.append(url)
+        return json.dumps([{"lat": "51.1", "lon": "17.03", "address": {"house_number": "12", "road": "Hubska"}}])
+
+    monkeypatch.setattr("aptsearch.details.fetch_page", fake_page)
+    monkeypatch.setitem(details.READERS, "otodom", lambda page, city=None: page)   # the "page" is already the text
+    monkeypatch.setattr("aptsearch.http.get", fake_get)
+    monkeypatch.setattr("aptsearch.geocode.DELAY_S", 0)
+    monkeypatch.setattr("aptsearch.details.DELAY_S", 0)
+    scraper = lambda _: [Listing(site="otodom", id="9", url="u", title="t", price_pln=1000, city="Wrocław")]
+    run([scraper], cfg, out, NOW)
+    row = load_listings(out)[("otodom", "9")]
+    assert (row.street, row.house, row.geo) == ("Hubska", "12", "address")   # page -> street+number -> building, in one run
+    assert json.loads((tmp_path / "addresscache.json").read_text(encoding="utf-8")) == {"otodom:9": ["Hubska", "12"]}
+    run([scraper], cfg, out, NOW + timedelta(hours=6))
+    assert pages == ["9"]                                                    # the page is read once, never again
+
+
+def test_olx_rows_seen_in_this_run_need_no_page(tmp_path, monkeypatch):
+    cfg, out, _ = geo_setup(tmp_path)
+    pages = []
+    monkeypatch.setattr("aptsearch.details.fetch_page", lambda row: pages.append(row.id) or "")
+    scraper = lambda _: [Listing(site="olx", id="1", url="u", title="t", price_pln=1000, city="Wrocław")]
+    run([scraper], cfg, out, NOW)
+    assert pages == []                                                       # its full text was in the list already
+
+
+def test_a_failing_page_reader_does_not_break_the_run(tmp_path, monkeypatch):
+    cfg, out, _ = geo_setup(tmp_path)
+
+    def boom(row):
+        raise OSError("blocked")
+
+    monkeypatch.setattr("aptsearch.details.fetch_page", boom)
+    run([lambda _: [Listing(site="otodom", id="9", url="u", title="t", price_pln=1000, city="Wrocław")]], cfg, out, NOW)
+    assert list(load_listings(out)) == [("otodom", "9")] and not (tmp_path / "addresscache.json").exists()
+
+
+def test_a_broken_address_cache_does_not_break_the_run(tmp_path):
+    cfg, out, _ = geo_setup(tmp_path)
+    (tmp_path / "addresscache.json").write_text("{not json", encoding="utf-8")
+    run([lambda _: [Listing(site="otodom", id="9", url="u", title="t", price_pln=1000, city="Wrocław")]], cfg, out, NOW)
+    assert list(load_listings(out)) == [("otodom", "9")]

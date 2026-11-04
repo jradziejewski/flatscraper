@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from aptsearch.config import load_config, matches
+from aptsearch import details
 from aptsearch.districts import normalize_district
 from aptsearch.geocode import fill_street_coordinates, load_cache, save_cache
 from aptsearch.scrapers import SCRAPERS
@@ -22,6 +23,20 @@ def with_street_coordinates(listings, default_city, cache_path):
             save_cache(cache, cache_path)
     except Exception:
         log.exception("Geocoding failed; continuing without new coordinates")
+    return listings
+
+
+def with_page_addresses(listings, default_city, cache_path, skip):
+    """Street and house number from the listing's own page for rows still without a street. A nicety like geocoding: any failure
+    is logged and the run goes on. `skip`: rows whose full text the list already gave this run (OLX)."""
+    try:
+        cache = details.load_cache(cache_path)
+        before = dict(cache)
+        listings = details.fill_addresses(listings, cache, skip=skip, default_city=default_city)
+        if cache != before:
+            details.save_cache(cache, cache_path)
+    except Exception:
+        log.exception("Reading listing pages failed; continuing without them")
     return listings
 
 
@@ -46,6 +61,8 @@ def run(scrapers=SCRAPERS, config_path="config.yaml", csv_path="listings.csv", n
     found = [l for l in found if matches(l, cfg)]
     existing = {k: with_official_district(l) for k, l in load_listings(csv_path).items()}
     merged = merge(existing, found, now)
+    olx_seen_now = {(l.site, l.id) for l in found if l.site == "olx"}  # the list gave their full text: no page needed
+    merged = with_page_addresses(merged, cfg.city, Path(csv_path).parent / "addresscache.json", olx_seen_now)
     merged = with_street_coordinates(merged, cfg.city, Path(csv_path).parent / "geocache.json")
     pruned = 0
     if found:  # on a total outage keep everything: no snapshot, no pruning
