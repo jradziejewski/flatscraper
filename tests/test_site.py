@@ -658,6 +658,48 @@ return {gone: gone.map(g => g.loc), reloaded: reloaded.favs['olx:o'].lat, change
                    "evil": [[None, None]] * 4}  # a favourite that left the CSV can still open its map
 
 
+@needs_node
+def test_a_building_found_from_the_text_beats_every_other_location_and_gets_a_close_view():
+    out = run_node("""
+const rows = [
+  {site: 'olx', lat: 51.2, lon: 17.2, geo: 'point'},      // OLX's own pin (business listings are sometimes km off)
+  {site: 'otodom', lat: 51.1, lon: 17.0, geo: 'address'}, // the address the seller wrote in the text
+  {site: 'morizon', lat: 51.3, lon: 17.3, geo: 'street'},
+].map(r => lib.normalize({id: r.site, ...r}));
+return {best: lib.bestLocation(rows), levels: lib.GEO_LEVELS,
+        span: ['address', 'point', 'street', 'area'].map(g => lib.mapEmbedUrl({lat: 51.1, lon: 17.0, geo: g}).match(/bbox=([^&]+)/)[1]),
+        pin: lib.mapEmbedUrl({lat: 51.1, lon: 17.0, geo: 'address'}).includes('marker='),
+        caption: lib.mapCaption({geo: 'address'}, 'Krzyki · Komedy 16')};
+""")
+    assert out["best"] == {"lat": 51.1, "lon": 17.0, "geo": "address"} and out["levels"] == ["area", "street", "point", "address"]
+    assert out["span"][0] == "16.997500%2C51.098500%2C17.002500%2C51.101500"  # about 350 m wide: one building and its neighbours
+    assert out["span"][1] == out["span"][2] and out["span"][3].startswith("16.930000")
+    assert out["pin"] is True
+    assert out["caption"] == "Krzyki · Komedy 16 — adres z opisu ogłoszenia."
+
+
+@needs_node
+def test_house_numbers_are_shown_with_the_street_and_kept_for_favourites():
+    out = run_node("""
+const rows = [
+  {site: 'olx', id: 'o', street: 'Hubska', house: '', title: 'x'},
+  {site: 'otodom', id: 'a', street: 'Hubska', house: '12', title: 'y'},
+  {site: 'morizon', id: 'b', street: '', house: '7', title: 'z'},
+].map(r => lib.normalize({price_pln: '3000', area_m2: '45', rooms: '2', district: 'Krzyki', url: 'https://' + r.site + '.test/' + r.id, ...r}));
+const views = lib.buildRows(rows, true);
+const merged = views.find(v => v.members.length === 2);
+const marks = lib.setMark(lib.emptyMarks(), merged, 'fav', 1);
+const storage = lib.memoryStorage(); lib.saveMarks(storage, marks);
+const reloaded = lib.loadMarks(storage);
+const evil = lib.sanitizeMarks({'olx:q': {site: 'olx', id: 'q', title: 't', house: 5}}, {});
+return {labels: rows.map(lib.streetLabel), merged: [merged.street, merged.house, lib.streetLabel(merged)],
+        snap: reloaded.favs['otodom:a'].house, evil: evil.favs['olx:q'].house, same: lib.refreshSnapshots(reloaded, rows).changed};
+""")
+    assert out["labels"] == ["Hubska", "Hubska 12", None]       # no street, no label: a number alone means nothing
+    assert out["merged"] == ["Hubska", "12", "Hubska 12"]       # the merged row takes the number from the member that has one
+    assert out["snap"] == "12" and out["evil"] is None and out["same"] is False
+
+
 def test_the_map_iframe_is_built_only_from_checked_numbers():
     row = re.search(r"function mapRow\(r\) \{.*?\n  \}\n", APP_JS, re.S).group(0)
     assert "src = mapEmbedUrl(r.loc)" in row and "{ className: \"map-frame\", src," in row  # nothing but the checked URL reaches src

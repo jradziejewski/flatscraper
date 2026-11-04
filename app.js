@@ -61,6 +61,7 @@ function normalize(record) {
     rooms: num(record.rooms),
     district: record.district || null,
     street: record.street || null,
+    house: record.house || null, // building number, only ever shown together with the street
     photo: safeUrl(record.photo), // listing data comes from scraped sites: only http(s) ever reaches an <img src>
     ...parseLocation(record),
     city: record.city || null,
@@ -165,6 +166,7 @@ function toView(members) {
   const earliest = Math.min(...members.map(first));
   return {
     ...rep,
+    house: rep.house ?? ordered.find((m) => m.house && rep.street && streetsMatch(m.street, rep.street))?.house ?? null,
     firstSeen: Number.isFinite(earliest) ? earliest : null, // a flat is only "new" if its earliest listing is
     photo: ordered.find((m) => m.photo)?.photo ?? null, // the first portal (by priority) that has a picture
     loc: bestLocation(ordered),
@@ -278,13 +280,15 @@ function photoSources(url) {
 // shows one), "street" is the middle of the street (geocoded, no house number), "area" is a blurred circle of several km.
 // The map is an OpenStreetMap iframe that is only created when a map is opened: nothing is requested before that.
 
-const GEO_LEVELS = ["area", "street", "point"]; // worst to best
+const GEO_LEVELS = ["area", "street", "point", "address"]; // worst to best (the same order as aptsearch/models.py)
 const GEO_TEXT = {
+  address: "adres z opisu ogłoszenia",
   point: "lokalizacja z ogłoszenia",
   street: "środek ulicy, numer domu nieznany",
   area: "przybliżona okolica, portal ukrywa dokładny adres",
 };
-const MAP_SPAN = { point: [0.006, 0.0035], street: [0.006, 0.0035], area: [0.07, 0.04] }; // half-size of the view: [lon, lat] degrees
+// half-size of the view: [lon, lat] degrees. A building gets a close view, a blurred area a wide one.
+const MAP_SPAN = { address: [0.0025, 0.0015], point: [0.006, 0.0035], street: [0.006, 0.0035], area: [0.07, 0.04] };
 
 /** {lat, lon, geo} when all three are present and sane, else all null: a half-known location is no location. */
 function parseLocation(record) {
@@ -325,6 +329,11 @@ function mapLinks(loc) {
     google: `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`,
     osm: `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=${zoom}/${lat}/${lon}`,
   };
+}
+
+/** "Komedy 16": the street with its house number when the listing's text gave one. */
+function streetLabel(r) {
+  return r.street ? (r.house ? `${r.street} ${r.house}` : r.street) : null;
 }
 
 /** "Krzyki · Hubska — środek ulicy, numer domu nieznany." Says how exact the pin is. */
@@ -398,7 +407,7 @@ const emptyMarks = () => ({ favs: {}, hidden: {} });
 function snapshotOf(m, group, savedAt) {
   return {
     site: m.site, id: m.id, url: m.url, title: m.title, price: m.price, area: m.area, rooms: m.rooms,
-    district: m.district, street: m.street, photo: m.photo ?? null, lat: m.lat ?? null, lon: m.lon ?? null, geo: m.geo ?? null, firstSeen: m.firstSeen, lastSeen: m.lastSeen, group, savedAt,
+    district: m.district, street: m.street, house: m.house ?? null, photo: m.photo ?? null, lat: m.lat ?? null, lon: m.lon ?? null, geo: m.geo ?? null, firstSeen: m.firstSeen, lastSeen: m.lastSeen, group, savedAt,
   };
 }
 
@@ -430,7 +439,7 @@ function sanitizeMarks(favsRaw, hiddenRaw) {
       marks.favs[key] = {
         site: f.site, id: f.id, url: isText(f.url) ? f.url : "", title: f.title, price: numOrNull(f.price),
         area: numOrNull(f.area), rooms: numOrNull(f.rooms), district: isText(f.district) ? f.district : null,
-        street: isText(f.street) ? f.street : null, photo: isText(f.photo) ? safeUrl(f.photo) : null,
+        street: isText(f.street) ? f.street : null, house: isText(f.house) ? f.house : null, photo: isText(f.photo) ? safeUrl(f.photo) : null,
         ...parseLocation({ lat: numOrNull(f.lat), lon: numOrNull(f.lon), geo: f.geo }),
         firstSeen: numOrNull(f.firstSeen), lastSeen: numOrNull(f.lastSeen),
         group: Array.isArray(f.group) ? f.group.filter(isText) : [key], savedAt: numOrNull(f.savedAt) ?? 0,
@@ -550,7 +559,7 @@ function describeSince(ms, now) {
 
 if (typeof module !== "undefined") {
   module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
-    photoSources, activeFilterChips, parseLocation, bestLocation, mapEmbedUrl, mapLinks, mapCaption, GEO_LEVELS,
+    photoSources, activeFilterChips, parseLocation, bestLocation, mapEmbedUrl, mapLinks, mapCaption, streetLabel, GEO_LEVELS,
     isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON,
     prefsFromState, sanitizePrefs, loadPrefs, savePrefs, PREFS_KEY,
     markKey, emptyMarks, loadMarks, saveMarks, setMark, markState, refreshSnapshots, goneViews, capMarks, sanitizeMarks, MAX_MARKS, FAVS_KEY, HIDDEN_KEY, VIEWS };
@@ -763,7 +772,7 @@ if (typeof document !== "undefined") {
     if (!src || !links) return null;
     const tr = el("tr", { className: "map-row", id: mapRowId(rowKey(r)) });
     const box = el("div", { className: "map-box" });
-    box.append(el("p", { className: "map-note" }, mapCaption(r.loc, [r.district, r.street].filter(Boolean).join(" · "))));
+    box.append(el("p", { className: "map-note" }, mapCaption(r.loc, [r.district, streetLabel(r)].filter(Boolean).join(" · "))));
     // Not "no-referrer", unlike the photos: OpenStreetMap's tile servers refuse requests without a Referer (403 "Access blocked"),
     // and its usage policy asks for one. The default sends only this site's origin, never the path or any search text.
     const frame = el("iframe", { className: "map-frame", src, title: `Mapa: ${r.title || "ogłoszenie"}`, loading: "lazy", referrerPolicy: "strict-origin-when-cross-origin" });
@@ -791,7 +800,7 @@ if (typeof document !== "undefined") {
     const when = r.gone ? `ostatnio widziano: ${relativeTime(r.lastSeen, now)}` : relativeTime(r.firstSeen, now);
     const portals = portalChips(r);
     if (r.loc) portals.append(mapButton(r)); // no location, no button: the page never shows a map it cannot place
-    td.append(line, el("div", { className: "meta" }, [r.district, r.street, when].filter(Boolean).join(" · ")), portals);
+    td.append(line, el("div", { className: "meta" }, [r.district, streetLabel(r), when].filter(Boolean).join(" · ")), portals);
     return td;
   }
 
