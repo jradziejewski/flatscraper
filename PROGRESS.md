@@ -8,7 +8,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 - Repo: `jradziejewski/flatscraper` (public). Page: https://jradziejewski.github.io/flatscraper/ (GitHub Pages, branch `main`, folder `/`).
 - Config: `config.yaml` = Wrocław, max 5000 zł, min 30 m², min 2 rooms, all districts.
 
-## Status: everything below is built, tested and pushed (HEAD `352c3b6`)
+## Status: everything below is built, tested and pushed
 | Step | What |
 |---|---|
 | 1 | Skeleton, `Listing` model, CSV merge, config with filters |
@@ -28,8 +28,8 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 
 ## Open issue: the scheduled run does not fire (as of 2026-11-04 ~15:20 UTC)
 The user wants GitHub Actions to run the scrape by itself. It has **never** run on schedule:
-- Only one `scrape` run exists: the manual `workflow_dispatch` on 2026-11-03 21:59 UTC (before Steps 10-15). `GET .../actions/workflows/scrape.yml/runs?event=schedule` gives
-  `total_count: 0`. Slots missed: 06:00 UTC and 12:17 UTC (cron was moved to minute 17 on 2026-11-04 to avoid the busy top of the hour; no change).
+- Only two `scrape` runs exist, **both manual** (`workflow_dispatch`): 2026-11-03 21:59 UTC and 2026-11-04 15:17 UTC (the user's click). `GET .../actions/workflows/scrape.yml/runs?event=schedule`
+  still gives `total_count: 0` (checked 15:43 UTC; the 18:17 UTC slot was still to come). Slots missed: 06:00 UTC and 12:17 UTC (cron was moved to minute 17 on 2026-11-04 to avoid the busy top of the hour; no change).
 - Ruled out (public API): workflow state is `active`; repo is public, not a fork, not archived, default branch `main`; the deployed YAML is valid; manual dispatch
   works; no GitHub Actions incident in the status feed. Repo was created 2026-11-03 21:26 UTC.
 - GitHub community threads describe the same symptom with no staff answer or confirmed fix: #203473 (a new public repo whose first schedule run came ~8 h after
@@ -38,9 +38,11 @@ The user wants GitHub Actions to run the scrape by itself. It has **never** run 
   workflow (said to re-register schedules; unconfirmed); (3) a throwaway probe workflow on a frequent odd-minute cron (e.g. `*/15`) tells whether scheduling works for
   this repo at all (delete it afterwards); (4) GitHub Support ticket with the facts above; (5) dependable fallbacks if it stays dead: an external timer (e.g. cron-job.org)
   calling the `workflow_dispatch` API with a fine-grained token, or a systemd timer on the user's computer. The user prefers fixing GitHub Actions itself.
-- **Also do one manual run now** (Actions > scrape > Run workflow): the bot has **never run the new code** (street/house extraction, page reading, geocoding, the two caches).
-  Check the log shows `details:` and `geocode:` lines, no "Unknown district names", and that the commit includes `geocache.json` and `addresscache.json`.
-  The live CSV on GitHub is currently the one generated locally on 2026-11-04 (pushed in `352c3b6`).
+- **The new code does work on GitHub's runners** (verified from the manual run of 2026-11-04 15:17 UTC, commit `5aa2996`, which committed `listings.csv`, `geocache.json` and an
+  archive snapshot): rows 883 -> 897, no row lost its street, no building pin was downgraded (102 -> 106), `geocache.json` +4 entries (so Nominatim answers from
+  GitHub's IPs), `addresscache.json` unchanged (no new gaps to read). One Otodom row's street changed because the portal edited its own field (junk "Białowieska / Balkon" ->
+  "Powstańców Śląskich"): a fresh portal value wins by design. So the only thing broken is the scheduler itself. Bot commits use the message "listings: update from scheduled run"
+  even for manual runs. Remember `git pull --rebase` before pushing after a bot run.
 
 ## Map of the code
 ```
