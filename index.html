@@ -11,6 +11,7 @@
     --bg: #f3f2ee; --surface: #ffffff; --fg: #1b1d21; --muted: #5d626b; --line: #e3e1db; --line-strong: #cdcac2;
     --accent: #1a5fd0; --accent-fg: #ffffff; --accent-soft: #e5edfb; --star: #b7791f;
     --badge-bg: #d9f2e0; --badge-fg: #14532d; --warn: #9a5b00; --scrim: rgba(15, 17, 20, .45); --ph: #e8e6e0;
+    --visited: #6f747d; /* a link already opened: lighter than the title, readable on --surface (4.7:1) */
     --shadow: 0 1px 2px rgba(20, 22, 26, .06), 0 6px 18px rgba(20, 22, 26, .06);
     --r-lg: 14px; --r-md: 10px; --ctl: 40px;
   }
@@ -19,6 +20,7 @@
       --bg: #121418; --surface: #1b1e24; --fg: #e8e9ec; --muted: #9a9fa8; --line: #2b2f37; --line-strong: #3b404a;
       --accent: #7aa8ff; --accent-fg: #0b1220; --accent-soft: #22324f; --star: #f5c451;
       --badge-bg: #1d4a2c; --badge-fg: #b7efc9; --warn: #f0b24a; --scrim: rgba(0, 0, 0, .6); --ph: #262a31;
+      --visited: #8b909a;
       --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .3);
     }
   }
@@ -111,11 +113,15 @@
   td.main { min-width: 0; overflow-wrap: anywhere; }
   .line { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
   .title-link { color: var(--fg); font-weight: 600; font-size: 1rem; text-decoration: none; }
+  /* Already opened (the browser's own history, so it also counts visits made on the portal itself). Browsers only let :visited change
+     colours, never layout or text. Keep these rules BEFORE :hover, so a hovered visited link still lights up. */
+  a.title-link:visited { color: var(--visited); }
   a.title-link:hover { color: var(--accent); text-decoration: underline; }
   .badge { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .03em; background: var(--badge-bg); color: var(--badge-fg); vertical-align: 1px; }
   .meta { margin-top: 2px; color: var(--muted); font-size: .85rem; }
   .portals { margin-top: 6px; }
   .chip { display: inline-block; margin: 0 4px 2px 0; padding: 1px 9px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: .78rem; white-space: nowrap; color: var(--accent); text-decoration: none; }
+  a.chip:visited { color: var(--visited); }
   a.chip:hover { background: var(--accent-soft); border-color: var(--accent); }
   .chip.map-btn { background: var(--surface); font: inherit; font-size: .78rem; color: var(--fg); cursor: pointer; }
   .chip.map-btn:hover, .chip.map-btn[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent); }

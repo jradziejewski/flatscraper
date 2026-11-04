@@ -679,6 +679,23 @@ def test_a_map_button_exists_only_for_rows_with_a_location_and_is_a_real_button(
     assert "openMap" in APP_JS and "state.openMap = null" in APP_JS  # one open at a time, closed when its row disappears
 
 
+# ---------- already-opened links ----------
+
+def test_opened_links_are_greyed_by_the_browser_in_both_themes():
+    # a token for both colour schemes...
+    assert len(re.findall(r"--visited: #[0-9a-fA-F]{6};", INDEX_HTML)) == 2
+    # ...used for the title and the portal chips (the only links that open a listing)
+    assert re.search(r"a\.title-link:visited \{ color: var\(--visited\); \}", INDEX_HTML)
+    assert re.search(r"a\.chip:visited \{ color: var\(--visited\); \}", INDEX_HTML)
+    # browsers silently ignore :visited rules that change anything but colours, so only colour properties may appear in them
+    for rule in re.findall(r"[^{}]*:visited[^{}]*\{([^}]*)\}", INDEX_HTML):
+        props = {p.split(":")[0].strip() for p in rule.split(";") if p.strip()}
+        assert props <= {"color", "background-color", "border-color", "outline-color"}, props
+    # a visited link must still react to hover: its rule has to come first, equal specificity means the later rule wins
+    assert INDEX_HTML.index("a.title-link:visited") < INDEX_HTML.index("a.title-link:hover")
+    assert INDEX_HTML.index("a.chip:visited") < INDEX_HTML.index("a.chip:hover")
+
+
 # ---------- favourites and hidden listings ----------
 
 def view_rows(records):
