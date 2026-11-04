@@ -94,6 +94,18 @@ def test_photo_url_is_built_from_the_photo_id_and_name():
         assert mz.parse_node({**NODES[0], "photos": odd}).photo is None
 
 
+def test_house_number_comes_from_the_description_and_the_portal_street_wins():
+    with_street = {**NODES[1], "description": "Mieszkanie przy ulicy Hubskiej 12 na wrocławskim Krzyku. Dobry dojazd."}
+    listing = mz.parse_node(with_street)
+    assert (listing.street, listing.house) == ("Hubska", "12")           # the portal's street, plus the number from the text
+    other = mz.parse_node({**NODES[1], "description": "przy ul. Legnickiej 5, blisko centrum"})
+    assert (other.street, other.house) == ("Hubska", None)               # a different street in the text never replaces the portal's
+    gap = mz.parse_node({**NODES[2], "description": "Mieszkanie przy ul. Komedy 16 w Jagodnie."})
+    assert NODES[2]["location"].get("street") in (None, "")
+    assert (gap.street, gap.house) == ("Krzysztofa Komedy", "16")        # no street from the portal: the text fills the gap
+    assert mz.parse_node({**NODES[2], "description": None}).street is None
+
+
 def test_parse_node_unescapes_title():
     node = {**NODES[0], "advertisementText": "Spa &amp; Gym | Pierwszy najem"}
     assert mz.parse_node(node).title == "Spa & Gym | Pierwszy najem"

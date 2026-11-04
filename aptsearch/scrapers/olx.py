@@ -6,10 +6,11 @@ from urllib.parse import urlencode
 
 from .. import http
 from ..config import Config
+from ..address import resolve
 from ..geocode import clean_point
 from ..models import Listing
 from ..storage import utc_iso
-from ..text import city_slug, photo_url
+from ..text import city_slug, photo_url, plain_text
 
 log = logging.getLogger(__name__)
 
@@ -78,6 +79,9 @@ def parse_offer(offer: dict) -> Listing:
     loc = offer.get("location") or {}
     created = offer.get("created_time")
     lat, lon, geo = _location(offer)
+    city = (loc.get("city") or {}).get("name")
+    # OLX has no street field, but sellers write the address in the title or description ("przy ul. Komedy 16")
+    street, house = resolve(None, f"{plain_text(offer.get('title'))} . {plain_text(offer.get('description'))}", city)
     return Listing(
         site=SITE,
         id=str(offer["id"]),
@@ -87,11 +91,13 @@ def parse_offer(offer: dict) -> Listing:
         area_m2=float(area) if area else None,
         rooms=ROOMS.index(room) + 1 if room in ROOMS else None,
         district=(loc.get("district") or {}).get("name"),
+        street=street,
+        house=house,
         photo=_photo(offer),
         lat=lat,
         lon=lon,
         geo=geo,
-        city=(loc.get("city") or {}).get("name"),
+        city=city,
         posted_at=utc_iso(datetime.fromisoformat(created)) if created else None,
     )
 

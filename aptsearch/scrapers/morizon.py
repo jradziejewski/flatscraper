@@ -8,7 +8,8 @@ from urllib.parse import urlencode
 from .. import http
 from ..config import Config
 from ..models import Listing
-from ..text import city_slug, clean_street, photo_url
+from ..address import resolve
+from ..text import city_slug, clean_street, photo_url, plain_text
 
 log = logging.getLogger(__name__)
 
@@ -99,18 +100,23 @@ def parse_node(node: dict) -> Listing:
     area = node.get("area")
     rooms = _LEADING_INT.match(node.get("numberOfRooms") or "")
     where = (node.get("location") or {}).get("location") or []
+    city = where[1] if len(where) > 1 else None
+    title = html.unescape(node.get("advertisementText") or node.get("title") or "")  # site sends &amp;
+    # the list carries only the first ~300 characters of the description, but that is often where the address is
+    street, house = resolve(clean_street((node.get("location") or {}).get("street")), f"{title} . {plain_text(node.get('description'))}", city)
     return Listing(
         site=SITE,
         id=str(node["idOnFrontend"]),
         url=BASE + node["url"],
-        title=html.unescape(node.get("advertisementText") or node.get("title") or ""),  # site sends &amp;
+        title=title,
         price_pln=int(float(price["amount"])) if price.get("currency") == "PLN" and price.get("amount") else None,
         area_m2=float(area) if area else None,
         rooms=int(rooms.group()) if rooms else None,
         district=where[2] if len(where) > 2 else None,
-        street=clean_street((node.get("location") or {}).get("street")),
+        street=street,
+        house=house,
         photo=_photo(node),
-        city=where[1] if len(where) > 1 else None,
+        city=city,
         posted_at=node.get("addedAt"),
     )
 

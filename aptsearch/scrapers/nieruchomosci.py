@@ -8,6 +8,7 @@ from urllib.parse import quote
 from .. import http
 from ..config import Config
 from ..models import Listing
+from ..address import resolve
 from ..text import clean_street, photo_url
 
 log = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ def parse_offer(offer: dict, tiles: dict) -> Listing:
     district = spans[0] if spans and spans[0].casefold() != (city or "").casefold() else None
     price = offer.get("price")
     area = (item.get("floorSize") or {}).get("value")
+    street, house = resolve(clean_street((item.get("address") or {}).get("streetAddress")), title, city)
     return Listing(
         site=SITE,
         id=_ID.search(url).group(1),
@@ -68,7 +70,8 @@ def parse_offer(offer: dict, tiles: dict) -> Listing:
         area_m2=float(area) if area else None,
         rooms=item.get("numberOfRooms") or None,
         district=district,
-        street=clean_street((item.get("address") or {}).get("streetAddress")),
+        street=street,
+        house=house,
         photo=photo_url(offer.get("image")),
         city=city,
     )

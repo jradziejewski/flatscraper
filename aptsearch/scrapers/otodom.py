@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from .. import http
 from ..config import Config
 from ..models import Listing
+from ..address import resolve
 from ..text import clean_street, photo_url
 
 log = logging.getLogger(__name__)
@@ -69,18 +70,23 @@ def _photo(item: dict) -> str | None:
 def parse_item(item: dict) -> Listing:
     price = item.get("totalPrice") or {}
     area = item.get("areaInSquareMeters")
+    city = _location(item, "city_or_village")
+    title = item.get("title") or ""
+    # the list has no description, but the title sometimes holds the address ("Buforowa 89 - mieszkania na wynajem")
+    street, house = resolve(clean_street((((item.get("location") or {}).get("address") or {}).get("street") or {}).get("name")), title, city)
     return Listing(
         site=SITE,
         id=str(item["id"]),
         url=f"{BASE}/pl/oferta/{item['slug']}",
-        title=item.get("title") or "",
+        title=title,
         price_pln=int(price["value"]) if price.get("currency") == "PLN" and price.get("value") is not None else None,
         area_m2=float(area) if area is not None else None,
         rooms=ROOM_VALUES.get(item.get("roomsNumber")),
         district=_location(item, "district"),
-        street=clean_street((((item.get("location") or {}).get("address") or {}).get("street") or {}).get("name")),
+        street=street,
+        house=house,
         photo=_photo(item),
-        city=_location(item, "city_or_village"),
+        city=city,
         posted_at=item.get("dateCreated"),
     )
 

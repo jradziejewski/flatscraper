@@ -40,6 +40,16 @@ def test_photo_comes_from_the_offer_image():
     assert no.parse_offer({k: v for k, v in offer.items() if k != "image"}, {}).photo is None
 
 
+def test_title_fills_a_missing_street_and_adds_the_house_number():
+    offer = no.extract_offers(HTML)[0]  # this tile has no streetAddress
+    tiles = {offer["url"]: ("Mieszkanie przy ul. Hubskiej 12", [])}
+    gap = no.parse_offer(offer, tiles)
+    assert (gap.street, gap.house) == ("Hubska", "12")
+    anchor = no.extract_offers(HTML)[1]  # streetAddress "Obornicka"
+    known = no.parse_offer(anchor, {anchor["url"]: ("ul. Obornicka 28, Różanka", [])})
+    assert (known.street, known.house) == ("Obornicka", "28")
+
+
 def test_extract_offers_requires_ld_json():
     assert len(no.extract_offers(HTML)) == 4
     with pytest.raises(ValueError):

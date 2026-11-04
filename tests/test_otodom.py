@@ -41,6 +41,17 @@ def test_photo_is_the_first_small_image_and_optional(ads):
         assert otodom.parse_item({**ads["items"][0], "images": odd}).photo is None
 
 
+def test_title_can_fill_a_missing_street_and_add_a_house_number(ads):
+    item = ads["items"][0]
+    bare = {**item, "location": {**item["location"], "address": {"street": None}}}
+    gap = otodom.parse_item({**bare, "title": "Buforowa 89 - mieszkania na wynajem"})
+    assert (gap.street, gap.house) == ("Buforowa", "89")
+    assert otodom.parse_item(bare).street is None                         # nothing in the title: still a gap
+    known = otodom.parse_item({**item, "title": "przy Białowieskiej 7, garaż"})
+    assert (known.street, known.house) == ("Białowieska", "7")           # the portal's street, the title's number
+    assert otodom.parse_item({**item, "title": "Mieszkanie 45m2 przy ul. Legnickiej 3"}).street == "Białowieska"  # the portal wins
+
+
 def test_extract_search_ads_from_html(ads):
     page = {"props": {"pageProps": {"data": {"searchAds": ads}}}}
     html = f'<html><script id="__NEXT_DATA__" type="application/json">{json.dumps(page)}</script></html>'

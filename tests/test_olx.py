@@ -64,6 +64,17 @@ def test_odd_map_values_are_ignored_not_fatal():
     assert olx.parse_offer({**base, "map": {k: v for k, v in base["map"].items() if k != "radius"}}).geo == "area"
 
 
+def test_street_and_house_come_from_the_description_because_olx_has_no_street_field():
+    html_text = ("<p><b>Do wynajęcia</b> 2-pokojowe mieszkanie</p><p>Lokalizacja: ul.&nbsp;Racławickiej 95 we Wrocławiu.</p>"
+                 "<p>Blisko ul. Legnickiej.</p>")
+    listing = olx.parse_offer({**OFFERS[0], "description": html_text})
+    assert (listing.street, listing.house) == ("Racławicka", "95")  # canonical name, tags and &nbsp; handled
+    assert olx.parse_offer({**OFFERS[0], "description": "<p>ładne mieszkanie</p>"}).street is None
+    assert olx.parse_offer({k: v for k, v in OFFERS[0].items() if k != "description"}).street is None
+    title_only = olx.parse_offer({**OFFERS[0], "title": "Kawalerka ul.Braterska", "description": None})
+    assert (title_only.street, title_only.house) == ("Braterska", None)
+
+
 def test_posted_at_is_converted_to_utc():
     offer = {**OFFERS[0], "created_time": "2026-10-23T14:34:54+02:00"}
     assert olx.parse_offer(offer).posted_at == "2026-10-23T12:34:54Z"
