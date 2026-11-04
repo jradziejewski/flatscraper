@@ -46,14 +46,21 @@ For a new step, show the file structure first, then implement.
 
 ## Viewing the listings
 
-- `index.html` + `app.js` is a static, Polish-language page served by GitHub Pages: search, filters, sortable columns, "NOWE" badge for listings first seen in the last 24 h, card layout on phones. Live at https://jradziejewski.github.io/flatscraper/.
+- `index.html` + `app.js` is a static, Polish-language page served by GitHub Pages: search, filters, sort, "NOWE" badge for listings first seen in the last 24 h. Desktop is a clean list (photo, title with a muted
+  "district · street · added" line and the portals, price with zł/m², m², rooms, ★ ✕); phones get cards with the photo on top.
+  The toolbar (search, "Filtry" button with an active-filter count, sort, Aktualne/Ulubione/Ukryte tabs) is always visible and sticky
+  on desktop; the other filters live in a panel (a dropdown on desktop, a bottom sheet on phones), and active filters show as
+  removable chips under the toolbar. No web fonts or libraries; light and dark theme follow the system. Live at https://jradziejewski.github.io/flatscraper/.
 - **Duplicates:** the same flat is often listed on several portals, so the page merges those rows ("Łącz duplikaty", on by default; off shows every listing). Strict rule (`groupDuplicates` in `app.js`): same price, area (rounded to a whole m²), rooms and district on different portals, plus evidence of the same place, which means the same street (one name's distinctive words contained in the other's, so "Sikorskiego" matches "gen. Władysława Sikorskiego"). A row without a street (OLX) matches only if its title or URL names the other row's street. Different streets never merge, two listings from one portal are never combined, and a merged row links to every portal's listing. Nothing is removed from the data; merging is display only. It is the only place that decides what counts as the same flat, so alerts or exports would need the same rule.
-- **Photos:** every row starts with a 96×72 thumbnail (`photoCell` in `app.js`); on phones it sits beside the title in the card.
-  The image is lazy-loaded, sent with `referrerpolicy="no-referrer"`, and its `src` only ever gets a `safeUrl` value. The box has a
-  fixed size, so a missing or dead image (portals rotate CDN URLs) leaves an empty grey box and the title link keeps working. A merged
-  row shows the picture of the first portal (by priority) that has one. Favourites keep the photo URL in their snapshot.
-  Portals' thumbnails: Otodom `images[0].small`, Morizon `photos[0]` built into its `3x2_s` thumb URL, nieruchomosci ld+json `image`,
-  OLX `photos[0].link` with `{width}x{height}` = 320x240. The page hot-links the portals' CDNs; nothing is copied into this repo.
+- **Photos:** `photoCell` in `app.js`. 120×90 on desktop; full-width 3:2 (max 230 px) at the top of the phone card, with NOWE and ★ ✕
+  overlaid. `photoSources` gives each `<img>` a `srcset` with a larger variant for Otodom, OLX and Morizon (same CDN path, bigger size
+  token), so phones fetch a sharp image and desktop the small one; nieruchomosci has one size. The image is lazy-loaded, sent with
+  `referrerpolicy="no-referrer"`, and its `src`/`srcset` only come from `photoSources` (which runs `safeUrl`). The box has a fixed
+  size, so a missing or dead image (portals rotate CDN URLs) leaves a plain placeholder and the title link keeps working; if only the
+  larger variant fails, the stored one is tried first. A merged row shows the picture of the first portal (by priority) that has one.
+  Favourites keep the photo URL in their snapshot. Scraped thumbnails: Otodom `images[0].small`, Morizon `photos[0]` built into its
+  `3x2_s` thumb URL, nieruchomosci ld+json `image`, OLX `photos[0].link` with `{width}x{height}` = 320x240. The page hot-links the
+  portals' CDNs; nothing is copied into this repo.
 - **Per-device features** (browser `localStorage`/`sessionStorage`, keys `flatscraper:v1:*`; nothing is sent anywhere and nothing is shared between devices; every access is wrapped in try/catch and falls back to memory when storage is blocked):
   - *New since last visit*: the baseline is the newest `last_seen` in the data she saw last time (not the wall clock, because the raw CSV is cached for ~5 min), fixed for the tab session so a refresh keeps the badges. First visit: falls back to "first seen in the last 24 h".
   - *Remembered filters and sort* (not the search text; a remembered "Ukryte" view is not restored). Values are sanitized against the current data on load.
