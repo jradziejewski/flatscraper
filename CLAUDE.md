@@ -55,8 +55,14 @@ For a new step, show the file structure first, then implement.
   that are rooms, areas or ranges. A title starting with "<Street> <number>" needs no cue but must be in the base form. `resolve()`: the portal's street
   always wins and the text only adds the number; when the portal has none, the text's street fills the gap. Only Wrocław has a list. A wrong street is worse
   than none (it misleads the map and the duplicate merging), so every rule errs towards finding nothing.
+  **Listing pages** (`aptsearch/details.py`): rows still without a street get their own page read once (Otodom `ad.title`/`description`, Morizon
+  `propertyData.description` and the page title, nieruchomosci's description block and a title that is the portal's address line, OLX's single-offer API
+  for rows the list no longer returns). Only those fields: pages also hold the agency's office, the portal's company address and nearby parks. The answer,
+  including "nothing", is cached in `addresscache.json` (entries of gone listings are dropped); 25 pages per run, 2 s apart, failures counted per portal;
+  `python -m aptsearch.details` backfills. Streets in running text near a landmark (school, shop, stop, park), in a contact block (phone label, phone
+  number, postal code) or named after "agency" are not the flat's. Bare street names in titles are not trusted (too many ordinary words).
 - Filters live in `config.yaml` (`city`, `max_price`, `min_area`, `min_rooms`, `districts`). Only matching listings are saved.
-- A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv`, `geocache.json` and `archive/` only if they changed (`permissions: contents: write`).
+- A GitHub Actions workflow runs on cron (e.g. 07:00, 13:00, 19:00 Europe/Warsaw) and commits `listings.csv`, `geocache.json`, `addresscache.json` and `archive/` only if they changed (`permissions: contents: write`).
 
 ## Scraping rules
 

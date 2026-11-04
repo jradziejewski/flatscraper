@@ -8,7 +8,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 - Repo: `jradziejewski/flatscraper` (public). Page: https://jradziejewski.github.io/flatscraper/ (GitHub Pages, branch `main`, folder `/`).
 - Config: `config.yaml` = Wrocław, max 5000 zł, min 30 m², min 2 rooms, all districts.
 
-## Status: everything below is built and tested. Steps 1-12c are pushed; Step 13 (map) is committed locally, **not pushed yet**
+## Status: everything below is built and tested. Everything up to the opened-listing styling (`f6d054f`) is pushed; Step 15 (street + house number from text) is committed locally, **not pushed yet**
 | Step | What |
 |---|---|
 | 1 | Skeleton, `Listing` model, CSV merge, config with filters |
@@ -20,7 +20,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 | 10 | `street` column + duplicate merging across portals on the page (Strict) |
 | 11 | Per-device page features: new since last visit, remembered filters, favourites/hide with undo |
 | 12 | `photo` column (thumbnail URL from each portal's list data) + thumbnails on the page |
-| 15A | Street + house number from titles and descriptions (`streets.py`, `address.py`), building-level map pins (`geo=address`); detail pages for gaps (15B) not built yet |
+| 15 | Street + house number from titles, descriptions and the listing's own page (`streets.py`, `address.py`, `details.py`), building-level map pins (`geo=address`) |
 | 13 | Map for each flat: `lat/lon/geo` columns, OLX coordinates, street geocoding through OSM (`geocode.py`, `geocache.json`), expandable OSM map on the page |
 | 12b | Page revamp: toolbar + filter panel/bottom sheet + removable filter chips, clean desktop list, phone cards with the photo on top, design tokens, larger-photo `srcset`; desktop thumbnails 180x135 (`.thumb` in `index.html` and `PHOTO_SIZES` in `app.js` must agree, a test checks it) |
 
@@ -39,12 +39,13 @@ aptsearch/storage.py     load/merge/save, prune (STALE_AFTER 3 days), save_snaps
 aptsearch/districts.py   WROCLAW table (59 neighbourhoods) + normalize_district(); unknown -> None, logged by main.py
 aptsearch/streets.py     Wrocław street list (data/streets_wroclaw.json from OSM) + stem matcher; `python -m aptsearch.streets` refreshes it
 aptsearch/address.py     find_address / resolve: street + house number from text
+aptsearch/details.py     reads the listing's own page for rows still without a street (per-portal fields, addresscache.json, `python -m aptsearch.details`)
 aptsearch/geocode.py     clean_point, load/save_cache (geocache.json), lookup + fill_street_coordinates (Nominatim), `python -m aptsearch.geocode` backfill
 aptsearch/text.py        city_slug, clean_street, photo_url (http(s) only)
 aptsearch/http.py        get() (urllib, browser UA) and get_curl() (OLX only: urllib gets 403)
 aptsearch/scrapers/      otodom, nieruchomosci, morizon, olx; SCRAPERS list in __init__.py
 index.html, app.js       the page; pure functions exported for node tests, DOM code only in a browser
-tests/                   275 tests (pytest); test_site.py drives app.js through node
+tests/                   308 tests (pytest); test_site.py drives app.js through node
 .github/workflows/scrape.yml
 archive/YYYY-MM/*.csv    immutable snapshots of new listings
 ```
@@ -109,6 +110,23 @@ archive/YYYY-MM/*.csv    immutable snapshots of new listings
 - **Known limits of the extractor:** a title that starts with an inflected surname and has no cue ("Madalińskiego 57, garaż") is not guessed; a street only
   named in a landmark list is skipped; `merge()` never erases a street, so after changing the extraction rules, regenerate from a clean CSV (restore it
   with git, rerun `main.py`) rather than expecting old wrong streets to heal.
+
+- **Page reading (15B), measured 2026-11-04:** streets 55% -> **88%** of rows (778/883; Otodom 80 -> 94%, Morizon 86 -> 99%, nieruchomosci 93 -> 97%, OLX 0 -> 73%),
+  locations 81% -> **94%**, 102 buildings. The 105 rows still without a street are mostly OLX (88): a sample of 12 of them were all LIVE offers whose text simply
+  names no street (estate names like "Browary Wrocławskie"), so "every listing has its street in the text" is not true for OLX. nieruchomosci pages also say
+  "Lokalizacja przybliżona" (the portal hides the address); Morizon's own `propertyData.location.street` is null for its gaps.
+- **Readers look at specific fields, never "everything on the page"** (a scan of all strings produced these wrong streets): Otodom `ad.owner.address` and
+  `ad.agency.address` are the AGENCY's office; Morizon's page holds its own company address in a consent text and "Zieleniec przy ul. ..." (a park) in
+  `environment`; nieruchomosci's ld+json has the agent's address and its description ends with the agency's office in Polish AND English
+  ("MAGNUS Real Estate Agency, Wrocław, ul. Krakowska 52"). Also landmarks ("dojazd do International High School przy ul. Racławickiej"). The extractor skips
+  those: landmark words within 3 words and one sentence, a phone label / phone number / postal code in the 40 characters before the cue, "agency" and
+  "real estate". A broad "agency word nearby" rule would have thrown out good streets ("bez pośredników", "nieruchomości" are everyday words).
+- **Bare street names in titles are NOT used** ("Mieszkanie 2 pokojowe Waniliowa"): on rows with a known street, 22 of 199 such hits contradicted it ("Rynek",
+  "Nowa" from "NOWA CENA", "Mieszczańska" from the area "Kępa Mieszczańska"). Possible later: corroborate with a second source.
+- **Robustness:** page-read failures are counted per portal (three dead OLX offers once starved Otodom because rows go in key order); a 404/410 is cached as
+  "nothing to read"; for OLX curl only says "exit 22", so the real status is fetched once after a failure (410 removed, 200 live, verified). 25 pages per run.
+- Otodom detail pages also carry coordinates (`ad.location.coordinates`, with `mapDetails.radius` 0 = exact, 500 = approximate): not used yet, a candidate
+  for the 14 percent of rows still without a precise pin.
 
 ## How we work (user preferences)
 - **One step at a time.** Show the file layout first, plan, get approval, implement, then stop and wait. Plan mode is used for this;
