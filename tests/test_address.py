@@ -25,6 +25,9 @@ from aptsearch.address import Address, find_address, parse_house, resolve
     ("Mieszkanie 2 pokoje, ul. Hubska, obok ul. Legnickiej 5", ("Hubska", None)),
     ("w pobliżu ul. Legnickiej 5 znajduje się ul. Hubska 7", ("Hubska", "7")),
     ("Szkoła i sklepy są blisko. Mieszkanie przy ul. Hubskiej 12", ("Hubska", "12")),   # a landmark in an earlier sentence does not count
+    ("NAJEM, bez pośredników – mieszkanie przy ul. Hubskiej 12", ("Hubska", "12")),      # "pośredników" is ordinary text, not a contact block
+    ("Zapraszam do wynajęcia nieruchomości położonej przy ul. Hubskiej 12", ("Hubska", "12")),
+    ("Mieszkanie przy ul. Hubskiej 12. Kontakt: tel. 600 123 456", ("Hubska", "12")),    # the contact block comes AFTER the address
     ("Mieszkanie przy ul. Hubskiej 12, blisko szkoły i parku", ("Hubska", "12")),        # ...nor one that comes after the street
     ("Apartament z miejscem parkingowym, ul. Opoczyńska", ("Opoczyńska", None)),         # a parking space is not a park
     ("Mieszkanie 4 piętro, 60 metrów, ul. Hubska 3", ("Hubska", "3")),                     # "metrów" is not the metro
@@ -39,6 +42,11 @@ def test_finds_the_street_and_house_the_text_names(text, expected):
     "Mieszkanie blisko ul. Legnickiej, tramwaj pod domem",     # only a neighbour is named
     "Dobry dojazd do American School of Wrocław, International High School przy ul. Racławickiej.",   # a school, not the flat
     "Przystanek tramwajowy przy ul. Legnickiej, sklep Biedronka przy ul. Hubskiej 3",                # shops and stops are landmarks
+    # the agency's office in the footer of real listings (Polish and English copies of the same text)
+    "Licencja zawodowa nr 23780. kom: ; tel: Biuro Nieruchomości MAGNUS, Wrocław, ul. Krakowska 52 nr lok.1 Powyższa oferta",
+    "License no. 23780. mobile: ; tel: MAGNUS Real Estate Agency, Wrocław, ul. Krakowska 52, room no. 1 The above offer",
+    "Marta Górecka Perfect Place Tel. kom.: 72*******76 50-541 Wrocław, ul. Krakowska 52 lok 6, 50-425 Wrocław",
+    "Zapraszam do kontaktu: 600 123 456, ul. Hubska 5",                                                 # a phone number right before the address
     "Jasne 3-pokojowe mieszkanie z balkonem",                  # "Jasne" resembles the street Jasna, but it is a room count and no cue
     "Piękne 3-pokojowe mieszkanie na Jagodnie",
     "Mieszkanie w Głównej części miasta",                      # a street-like word without a cue word

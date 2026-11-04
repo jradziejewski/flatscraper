@@ -31,9 +31,13 @@ LANDMARKS = (
     r"blisko|bliskość|obok|pobliż\w*|niedaleko|nieopodal|sąsiedztw\w*|dojazd\w*|skrzyżowani\w*|róg|rogu|między|"
     r"szkoł\w*|school|przedszkol\w*|żłob\w*|uczelni\w*|uniwersytet\w*|politechnik\w*|szpital\w*|przychodni\w*|apte\w*|"
     r"sklep\w*|market\w*|biedronk\w*|lidl|żabk\w*|kaufland|galeri\w*|park(?:u|owi|iem|i|y|ach|ów)?(?![\w])|kości(?:oł|ół)\w*|kościele|stacj\w*|przystan\w*|tramwaj\w*|"
-    r"autobus\w*|metro(?![\w])|dworc\w*|dworzec|lotnisk\w*|biur[ao]|urzęd\w*|urząd"
+    r"autobus\w*|metro(?![\w])|dworc\w*|dworzec|lotnisk\w*|biur[ao]|urzęd\w*|urząd|agenc\w*|agency|real estate"
 )
 NEARBY = re.compile(rf"(?:{LANDMARKS})[^\w.!?]{{0,3}}(?:\w+[^\w.!?]{{1,3}}){{0,3}}$", re.IGNORECASE)
+# The agency's own address, usually in the footer of a long description: "... Tel. kom.: 72*******76 50-541 ul. Krakowska 52".
+# A phone label, a phone number (masked or not) or a postal code in the 40 characters before the cue marks a contact block, not the flat.
+# (A bare word like "pośredników" or "nieruchomości" proved too common in real listings to count: only these shapes do.)
+CONTACT = re.compile(r"(?:\b(?:tel|kom|mobile|phone|fax)\b|\d{2}-\d{3}|\*{2,}|\b\d{3}[ -]\d{3}[ -]\d{3}\b)[^\n]{0,40}$", re.IGNORECASE)
 # words after a number that show it is not a house number ("Komedy 45 m2", "ul. Hubska 3 pokoje")
 UNITS = re.compile(r"(?:m\b|m2|m²|mkw|pok\w*|zł|pln|piętr\w*|p\.|osob\w*|os\.|mies\w*|lat\w*|dni|kg|%)", re.IGNORECASE)
 HOUSE = re.compile(r"[ \t]*(\d{1,3}[A-Za-z]?)(?![A-Za-z0-9])(?:[ \t]*/[ \t]*\d{1,3}[A-Za-z]?)?")
@@ -116,7 +120,7 @@ def _after_cue(text: str, index: StreetIndex) -> list[tuple[Address, bool]]:
             # only when it has a house number or the text says the flat is "przy"/"na" it
             if kind in ("Plac", "Osiedle") and not house and not re.search(r"\b(?:przy|na)\s*$", text[max(0, cue.start() - 12) : cue.start()], re.IGNORECASE):
                 continue
-            strong = not NEARBY.search(text[max(0, cue.start() - 70) : cue.start()])
+            strong = not NEARBY.search(text[max(0, cue.start() - 70) : cue.start()]) and not CONTACT.search(text[max(0, cue.start() - 45) : cue.start()])
             found.append((Address(street, house), strong))
             break
     return found
