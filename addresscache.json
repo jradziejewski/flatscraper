@@ -38,6 +38,7 @@
   "Legnicka",
   "52A"
  ],
+ "morizon:mzn2048338892": null,
  "nieruchomosci:26894261": null,
  "nieruchomosci:27021854": null,
  "nieruchomosci:27081942": [
@@ -63,6 +64,7 @@
   "Tadeusza Kościuszki",
   null
  ],
+ "nieruchomosci:27107028": null,
  "olx:1027369622": null,
  "olx:1051277157": [
   "Jesionowa",
@@ -523,5 +525,9 @@
   "Legnicka",
   "52A"
  ],
- "otodom:68604373": null
+ "otodom:68604373": null,
+ "otodom:68605627": null,
+ "otodom:68605937": null,
+ "otodom:68606080": null,
+ "otodom:68606083": null
 }

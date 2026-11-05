@@ -35,6 +35,7 @@
   51.128173,
   17.045726
  ],
+ "wrocław|antoniego słonimskiego|62b": null,
  "wrocław|arbuzowa": [
   51.156083,
   16.897245
@@ -79,9 +80,17 @@
   51.122127,
   17.048825
  ],
+ "wrocław|benedyktyńska": [
+  51.115304,
+  17.053249
+ ],
  "wrocław|bernarda pretficza|53": [
   51.092726,
   17.004694
+ ],
+ "wrocław|bernardyńska": [
+  51.109425,
+  17.041645
  ],
  "wrocław|bezpieczna": [
   51.141612,
@@ -297,6 +306,10 @@
   51.137295,
   16.980396
  ],
+ "wrocław|działdowska": [
+  51.13015,
+  17.10332
+ ],
  "wrocław|dąbrowskiego": [
   51.099138,
   17.04019
@@ -333,6 +346,10 @@
   51.095545,
   17.040834
  ],
+ "wrocław|gajowa|70": [
+  51.088773,
+  17.040657
+ ],
  "wrocław|gajowicka": [
   51.096524,
   17.013004
@@ -362,6 +379,10 @@
   17.040979
  ],
  "wrocław|gen. józefa hallera": null,
+ "wrocław|gen. józefa kustronia": [
+  51.051643,
+  17.013175
+ ],
  "wrocław|gen. kazimierza pułaskiego": [
   51.100396,
   17.045687
@@ -426,6 +447,10 @@
  "wrocław|grabiszyńska": [
   51.095292,
   16.98328
+ ],
+ "wrocław|grabiszyńska|204d": [
+  51.096337,
+  16.989228
  ],
  "wrocław|grabiszyńska|91": [
   51.101536,
@@ -571,6 +596,10 @@
   51.079855,
   17.034273
  ],
+ "wrocław|jackowskiego": [
+  51.104481,
+  17.108248
+ ],
  "wrocław|jana kilińskiego": [
   51.119238,
   17.039692
@@ -664,6 +693,14 @@
  "wrocław|kardynała stefana wyszyńskiego": [
   51.118577,
   17.051183
+ ],
+ "wrocław|karmelkowa": [
+  51.066702,
+  16.974016
+ ],
+ "wrocław|karola miarki": [
+  51.126467,
+  17.052561
  ],
  "wrocław|karola miarki|4": [
   51.125462,
@@ -790,6 +827,10 @@
   51.156589,
   17.130962
  ],
+ "wrocław|ks. konstantego damrota": [
+  51.126173,
+  17.054513
+ ],
  "wrocław|ks. szczepana zielińskiego": [
   51.125504,
   16.953632
@@ -829,6 +870,10 @@
  "wrocław|kurlandzka|33": [
   51.140852,
   17.136446
+ ],
+ "wrocław|kustronia": [
+  51.051643,
+  17.013175
  ],
  "wrocław|kuźnicza": [
   51.11195,
@@ -890,6 +935,10 @@
   51.126255,
   16.949765
  ],
+ "wrocław|maksymiliana jackowskiego": [
+  51.104481,
+  17.108248
+ ],
  "wrocław|marca polo": [
   51.111176,
   17.116638
@@ -946,6 +995,10 @@
  "wrocław|mglista": [
   51.07032,
   16.993265
+ ],
+ "wrocław|miarki": [
+  51.126467,
+  17.052561
  ],
  "wrocław|michalczyka": [
   51.118879,
@@ -1170,6 +1223,10 @@
   51.113926,
   17.053941
  ],
+ "wrocław|piwna|17": [
+  51.113737,
+  17.054599
+ ],
  "wrocław|piękna": [
   51.084457,
   17.05752
@@ -1231,6 +1288,10 @@
  "wrocław|poświęcka|22": [
   51.158463,
   17.039556
+ ],
+ "wrocław|przedmiejska": [
+  51.120019,
+  16.998024
  ],
  "wrocław|przejazdowa": [
   51.147691,
@@ -1371,6 +1432,10 @@
  "wrocław|skarbowców|108": [
   51.068582,
   16.991504
+ ],
+ "wrocław|smardzowska": [
+  51.054318,
+  17.040863
  ],
  "wrocław|smardzowska 7a": [
   51.061748,
@@ -1609,6 +1674,14 @@
   51.079802,
   17.024414
  ],
+ "wrocław|wilcza": [
+  51.089299,
+  17.071645
+ ],
+ "wrocław|wilcza|7": [
+  51.088729,
+  17.069027
+ ],
  "wrocław|wincentego stysia": [
   51.101549,
   17.022187
@@ -1636,6 +1709,14 @@
  "wrocław|worcella": [
   51.103972,
   17.045025
+ ],
+ "wrocław|wołowska": [
+  51.144899,
+  17.02411
+ ],
+ "wrocław|wołowska|5": [
+  51.145725,
+  17.026065
  ],
  "wrocław|wybrzeże stanisława wyspiańskiego": [
   51.109839,
@@ -1701,10 +1782,19 @@
   51.098099,
   17.020193
  ],
+ "wrocław|ziemowita|11c": [
+  51.111677,
+  17.016378
+ ],
  "wrocław|zwycięska": [
   51.058654,
   17.012986
  ],
+ "wrocław|zwycięska 56": [
+  51.057533,
+  17.008549
+ ],
+ "wrocław|zwycięska 56|56": null,
  "wrocław|zwycięska|3": [
   51.06099,
   16.999532
@@ -1764,6 +1854,10 @@
  "wrocław|św. mikołaja": [
   51.111376,
   17.029049
+ ],
+ "wrocław|świdnicka|45": [
+  51.102099,
+  17.029211
  ],
  "wrocław|żelazna": [
   51.096933,
