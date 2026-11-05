@@ -34,6 +34,15 @@
   h1 { font-size: 1.5rem; letter-spacing: -.01em; margin: 0 0 2px; }
   .sub { color: var(--muted); margin: 0 0 6px; font-size: .9rem; }
   .sub .warn { color: var(--warn); font-weight: 600; }
+  .btn.small { min-height: 30px; padding: 0 12px; margin-left: 6px; font-size: .85rem; }
+  .btn:disabled { opacity: .6; cursor: progress; }
+  .link-btn { all: unset; cursor: pointer; margin-left: 8px; color: var(--accent); font-size: .82rem; text-decoration: underline; }
+  .link-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .token-form { max-width: 520px; margin: 8px 0 12px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); }
+  .token-form .hint { margin: 8px 0; color: var(--muted); font-size: .82rem; }
+  .token-form .token-error { margin: 0 0 8px; color: var(--warn); font-size: .85rem; font-weight: 600; }
+  .token-form .token-error:empty { display: none; }
+  .token-form .panel-actions { position: static; margin: 0; padding: 0; border: 0; background: none; } /* not the filter sheet's sticky bar on phones */
   a { color: var(--accent); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -41,11 +50,11 @@
 
   /* ---------- controls: one height, one border, one radius ---------- */
   button, input, select { font: inherit; color: inherit; }
-  input[type=search], input[type=number], select, .btn {
+  input[type=search], input[type=number], input[type=password], select, .btn {
     min-height: var(--ctl); padding: 0 12px; background: var(--surface);
     border: 1px solid var(--line-strong); border-radius: var(--r-md);
   }
-  input[type=search], input[type=number], select { width: 100%; }
+  input[type=search], input[type=number], input[type=password], select { width: 100%; }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; white-space: nowrap; }
   .btn:hover { border-color: var(--accent); }
   .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
@@ -207,7 +216,23 @@
 <body>
 <main>
   <h1>Mieszkania do wynajęcia<span id="city"></span></h1>
-  <p class="sub"><span id="updated"></span></p>
+  <p class="sub"><span id="updated"></span>
+    <button id="refresh" class="btn small" type="button" hidden>Aktualizuj teraz</button>
+    <span id="refreshStatus" role="status" aria-live="polite"></span>
+    <button id="tokenForget" class="link-btn" type="button" hidden>Zapomnij token</button>
+  </p>
+  <form id="tokenForm" class="token-form" autocomplete="off" hidden>
+    <label class="field">Token GitHub (zapisany tylko w tej przeglądarce)
+      <input id="tokenInput" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
+    </label>
+    <p class="hint">Utwórz <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">token o ograniczonym zakresie</a>:
+      tylko repozytorium <code>jradziejewski/flatscraper</code>, uprawnienie <strong>Actions: Read and write</strong>. Strona wysyła go wyłącznie do api.github.com.</p>
+    <p id="tokenError" class="token-error" role="alert"></p>
+    <div class="panel-actions">
+      <button id="tokenCancel" class="btn" type="button">Anuluj</button>
+      <button id="tokenSave" class="btn primary" type="submit">Zapisz i aktualizuj</button>
+    </div>
+  </form>
 
   <div id="status">
     <p id="status-text">Ładowanie…</p>

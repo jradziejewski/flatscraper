@@ -557,8 +557,61 @@ function describeSince(ms, now) {
   return formatDate(ms);
 }
 
+// ---------- manual update: start the scrape workflow from the page ----------
+// A static page cannot hold a secret, so the owner pastes a fine-grained token (this repo only, "Actions: read and write")
+// once per device. It lives in this browser's localStorage and is only ever sent to api.github.com.
+
+const REPO = "jradziejewski/flatscraper";
+const WORKFLOW = "scrape.yml";
+const TOKEN_KEY = "flatscraper:v1:ghToken";
+const API = `https://api.github.com/repos/${REPO}`;
+const RUN_SLACK_MS = 60 * 1000; // the browser's clock may run a little behind GitHub's
+
+/** The pasted token if it looks like a GitHub one (and nothing else), otherwise null: junk is never sent or stored. */
+function cleanToken(value) {
+  const t = typeof value === "string" ? value.trim() : "";
+  return /^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(t) ? t : null;
+}
+
+function apiHeaders(token) {
+  return { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+}
+
+/** The workflow_dispatch call: 204 with no body when it worked (it does not say which run it started). */
+function dispatchRequest(token) {
+  return {
+    url: `${API}/actions/workflows/${WORKFLOW}/dispatches`,
+    init: { method: "POST", headers: { ...apiHeaders(token), "Content-Type": "application/json" }, body: JSON.stringify({ ref: "main" }) },
+  };
+}
+
+const runsUrl = () => `${API}/actions/workflows/${WORKFLOW}/runs?event=workflow_dispatch&per_page=5`;
+const headCommitUrl = () => `${API}/commits/main`;
+
+/** The dispatch does not return a run id, so take the newest manual run created after the click. */
+function pickRun(runs, sinceMs) {
+  const mine = (Array.isArray(runs) ? runs : []).filter((r) => r && Date.parse(r.created_at) >= sinceMs - RUN_SLACK_MS);
+  mine.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+  return mine[0] || null;
+}
+
+/** {label, done, ok} for a run as the API describes it. */
+function runPhase(run) {
+  if (!run) return { label: "Uruchamianie…", done: false, ok: false };
+  if (run.status === "completed") {
+    if (run.conclusion === "success") return { label: "Wczytywanie nowych danych…", done: true, ok: true };
+    return { label: run.conclusion === "cancelled" ? "Aktualizacja została anulowana." : "Aktualizacja nie powiodła się.", done: true, ok: false };
+  }
+  return { label: run.status === "in_progress" ? "Pobieranie ogłoszeń…" : "W kolejce…", done: false, ok: false };
+}
+
+/** A URL pinned to one commit is never served from the ~5 min cache of the `main` one. */
+function freshCsvUrl(sha) {
+  return typeof sha === "string" && /^[0-9a-f]{40}$/.test(sha) ? `https://raw.githubusercontent.com/${REPO}/${sha}/listings.csv` : null;
+}
+
 if (typeof module !== "undefined") {
-  module.exports = { parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
+  module.exports = { cleanToken, apiHeaders, dispatchRequest, runsUrl, headCommitUrl, pickRun, runPhase, freshCsvUrl, TOKEN_KEY, parseCSV, normalize, applyFilters, sortRows, formatPrice, formatArea, relativeTime, safeUrl, NEW_WINDOW_MS, NO_DISTRICT, groupDuplicates, buildRows, streetsMatch,
     photoSources, activeFilterChips, parseLocation, bestLocation, mapEmbedUrl, mapLinks, mapCaption, streetLabel, GEO_LEVELS,
     isNew, startVisit, describeSince, memoryStorage, readJSON, writeJSON,
     prefsFromState, sanitizePrefs, loadPrefs, savePrefs, PREFS_KEY,
@@ -908,10 +961,16 @@ if (typeof document !== "undefined") {
   }
 
   function setData(records) {
+    // A reload (after a manual update) rebuilds the site and district controls, which would reset them: keep what is set now.
+    const kept = state.prefsReady ? { ...prefsFromState(readFilters(), $("merge").checked, state.sort), view: getView() } : null;
     state.rows = records.map(normalize);
     const unique = (key) => [...new Set(state.rows.map((r) => r[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pl"));
     fillSelect($("site"), unique("site"), (s) => SITE_NAMES[s] || s);
     buildDistrictPanel();
+    if (kept) {
+      const known = { sites: unique("site"), districts: [...new Set(state.rows.map((r) => r.district ?? NO_DISTRICT))] };
+      applyPrefs({ ...sanitizePrefs(kept, known), view: kept.view });
+    }
     const cities = unique("city");
     $("city").textContent = cities.length === 1 ? ` — ${cities[0]}` : "";
     const last = Math.max(0, ...state.rows.map((r) => r.lastSeen || 0));
@@ -940,6 +999,7 @@ if (typeof document !== "undefined") {
     }
     $("app").hidden = false;
     $("status").hidden = true;
+    $("refresh").hidden = false;
     rebuild();
   }
 
@@ -965,7 +1025,101 @@ if (typeof document !== "undefined") {
     }
   }
 
+  // ----- manual update -----
+
+  const POLL_MS = 10 * 1000;
+  const GIVE_UP_MS = 15 * 60 * 1000; // the workflow's own timeout-minutes
+  const NO_RUN_MS = 2 * 60 * 1000;   // a dispatch whose run never shows up
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const storedToken = () => cleanToken(readJSON(localStore, TOKEN_KEY));
+  function setRefreshStatus(text, link) {
+    const box = $("refreshStatus");
+    box.replaceChildren(text);
+    const href = link && safeUrl(link);
+    if (href) box.append(" ", el("a", { href, target: "_blank", rel: "noopener noreferrer" }, "Zobacz przebieg"));
+  }
+  function syncToken() { $("tokenForget").hidden = !storedToken(); }
+  function openTokenForm(message) {
+    $("tokenForm").hidden = false;
+    $("tokenError").textContent = message || "";
+    $("tokenInput").value = "";
+    $("tokenInput").focus();
+  }
+  function closeTokenForm() { $("tokenForm").hidden = true; $("tokenInput").value = ""; }
+  function forgetToken() { try { localStore.removeItem(TOKEN_KEY); } catch { /* storage blocked: nothing to forget */ } syncToken(); }
+
+  async function api(url, token, init = {}) {
+    const res = await fetch(url, { cache: "no-store", ...init, headers: { ...apiHeaders(token), ...(init.headers || {}) } });
+    return res;
+  }
+
+  /** Start the workflow, follow its run, then show the data it committed. Resolves when everything has settled. */
+  async function startRefresh(token) {
+    if (state.refreshing) return;
+    state.refreshing = true;
+    $("refresh").disabled = true;
+    try {
+      setRefreshStatus("Uruchamianie…");
+      const t0 = Date.now();
+      const { url, init } = dispatchRequest(token);
+      const started = await api(url, token, init);
+      if (started.status === 401 || started.status === 403 || started.status === 404) {
+        forgetToken();
+        setRefreshStatus("");
+        openTokenForm("GitHub odrzucił token (potrzebne: dostęp do tego repozytorium i uprawnienie Actions: Read and write).");
+        return;
+      }
+      if (started.status !== 204) throw new Error(`HTTP ${started.status}`);
+
+      let run = null;
+      while (true) {
+        await sleep(POLL_MS);
+        const elapsed = Date.now() - t0;
+        const res = await api(runsUrl(), token);
+        if (res.ok) run = pickRun((await res.json()).workflow_runs, t0);
+        const phase = runPhase(run);
+        setRefreshStatus(phase.label, run && run.html_url);
+        if (phase.done) {
+          if (!phase.ok) return;
+          break;
+        }
+        if (!run && elapsed > NO_RUN_MS) { setRefreshStatus("Nie widać uruchomienia — sprawdź zakładkę Actions w repozytorium."); return; }
+        if (elapsed > GIVE_UP_MS) { setRefreshStatus("Aktualizacja trwa zbyt długo — sprawdź zakładkę Actions.", run && run.html_url); return; }
+      }
+
+      const head = await api(headCommitUrl(), token);
+      const csvUrl = head.ok ? freshCsvUrl((await head.json()).sha) : null;
+      const before = new Set(state.rows.map(markKey));
+      setData(parseCSV(await fetchText(csvUrl || RAW_URL)));
+      const added = state.rows.filter((r) => !before.has(markKey(r))).length;
+      setRefreshStatus(added > 0 ? `Zaktualizowano · nowych ogłoszeń: ${added}.` : "Zaktualizowano · brak nowych ogłoszeń.");
+    } catch (err) {
+      console.error(err);
+      setRefreshStatus("Nie udało się zaktualizować. Spróbuj ponownie za chwilę.");
+    } finally {
+      state.refreshing = false;
+      $("refresh").disabled = false;
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    $("refresh").addEventListener("click", () => {
+      const token = storedToken();
+      if (token) startRefresh(token); else openTokenForm();
+    });
+    $("tokenForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const token = cleanToken($("tokenInput").value);
+      if (!token) { $("tokenError").textContent = "To nie wygląda na token GitHub (zaczyna się od github_pat_)."; return; }
+      writeJSON(localStore, TOKEN_KEY, token);
+      closeTokenForm();
+      syncToken();
+      startRefresh(token);
+    });
+    $("tokenCancel").addEventListener("click", closeTokenForm);
+    $("tokenForget").addEventListener("click", () => { forgetToken(); setRefreshStatus("Token usunięty z tej przeglądarki."); });
+    syncToken();
     ["q", "site", "maxPrice", "minArea", "minRooms", "onlyNew"].forEach((id) => {
       $(id).addEventListener("input", render);
     });

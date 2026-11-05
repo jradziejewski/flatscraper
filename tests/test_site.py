@@ -862,3 +862,80 @@ return {saved, same: JSON.stringify(loaded) === JSON.stringify(marks),
     assert out["brokenLoad"] == {"favs": {}, "hidden": {}} and out["brokenSave"] is False
     assert out["capped"] == [["h3", "h4", "h5"], ["a", "b", "c"]]  # oldest hidden dropped first
     assert out["capped2"] == [[], ["b", "c"]]  # a smaller cap drops all hidden ones, then the oldest favourite
+
+
+# ---------- manual update button ----------
+
+FAKE_PAT = "github_pat_" + "A1b2C3d4E5" * 6
+
+
+@needs_node
+@pytest.mark.parametrize("value, ok", [
+    (FAKE_PAT, True),
+    (f"  {FAKE_PAT}\n", True),
+    ("ghp_" + "x" * 36, True),
+    ("", False), ("   ", False), (None, False), (42, False),
+    ("hunter2", False),
+    ("github_pat_short", False),
+    (FAKE_PAT + '"', False),
+    (FAKE_PAT + "\nX-Evil: 1", False),
+    ("Bearer " + FAKE_PAT, False),
+])
+def test_clean_token_accepts_only_github_looking_tokens(value, ok):
+    got = run_node("return lib.cleanToken(input);", value)
+    assert got == (value.strip() if ok else None)
+
+
+@needs_node
+def test_dispatch_request_is_the_exact_workflow_dispatch_call():
+    req = run_node("return lib.dispatchRequest(input);", FAKE_PAT)
+    assert req["url"] == "https://api.github.com/repos/jradziejewski/flatscraper/actions/workflows/scrape.yml/dispatches"
+    assert req["init"]["method"] == "POST"
+    assert json.loads(req["init"]["body"]) == {"ref": "main"}
+    headers = req["init"]["headers"]
+    assert headers["Authorization"] == f"Bearer {FAKE_PAT}"
+    assert headers["Accept"] == "application/vnd.github+json"
+    assert FAKE_PAT not in json.dumps({**req, "init": {**req["init"], "headers": {}}})  # the token is only in Authorization
+
+
+@needs_node
+def test_pick_run_takes_the_newest_manual_run_created_after_the_click():
+    click = 1_700_000_000_000
+    iso = lambda ms: run_node("return new Date(input).toISOString();", ms)
+    runs = [
+        {"id": 1, "created_at": iso(click - 10 * 60 * 1000)},  # an older run: not ours
+        {"id": 2, "created_at": iso(click - 20 * 1000)},       # within the clock slack
+        {"id": 3, "created_at": iso(click + 5 * 1000)},
+    ]
+    assert run_node("return lib.pickRun(input.runs, input.t)?.id ?? null;", {"runs": runs, "t": click}) == 3
+    assert run_node("return lib.pickRun(input.runs, input.t)?.id ?? null;", {"runs": runs[:1], "t": click}) is None
+    assert run_node("return lib.pickRun(input.runs, input.t)?.id ?? null;", {"runs": runs[:2], "t": click}) == 2
+    assert run_node("return lib.pickRun(input.runs, input.t);", {"runs": None, "t": click}) is None
+
+
+@needs_node
+@pytest.mark.parametrize("run, done, ok", [
+    (None, False, False),
+    ({"status": "queued"}, False, False),
+    ({"status": "in_progress"}, False, False),
+    ({"status": "completed", "conclusion": "success"}, True, True),
+    ({"status": "completed", "conclusion": "failure"}, True, False),
+    ({"status": "completed", "conclusion": "cancelled"}, True, False),
+])
+def test_run_phase(run, done, ok):
+    phase = run_node("return lib.runPhase(input);", run)
+    assert (phase["done"], phase["ok"]) == (done, ok) and phase["label"]
+
+
+@needs_node
+def test_fresh_csv_url_is_pinned_to_a_commit():
+    sha = "a" * 40
+    assert run_node("return lib.freshCsvUrl(input);", sha) == f"https://raw.githubusercontent.com/jradziejewski/flatscraper/{sha}/listings.csv"
+    for bad in ["main", "abc", "g" * 40, "a" * 41, "../" + "a" * 37, None]:
+        assert run_node("return lib.freshCsvUrl(input);", bad) is None
+
+
+def test_token_form_hides_what_is_typed_and_is_not_autofilled():
+    tag = re.search(r'<input id="tokenInput"[^>]*>', INDEX_HTML).group(0)
+    assert 'type="password"' in tag and 'autocomplete="off"' in tag
+    assert "console.log" not in APP_JS  # nothing may print the token
