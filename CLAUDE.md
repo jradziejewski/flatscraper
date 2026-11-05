@@ -101,6 +101,12 @@ For a new step, show the file structure first, then implement.
   - *New since last visit*: the baseline is the newest `last_seen` in the data she saw last time (not the wall clock, because the raw CSV is cached for ~5 min), fixed for the tab session so a refresh keeps the badges. First visit: falls back to "first seen in the last 24 h".
   - *Remembered filters and sort* (not the search text; a remembered "Ukryte" view is not restored). Values are sanitized against the current data on load.
   - *Favourites (★) and hide (✕)*: apply to every listing of a merged row. A favourite keeps a snapshot, so it stays in "Ulubione" (greyed, "ostatnio widziano: …") after the listing leaves the CSV. Hiding offers a short "Cofnij" undo. Capped at 2000 marks.
+- **Manual update ("Aktualizuj teraz"):** the button under the title starts the `scrape` workflow from the page (GitHub's cron is unreliable). A static page cannot hold a secret, so the owner
+  creates a **fine-grained token** (only this repo, permission *Actions: Read and write*) and pastes it once per device; it is kept in `localStorage` (`flatscraper:v1:ghToken`), checked by
+  `cleanToken` (`github_pat_`/`ghp_` shapes only) and sent only to `api.github.com`; "Zapomnij token" removes it. Flow in `app.js`: `dispatchRequest` (POST `.../workflows/scrape.yml/dispatches`,
+  `{"ref":"main"}`, 204 and no run id) -> poll `runsUrl` every 10 s with `pickRun` (newest `workflow_dispatch` run created after the click, 60 s clock slack) and `runPhase` for the status text
+  -> on success read the head commit of `main` and load `freshCsvUrl(sha)` (a commit-pinned raw URL, so no 5 min cache) -> `setData`, which keeps the current filters. A 401/403/404 forgets the token and
+  reopens the form. Polling uses the token too (unauthenticated calls are capped at 60/h). Anyone with the token can only start scrapes. The workflow's `concurrency` group queues double clicks.
 - It fetches `listings.csv` from `raw.githubusercontent.com` (CORS-enabled, cached ~5 min) and falls back to the relative `listings.csv`. So it never needs redeploying when the bot commits new data.
 - One-time setup: repo Settings → Pages → Source "Deploy from a branch" → `main`, folder `/ (root)`. `.nojekyll` skips the Jekyll build.
 - Listing fields come from scraped sites, so `app.js` fills the page with `textContent` only (never `innerHTML`) and links only `http(s)` URLs. A test enforces this.

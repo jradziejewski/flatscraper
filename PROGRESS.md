@@ -24,6 +24,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 | 12d | Opened listings (title and portal chips) turn grey via CSS `:visited` |
 | 13 | Map for each flat: `lat/lon/geo` columns, OLX coordinates, street geocoding through OSM (`geocode.py`, `geocache.json`), expandable OSM map on the page |
 | 15 | Street + house number from titles, descriptions and the listing's own page (`streets.py`, `address.py`, `details.py`, `addresscache.json`), building-level map pins (`geo=address`) |
+| 16 | "Aktualizuj teraz" button: starts the workflow from the page with a per-device fine-grained token (`cleanToken`, `dispatchRequest`, `pickRun`, `runPhase`, `freshCsvUrl` in `app.js`); **needs the user's live test with a real token** (not done yet) |
 | 14 | *Not built:* monthly fee + floor (see Backlog; the number was skipped) |
 
 ## Open issue: the scheduled run does not fire (as of 2026-11-04 ~15:20 UTC)
