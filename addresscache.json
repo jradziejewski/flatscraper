@@ -33,6 +33,11 @@
   null
  ],
  "morizon:mzn2048334443": null,
+ "morizon:mzn2048337412": null,
+ "morizon:mzn2048338059": [
+  "Legnicka",
+  "52A"
+ ],
  "nieruchomosci:26894261": null,
  "nieruchomosci:27021854": null,
  "nieruchomosci:27081942": [
@@ -52,6 +57,10 @@
  "nieruchomosci:27098130": null,
  "nieruchomosci:27100697": [
   "Tęczowa",
+  null
+ ],
+ "nieruchomosci:27104227": [
+  "Tadeusza Kościuszki",
   null
  ],
  "olx:1027369622": null,
@@ -183,6 +192,7 @@
  ],
  "olx:1103395732": null,
  "olx:1103575994": null,
+ "olx:1103723860": null,
  "olx:1103754413": null,
  "olx:1104724586": null,
  "olx:1105030281": null,
@@ -258,6 +268,7 @@
   "Orawska",
   null
  ],
+ "olx:1108525895": null,
  "olx:1108576857": null,
  "olx:1108591509": [
   "Marcelego Bacciarellego",
@@ -488,5 +499,29 @@
  "otodom:68600158": [
   "Arbuzowa",
   null
- ]
+ ],
+ "otodom:68602567": [
+  "Jerzego Bajana",
+  "8"
+ ],
+ "otodom:68602689": [
+  "Komuny Paryskiej",
+  "56"
+ ],
+ "otodom:68602694": [
+  "Tadeusza Kościuszki",
+  null
+ ],
+ "otodom:68602965": null,
+ "otodom:68603376": null,
+ "otodom:68603662": [
+  "Armii Krajowej",
+  null
+ ],
+ "otodom:68603902": null,
+ "otodom:68603943": [
+  "Legnicka",
+  "52A"
+ ],
+ "otodom:68604373": null
 }
