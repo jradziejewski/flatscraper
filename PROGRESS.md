@@ -1,6 +1,6 @@
 # Progress and handoff notes
 
-Read this first in a new session, then `CLAUDE.md` (the spec and rules). Last updated 2026-11-04, after Step 15 (streets and house numbers from the text). **One thing is broken: the scheduled GitHub run does not fire, see "Open issue".**
+Read this first in a new session, then `CLAUDE.md` (the spec and rules). Last updated 2026-11-06, after Step 16 (the manual update button). **Open: GitHub's scheduled runs fire only some of the time and late; the page now has a manual button as the dependable path, see "Open issue".**
 
 ## What this is
 A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three times a day, writes `listings.csv`
@@ -13,7 +13,7 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 |---|---|
 | 1 | Skeleton, `Listing` model, CSV merge, config with filters |
 | 2-5 | Scrapers: Otodom (`__NEXT_DATA__`), nieruchomosci-online (ld+json + tiles), Morizon (Nuxt `__NUXT_DATA__`), OLX (JSON API, fetched via system `curl`) |
-| 6 | GitHub Actions workflow, cron `17 6,12,18 * * *` UTC (+ manual `workflow_dispatch`); commits `listings.csv`, `geocache.json`, `addresscache.json`, `archive/`. **The cron does not fire, see "Open issue"** |
+| 6 | GitHub Actions workflow, cron `17 6,12,18 * * *` UTC (+ manual `workflow_dispatch`); commits `listings.csv`, `geocache.json`, `addresscache.json`, `archive/`. **The cron is unreliable (fires late, never at 06:17), see "Open issue"** |
 | 7 | Archive: one snapshot per run holding only listings **new in that run**; listings not seen for 3 days are pruned from `listings.csv` |
 | 8 | Static Polish page (`index.html` + `app.js`), no dependencies |
 | 9 | District normalization to the 5 official districts (`aptsearch/districts.py`) |
@@ -24,26 +24,31 @@ A Polish rental-listings scraper for Wrocław. It runs on GitHub Actions three t
 | 12d | Opened listings (title and portal chips) turn grey via CSS `:visited` |
 | 13 | Map for each flat: `lat/lon/geo` columns, OLX coordinates, street geocoding through OSM (`geocode.py`, `geocache.json`), expandable OSM map on the page |
 | 15 | Street + house number from titles, descriptions and the listing's own page (`streets.py`, `address.py`, `details.py`, `addresscache.json`), building-level map pins (`geo=address`) |
-| 16 | "Aktualizuj teraz" button: starts the workflow from the page with a per-device fine-grained token (`cleanToken`, `dispatchRequest`, `pickRun`, `runPhase`, `freshCsvUrl` in `app.js`); **needs the user's live test with a real token** (not done yet) |
+| 16 | "Aktualizuj teraz" button: starts the workflow from the page with a per-device fine-grained token (`cleanToken`, `dispatchRequest`, `pickRun`, `runPhase`, `freshCsvUrl` in `app.js`); pushed 2026-11-05. The user created the token; a `workflow_dispatch` run succeeded on 2026-11-06 11:00 UTC (most likely from the button, **not confirmed** which UI started it). Setup: see CLAUDE.md "Manual update" |
 | 14 | *Not built:* monthly fee + floor (see Backlog; the number was skipped) |
 
-## Open issue: the scheduled run does not fire (as of 2026-11-04 ~15:20 UTC)
-The user wants GitHub Actions to run the scrape by itself. It has **never** run on schedule:
-- Only two `scrape` runs exist, **both manual** (`workflow_dispatch`): 2026-11-03 21:59 UTC and 2026-11-04 15:17 UTC (the user's click). `GET .../actions/workflows/scrape.yml/runs?event=schedule`
-  still gives `total_count: 0` (checked 15:43 UTC; the 18:17 UTC slot was still to come). Slots missed: 06:00 UTC and 12:17 UTC (cron was moved to minute 17 on 2026-11-04 to avoid the busy top of the hour; no change).
-- Ruled out (public API): workflow state is `active`; repo is public, not a fork, not archived, default branch `main`; the deployed YAML is valid; manual dispatch
-  works; no GitHub Actions incident in the status feed. Repo was created 2026-11-03 21:26 UTC.
-- GitHub community threads describe the same symptom with no staff answer or confirmed fix: #203473 (a new public repo whose first schedule run came ~8 h after
-  creation), #208729, #211641. Scheduled runs are best-effort. Ours is past 18 h, so "new repo lag" fits only partly.
-- **Next steps, in order:** (1) watch the 18:17 UTC slot and tomorrow's 06:17 (advice is to wait 2-3 windows); (2) in the Actions UI disable then enable the `scrape`
-  workflow (said to re-register schedules; unconfirmed); (3) a throwaway probe workflow on a frequent odd-minute cron (e.g. `*/15`) tells whether scheduling works for
-  this repo at all (delete it afterwards); (4) GitHub Support ticket with the facts above; (5) dependable fallbacks if it stays dead: an external timer (e.g. cron-job.org)
-  calling the `workflow_dispatch` API with a fine-grained token, or a systemd timer on the user's computer. The user prefers fixing GitHub Actions itself.
-- **The new code does work on GitHub's runners** (verified from the manual run of 2026-11-04 15:17 UTC, commit `5aa2996`, which committed `listings.csv`, `geocache.json` and an
-  archive snapshot): rows 883 -> 897, no row lost its street, no building pin was downgraded (102 -> 106), `geocache.json` +4 entries (so Nominatim answers from
-  GitHub's IPs), `addresscache.json` unchanged (no new gaps to read). One Otodom row's street changed because the portal edited its own field (junk "Białowieska / Balkon" ->
-  "Powstańców Śląskich"): a fresh portal value wins by design. So the only thing broken is the scheduler itself. Bot commits use the message "listings: update from scheduled run"
-  even for manual runs. Remember `git pull --rebase` before pushing after a bot run.
+## Open issue: scheduled runs are unreliable (as of 2026-11-06 ~11:20 UTC)
+The user wants the scrape to run by itself. GitHub's cron fires, but only sometimes and always late. `GET https://api.github.com/repos/jradziejewski/flatscraper/actions/workflows/scrape.yml/runs`
+(public, no token; `curl` works, `gh` is not installed) gave, for the cron `17 6,12,18 * * *`:
+
+| slot (UTC) | result |
+|---|---|
+| 2026-11-04 06:17, 12:17 | never ran |
+| 2026-11-04 18:17 | ran at 19:50 (1.5 h late); the first `schedule` run ever, ~22 h after the repo was created (2026-11-03 21:26) |
+| 2026-11-05 06:17 | never ran |
+| 2026-11-05 12:17 | ran at 14:44 (2.5 h late) |
+| 2026-11-05 18:17 | ran at 23:41 (5.4 h late) |
+| 2026-11-06 06:17 | never ran (checked 11:20; the 12:17 slot was still to come) |
+
+So 3 of 7 slots fired, all late, and **06:17 has never fired** (0 of 3). Manual runs (`workflow_dispatch`) always worked: 2026-11-03 21:59, 2026-11-04 15:17, 2026-11-06 11:00.
+- Ruled out: workflow state is `active`; repo is public, not a fork, not archived, default branch `main`; the YAML is valid; no GitHub incident in the status feed. The 60-day inactivity pause does not apply (repo is days old).
+- The cause is GitHub's best-effort scheduler (queued/dropped events under load). Community threads describe the same: #203473, #208729, #211641; no staff fix.
+- **Decision so far:** the manual button (Step 16) is the dependable path, so nothing more is being done about the scheduler yet. If regular runs matter more later, in order: (1) move the 06:17 slot to
+  another odd minute/hour and watch a few days; (2) a throwaway probe workflow on a frequent odd-minute cron to measure how often this repo gets picked up; (3) a GitHub Support ticket with the table above;
+  (4) an external timer (cron-job.org, or a systemd timer on the user's computer) calling the same `workflow_dispatch` API with a fine-grained token. The user prefers fixing GitHub Actions itself.
+- **The code works on GitHub's runners** (manual run 2026-11-04 15:17 UTC, commit `5aa2996`): rows 883 -> 897, no row lost its street, no building pin was downgraded (102 -> 106), `geocache.json` +4 entries (so
+  Nominatim answers from GitHub's IPs). One Otodom row's street changed because the portal edited its own field ("Białowieska / Balkon" -> "Powstańców Śląskich"): a fresh portal value wins by design.
+- Bot commits use the message "listings: update from scheduled run" even for manual runs (small fix, not done: use `${{ github.event_name }}` in `scrape.yml`). Remember `git pull --rebase` before pushing after a bot run.
 
 ## Map of the code
 ```
@@ -60,7 +65,7 @@ aptsearch/text.py        city_slug, clean_street, photo_url (http(s) only)
 aptsearch/http.py        get() (urllib; browser UA, or an identifying one for OSM), get_curl() (OLX only: urllib gets 403), curl_status() (real HTTP status after a curl failure)
 aptsearch/scrapers/      otodom, nieruchomosci, morizon, olx; SCRAPERS list in __init__.py
 index.html, app.js       the page; pure functions exported for node tests, DOM code only in a browser
-tests/                   308 tests (pytest); test_site.py drives app.js through node
+tests/                   330 tests (pytest); test_site.py drives app.js through node
 .github/workflows/scrape.yml
 archive/YYYY-MM/*.csv    immutable snapshots of new listings
 geocache.json            street / building -> coordinates (or null), committed; addresscache.json: listing page already read -> street+house (or null)
@@ -163,7 +168,7 @@ aptsearch/data/          streets_wroclaw.json (2,571 OSM street names)
   `python -m aptsearch.details`. A full regeneration: `git show <old commit>:listings.csv > listings.csv`, `main.py`, then the two backfills.
 - `uv` is **not installed**. Use a venv: `python3 -m venv <dir> && <dir>/bin/pip install pyyaml pytest`, then `<dir>/bin/python -m pytest -q`
   and `<dir>/bin/python main.py` (a live run: ~45 s, hits all four sites, rewrites `listings.csv`, may add an `archive/` file).
-- `node` is available (page tests); `gh` CLI is not (so no workflow runs from here; use the GitHub web UI).
+- `node` is available (page tests); `gh` CLI is not, but the public REST API answers plain `curl` (workflow runs, commits) without a token.
 - **Headless Firefox is a snap:** it cannot read `/tmp`. Use `~/snap/firefox/common/<dir>` for `--profile` and screenshots, pass
   `--no-remote --profile <dir> --screenshot <file> --window-size=W,H <url>`, and delete the directory afterwards. Pages load data
   asynchronously, so serve a small local server whose page includes an image that answers after ~3 s to hold the `load` event.
@@ -176,7 +181,7 @@ aptsearch/data/          streets_wroclaw.json (2,571 OSM street names)
 - Otodom area can arrive as an int (`60`): scrapers coerce to float so the CSV round-trips byte-identical.
 - Morizon titles contain HTML entities (`&amp;`), unescaped in the parser.
 - nieruchomosci province markup alternates `<span>` and `<a>`; the fixture covers both.
-- GitHub scheduled workflows are best-effort and ours does not fire at all (see "Open issue"). They are also paused after 60 days without repository
+- GitHub scheduled workflows are best-effort: ours fire late and skip some slots (see "Open issue"). They are also paused after 60 days without repository
   activity. Pushes to `main` by the bot mean: `git fetch` / `git pull --rebase` before starting work.
 - GitHub Pages caches `app.js`/`index.html` for 10 minutes (`max-age=600`), so after a push hard-refresh; a failed Pages deploy is retried by GitHub on its own.
 - OSM: tiles answer 403 without a Referer (never `referrerpolicy="no-referrer"` on the map iframe); Nominatim understands only base-form street names, never the
@@ -190,7 +195,7 @@ aptsearch/data/          streets_wroclaw.json (2,571 OSM street names)
 otherwise; a merged flat can take the fee from whichever portal has it). Median fee ≈ 890 zł on 2800 zł (+32%). Floor: OLX
 `floor_select`, Otodom `floorNumber`, Morizon `floorFormatted`. Pets/furnished/parking/lift exist on a single portal only: not worth filters.
 
-**Other ideas, not scheduled:** collapse the filters behind a "Filtry" button on phones; home-screen icon (PWA manifest); new-listing
+**Other ideas, not scheduled:** name the run kind in the bot's commit message (`github.event_name` in `scrape.yml`); show the update button's token state/last-run time on the page; collapse the filters behind a "Filtry" button on phones; home-screen icon (PWA manifest); new-listing
 alerts (ntfy/Telegram, using the archive snapshots); price-drop badge; greying listings not seen for a day; run pytest on push in
 Actions; `uv.lock` for reproducible CI; some titles are single rooms in shared flats ("pokój do wynajęcia", area is the whole flat's).
 **From the description work (not built, not requested):** deposit (kaucja, in 36% of OLX descriptions), "available from" (25%), "bez prowizji" (21%) as extra

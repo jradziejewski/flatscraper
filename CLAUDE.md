@@ -162,5 +162,5 @@ uv run python -m aptsearch.geocode    # coordinates for every street / building
 uv run python -m aptsearch.details    # read the listing page of rows still without a street
 ```
 
-`PROGRESS.md` holds the current state, the open issue (the scheduled run does not fire), measurements and the backlog: read it first.
+`PROGRESS.md` holds the current state, the open issue (GitHub's scheduled runs fire late and skip slots; the page has a manual update button), measurements and the backlog: read it first.
 
