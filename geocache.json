@@ -117,6 +117,10 @@
   51.127959,
   16.986301
  ],
+ "wrocław|boleslawa ulanowskiego": [
+  51.082714,
+  17.007181
+ ],
  "wrocław|bolesława krzywoustego": [
   51.142893,
   17.097657
@@ -136,6 +140,10 @@
  "wrocław|bolesławiecka": [
   51.114852,
   17.00067
+ ],
+ "wrocław|bolesławiecka|1": [
+  51.11506,
+  17.001324
  ],
  "wrocław|borowska": [
   51.085428,
@@ -172,6 +180,10 @@
  "wrocław|braterska": [
   51.06729,
   16.998507
+ ],
+ "wrocław|braterska 4d": [
+  51.064782,
+  17.001154
  ],
  "wrocław|brylantowa": [
   51.048423,
@@ -322,6 +334,10 @@
   51.118641,
   17.014459
  ],
+ "wrocław|długa|55": [
+  51.124856,
+  17.013729
+ ],
  "wrocław|edmunda kajdasza": [
   51.053861,
   17.051286
@@ -333,6 +349,10 @@
  "wrocław|eugeniusza horbaczewskiego|16": [
   51.124397,
   16.973985
+ ],
+ "wrocław|eugeniusza horbaczewskiego|47": [
+  51.123274,
+  16.972536
  ],
  "wrocław|ferdynanda magellana": [
   51.11007,
@@ -475,6 +495,10 @@
  "wrocław|grudziądzka": [
   51.137109,
   17.074784
+ ],
+ "wrocław|grunwaldzki": [
+  51.111754,
+  17.060646
  ],
  "wrocław|gwiaździsta": [
   51.094551,
@@ -686,6 +710,10 @@
   51.090071,
   17.019357
  ],
+ "wrocław|kamieńskiego": [
+  51.15475,
+  17.04362
+ ],
  "wrocław|kard. stefana wyszyńskiego": [
   51.12783,
   17.054971
@@ -770,6 +798,14 @@
  "wrocław|komuny paryskiej|56": [
   51.101587,
   17.047764
+ ],
+ "wrocław|kosmonautów": [
+  51.125556,
+  16.970556
+ ],
+ "wrocław|kosmonautów|216": [
+  51.142641,
+  16.891575
  ],
  "wrocław|kosynierów gdyńskich": [
   51.111298,
@@ -923,6 +959,10 @@
   51.099241,
   17.017096
  ],
+ "wrocław|ludwika rydygiera": [
+  51.120924,
+  17.032261
+ ],
  "wrocław|madalińskiego": [
   51.095766,
   17.0489
@@ -972,6 +1012,10 @@
   16.94708
  ],
  "wrocław|marii rodziewiczówny|62": null,
+ "wrocław|marka hłaski": [
+  51.101111,
+  16.947765
+ ],
  "wrocław|marysieńki": [
   51.156589,
   17.130962
@@ -1349,9 +1393,17 @@
   51.101563,
   16.946265
  ],
+ "wrocław|rogowska": [
+  51.117813,
+  16.958602
+ ],
  "wrocław|rogowska 144": [
   51.114453,
   16.94911
+ ],
+ "wrocław|rogowska|136": [
+  51.115191,
+  16.948794
  ],
  "wrocław|rogowska|4": [
   51.117079,
@@ -1432,6 +1484,10 @@
  "wrocław|skarbowców|108": [
   51.068582,
   16.991504
+ ],
+ "wrocław|skwierzyńska": [
+  51.098831,
+  17.015312
  ],
  "wrocław|smardzowska": [
   51.054318,
@@ -1642,6 +1698,10 @@
   16.999562
  ],
  "wrocław|wałbrzyska|37": null,
+ "wrocław|wesoła": [
+  51.09125,
+  17.035901
+ ],
  "wrocław|wełniana": [
   51.159736,
   16.90135
@@ -1781,6 +1841,10 @@
  "wrocław|zielińskiego": [
   51.098099,
   17.020193
+ ],
+ "wrocław|zielonogórska": [
+  51.118933,
+  17.004508
  ],
  "wrocław|ziemowita|11c": [
   51.111677,
