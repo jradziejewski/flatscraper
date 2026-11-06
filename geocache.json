@@ -80,6 +80,10 @@
   51.122127,
   17.048825
  ],
+ "wrocław|benedykta polaka": [
+  51.112571,
+  17.055926
+ ],
  "wrocław|benedyktyńska": [
   51.115304,
   17.053249
@@ -132,6 +136,10 @@
  "wrocław|bolesława krzywoustego|105": [
   51.13864,
   17.07948
+ ],
+ "wrocław|bolesława prusa": [
+  51.119401,
+  17.044054
  ],
  "wrocław|bolesława prusa|8": [
   51.119518,
@@ -236,6 +244,10 @@
  "wrocław|chabrowa": [
   51.046364,
   17.011331
+ ],
+ "wrocław|chachaja": [
+  51.082391,
+  16.955897
  ],
  "wrocław|chałupnicza": [
   51.11046,
@@ -342,6 +354,10 @@
   51.123669,
   17.010861
  ],
+ "wrocław|długa 7": [
+  51.118404,
+  17.016761
+ ],
  "wrocław|długa|44": [
   51.118641,
   17.014459
@@ -349,6 +365,10 @@
  "wrocław|długa|55": [
   51.124856,
   17.013729
+ ],
+ "wrocław|długa|7": [
+  51.118404,
+  17.016761
  ],
  "wrocław|edmunda kajdasza": [
   51.053861,
@@ -373,6 +393,10 @@
  "wrocław|ferdynanda magellana|27": [
   51.111769,
   17.120521
+ ],
+ "wrocław|ferdynanda magellana|49": [
+  51.112622,
+  17.121029
  ],
  "wrocław|gajowa": [
   51.095545,
@@ -782,6 +806,10 @@
   51.120315,
   17.017694
  ],
+ "wrocław|kazimierza michalczyka 1": [
+  51.118816,
+  17.016312
+ ],
  "wrocław|kazimierza michalczyka|1": [
   51.118816,
   17.016312
@@ -883,6 +911,10 @@
  "wrocław|krucza|61": [
   51.093492,
   17.002559
+ ],
+ "wrocław|kruszwicka": [
+  51.114158,
+  17.009269
  ],
  "wrocław|krzycka|6": [
   51.074253,
@@ -1065,6 +1097,10 @@
   51.120712,
   16.984814
  ],
+ "wrocław|małopanewska|16": [
+  51.121067,
+  16.988292
+ ],
  "wrocław|melchiora wańkowicza": [
   51.104542,
   16.949895
@@ -1111,6 +1147,10 @@
   17.023937
  ],
  "wrocław|mieszkanie na gaju - balkon - nowe budownictwo": null,
+ "wrocław|migdałowa": [
+  51.061945,
+  16.978776
+ ],
  "wrocław|mikołaja": [
   51.104887,
   17.034586
@@ -1248,6 +1288,10 @@
   51.069826,
   17.092319
  ],
+ "wrocław|oporowska": [
+  51.09783,
+  16.998944
+ ],
  "wrocław|orawska": [
   51.062588,
   17.021366
@@ -1279,6 +1323,10 @@
  "wrocław|palisadowa": [
   51.144901,
   16.990024
+ ],
+ "wrocław|parafialna": [
+  51.060568,
+  17.026078
  ],
  "wrocław|partynicka": [
   51.062148,
@@ -1450,6 +1498,10 @@
   51.115191,
   16.948794
  ],
+ "wrocław|rogowska|176": [
+  51.111813,
+  16.952851
+ ],
  "wrocław|rogowska|4": [
   51.117079,
   16.957941
@@ -1497,6 +1549,10 @@
  "wrocław|rymarska": [
   51.079958,
   16.988732
+ ],
+ "wrocław|róży wiatrów": [
+  51.072836,
+  16.991938
  ],
  "wrocław|sanocka": [
   51.094152,
@@ -1562,6 +1618,10 @@
   51.158123,
   16.892691
  ],
+ "wrocław|stacha świstackiego": [
+  51.097793,
+  17.050494
+ ],
  "wrocław|stalowa": [
   51.09977,
   17.001068
@@ -1573,6 +1633,10 @@
  "wrocław|stanisława drabika|111": [
   51.055984,
   17.056378
+ ],
+ "wrocław|stanisława drabika|66": [
+  51.057024,
+  17.053243
  ],
  "wrocław|stanisława drabika|99": [
   51.057033,
@@ -1630,6 +1694,10 @@
   51.114217,
   16.976706
  ],
+ "wrocław|strzegomska|196": [
+  51.111634,
+  16.961723
+ ],
  "wrocław|strzegomska|42g": [
   51.113501,
   16.996192
@@ -1654,7 +1722,19 @@
   51.09861,
   17.008922
  ],
+ "wrocław|szkocka": [
+  51.109178,
+  16.963766
+ ],
  "wrocław|słonimska|20": null,
+ "wrocław|słonimskiego": [
+  51.130561,
+  17.045064
+ ],
+ "wrocław|słowiańska": [
+  51.123691,
+  17.041263
+ ],
  "wrocław|słowiańska|39": [
   51.123634,
   17.044151
@@ -1739,6 +1819,10 @@
   51.072459,
   17.038863
  ],
+ "wrocław|vespucciego": [
+  51.107435,
+  17.124253
+ ],
  "wrocław|wagnera": [
   51.053471,
   17.060727
@@ -1762,6 +1846,10 @@
  "wrocław|waniliowa": [
   51.180043,
   16.999562
+ ],
+ "wrocław|wałbrzyska": [
+  51.064027,
+  16.976644
  ],
  "wrocław|wałbrzyska|1": [
   51.063804,
@@ -2001,6 +2089,10 @@
   51.081497,
   17.024076
  ],
+ "wrocław|św. jadwigi": [
+  51.114354,
+  17.040397
+ ],
  "wrocław|św. mikołaja": [
   51.111376,
   17.029049
@@ -2008,6 +2100,10 @@
  "wrocław|świdnicka|45": [
   51.102099,
   17.029211
+ ],
+ "wrocław|świstackiego": [
+  51.099134,
+  17.050261
  ],
  "wrocław|żelazna": [
   51.096933,

@@ -65,6 +65,10 @@
   null
  ],
  "nieruchomosci:27107028": null,
+ "nieruchomosci:27110024": [
+  "Żelazna",
+  null
+ ],
  "olx:1027369622": null,
  "olx:1051277157": [
   "Jesionowa",
@@ -539,5 +543,9 @@
  "otodom:68608857": [
   "Kazimierza Michalczyka",
   "1"
+ ],
+ "otodom:68609704": [
+  "Edmunda Kajdasza",
+  null
  ]
 }
