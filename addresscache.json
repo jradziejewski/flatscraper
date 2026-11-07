@@ -45,8 +45,6 @@
   "Powstańców Śląskich",
   null
  ],
- "nieruchomosci:27086991": null,
- "nieruchomosci:27088521": null,
  "nieruchomosci:27097739": [
   "Turniejowa",
   null
@@ -65,7 +63,6 @@
   "Żelazna",
   null
  ],
- "olx:1027369622": null,
  "olx:1051277157": [
   "Jesionowa",
   "47"
@@ -73,51 +70,22 @@
  "olx:1068780343": null,
  "olx:1082728841": null,
  "olx:1088399327": null,
- "olx:1089464628": [
-  "Podwale",
-  "1"
- ],
  "olx:1090129222": null,
- "olx:1093817763": [
-  "Śliwowa",
-  null
- ],
  "olx:1093829811": null,
- "olx:1094236849": [
-  "Miedziana",
-  "40"
- ],
- "olx:1094440301": [
-  "Strońska",
-  null
- ],
  "olx:1094971185": null,
  "olx:1095194462": null,
  "olx:1095517958": [
   "Grabiszyńska",
   null
  ],
- "olx:1096092741": null,
  "olx:1096207066": null,
- "olx:1096706025": [
-  "Dzielna",
-  null
- ],
  "olx:1096744430": null,
  "olx:1097167174": null,
  "olx:1097173644": [
   "Zielonogórska",
   null
  ],
- "olx:1097241732": [
-  "Księdza Czesława Klimasa",
-  "37F"
- ],
  "olx:1097291955": null,
- "olx:1097410647": [
-  "Waniliowa",
-  null
- ],
  "olx:1097435946": [
   "Generała Karola Kniaziewicza",
   "38"
@@ -127,10 +95,6 @@
   null
  ],
  "olx:1097765686": null,
- "olx:1097853233": [
-  "Lubińska",
-  null
- ],
  "olx:1098448787": null,
  "olx:1099237897": null,
  "olx:1099509847": [
@@ -151,30 +115,14 @@
  "olx:1101463974": null,
  "olx:1101499767": null,
  "olx:1101500038": null,
- "olx:1101590120": [
-  "Nowowiejska",
-  "70"
- ],
- "olx:1101703382": null,
- "olx:1102104583": null,
  "olx:1102289441": null,
  "olx:1102304610": [
   "Piwna",
   null
  ],
- "olx:1102496147": [
-  "Bolesławiecka",
-  null
- ],
  "olx:1102718818": null,
- "olx:1102754157": null,
- "olx:1102848017": null,
  "olx:1102947903": null,
  "olx:1102996353": null,
- "olx:1103028290": [
-  "Stalowa",
-  null
- ],
  "olx:1103041731": null,
  "olx:1103316260": [
   "Krucza",
@@ -191,11 +139,6 @@
   "Górnicza",
   null
  ],
- "olx:1105275300": [
-  "Rychtalska",
-  null
- ],
- "olx:1105480716": null,
  "olx:1105507928": null,
  "olx:1105508225": null,
  "olx:1105531707": [
@@ -206,18 +149,6 @@
  "olx:1105741360": [
   "Stalowowolska",
   null
- ],
- "olx:1106067965": [
-  "Powiewna",
-  null
- ],
- "olx:1106097123": [
-  "Tkacka",
-  "65"
- ],
- "olx:1106550903": [
-  "Honoriusza Balzaka",
-  "30"
  ],
  "olx:1107039890": [
   "Złotnicka",
@@ -230,21 +161,9 @@
   null
  ],
  "olx:1107702783": null,
- "olx:1107800698": [
-  "Obornicka",
-  "76A"
- ],
- "olx:1108108808": [
-  "Adama Jerzego Czartoryskiego",
-  null
- ],
  "olx:1108202878": [
   "Hubska",
   "94"
- ],
- "olx:1108216842": [
-  "Racławicka",
-  "41"
  ],
  "olx:1108220518": [
   "Tadeusza Kościuszki",
@@ -259,7 +178,6 @@
   null
  ],
  "olx:1108525895": null,
- "olx:1108576857": null,
  "olx:1108591509": [
   "Marcelego Bacciarellego",
   null
@@ -268,7 +186,6 @@
   "Stabłowicka",
   null
  ],
- "olx:1108865875": null,
  "olx:1108971747": null,
  "olx:1109023083": null,
  "olx:1109212027": null,
@@ -278,77 +195,15 @@
  ],
  "olx:1109266234": null,
  "olx:1109306425": null,
- "olx:1109349829": [
-  "Stefana Jaracza",
-  null
- ],
- "olx:1109359105": null,
- "olx:1109360032": [
-  "Krakowska",
-  "39"
- ],
- "olx:1109360286": [
-  "Dożynkowa",
-  null
- ],
- "olx:1109360682": [
-  "Władysława Reymonta",
-  "10F"
- ],
- "olx:1109367563": null,
  "olx:1109370131": [
   "Poznańska",
   null
  ],
- "olx:1109375866": [
-  "Zwycięska",
-  null
- ],
- "olx:1109381595": null,
- "olx:1109383929": null,
- "olx:1109384011": [
-  "Grabiszyńska",
-  null
- ],
- "olx:1109388834": null,
  "olx:1109390703": null,
- "olx:1109392449": [
-  "Stanisława Kunickiego",
-  null
- ],
- "olx:1109393021": [
-  "Gajowicka",
-  null
- ],
- "olx:1109396185": [
-  "Zatorska",
-  null
- ],
- "olx:1109412200": null,
- "olx:1109419333": null,
- "olx:1109426019": null,
- "olx:1109426708": [
-  "Śliwowa",
-  null
- ],
- "olx:1109432336": [
-  "Lubuska",
-  null
- ],
- "olx:1109434049": [
-  "Ameriga Vespucciego",
-  null
- ],
- "olx:1109434184": null,
  "olx:1109439696": [
   "Tadeusza Zielińskiego",
   null
  ],
- "olx:1109442275": [
-  "Jesionowa",
-  null
- ],
- "olx:1109446909": null,
  "olx:1109448523": null,
  "olx:1109449293": null,
  "olx:1109451338": null,
@@ -359,9 +214,7 @@
  "olx:1109577175": null,
  "olx:1109601545": null,
  "olx:1109608733": null,
- "olx:1109613232": null,
  "olx:1109633460": null,
- "olx:1109641157": null,
  "olx:1109657283": null,
  "olx:1109669513": null,
  "olx:1109670830": null,
@@ -378,18 +231,6 @@
  "olx:1109901261": null,
  "olx:994598461": null,
  "otodom:63646793": null,
- "otodom:68583930": [
-  "Jesionowa",
-  null
- ],
- "otodom:68584133": [
-  "Pabianicka",
-  null
- ],
- "otodom:68584435": [
-  "Ameriga Vespucciego",
-  null
- ],
  "otodom:68585179": null,
  "otodom:68586258": [
   "Generała Antoniego Madalińskiego",
@@ -415,7 +256,6 @@
   "59"
  ],
  "otodom:68589186": null,
- "otodom:68591431": null,
  "otodom:68591526": [
   "Edmunda Kajdasza",
   null
@@ -437,7 +277,6 @@
   "Braterska",
   null
  ],
- "otodom:68594428": null,
  "otodom:68594735": null,
  "otodom:68596198": null,
  "otodom:68596492": [
@@ -518,6 +357,14 @@
  ],
  "otodom:68609704": [
   "Edmunda Kajdasza",
+  null
+ ],
+ "otodom:68611707": [
+  "Zakładowa",
+  null
+ ],
+ "otodom:68611929": [
+  "Ślężna",
   null
  ]
 }
