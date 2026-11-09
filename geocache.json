@@ -133,6 +133,10 @@
   51.082714,
   17.007181
  ],
+ "wrocław|bolesława chrobrego": [
+  51.121655,
+  17.034942
+ ],
  "wrocław|bolesława krzywoustego": [
   51.142893,
   17.097657
@@ -164,6 +168,10 @@
  "wrocław|borowska": [
   51.085428,
   17.035063
+ ],
+ "wrocław|borowska|99": [
+  51.090544,
+  17.032235
  ],
  "wrocław|braci gierymskich": [
   51.102189,
@@ -224,6 +232,10 @@
  "wrocław|buczacka": [
   51.099763,
   16.937783
+ ],
+ "wrocław|budziszyńska|31": [
+  51.113692,
+  16.960618
  ],
  "wrocław|buforowa": [
   51.056105,
@@ -288,6 +300,10 @@
  "wrocław|czarnuszkowa": [
   51.180534,
   17.00185
+ ],
+ "wrocław|czartoryskiego": [
+  51.152908,
+  17.047185
  ],
  "wrocław|czechowicka": [
   51.081226,
@@ -576,6 +592,10 @@
   51.111754,
   17.060646
  ],
+ "wrocław|grunwaldzki 8": [
+  51.110719,
+  17.055935
+ ],
  "wrocław|grunwaldzki|10": [
   51.111041,
   17.05627
@@ -615,6 +635,10 @@
  "wrocław|henryka michała kamieńskiego|202": [
   51.155759,
   17.043629
+ ],
+ "wrocław|henryka pobożnego|16": [
+  51.120596,
+  17.038086
  ],
  "wrocław|henryka sienkiewicza": [
   51.115139,
@@ -722,6 +746,7 @@
  ],
  "wrocław|jana matejki": null,
  "wrocław|jana pawła ii": null,
+ "wrocław|jana pawła ii|2": null,
  "wrocław|januszowicka": [
   51.084515,
   17.013538
@@ -806,6 +831,10 @@
   51.090071,
   17.019357
  ],
+ "wrocław|kamienna|13": [
+  51.088962,
+  17.021836
+ ],
  "wrocław|kamieńskiego": [
   51.15475,
   17.04362
@@ -873,6 +902,10 @@
  "wrocław|klasztorna": [
   51.063067,
   17.039667
+ ],
+ "wrocław|kmieca": [
+  51.105499,
+  17.146639
  ],
  "wrocław|kminkowa": [
   51.17933,
@@ -948,6 +981,10 @@
   51.093926,
   17.060765
  ],
+ "wrocław|krasińskiego": [
+  51.105863,
+  17.043351
+ ],
  "wrocław|krawiecka": [
   51.108277,
   17.037444
@@ -971,6 +1008,10 @@
  "wrocław|kruszwicka|8": [
   51.11381,
   17.010124
+ ],
+ "wrocław|krzycka": [
+  51.07297,
+  17.002318
  ],
  "wrocław|krzycka|6": [
   51.074253,
@@ -1003,6 +1044,10 @@
  "wrocław|księdza czesława klimasa|43d": [
   51.079758,
   17.065411
+ ],
+ "wrocław|księdza jana dzierżonia|36": [
+  51.079506,
+  16.958757
  ],
  "wrocław|księdza piotra wawrzyniaka": [
   51.075606,
@@ -1060,6 +1105,10 @@
   51.11426,
   17.005145
  ],
+ "wrocław|legnicka|49": [
+  51.121773,
+  16.993795
+ ],
  "wrocław|legnicka|52a": [
   51.11955,
   16.994629
@@ -1115,6 +1164,10 @@
  "wrocław|marcelego bacciarellego|40a": [
   51.104533,
   17.114278
+ ],
+ "wrocław|marcelego bacciarellego|54": [
+  51.102407,
+  17.116685
  ],
  "wrocław|marcelego nenckiego|59": [
   51.057999,
@@ -1259,6 +1312,10 @@
   51.121961,
   16.974414
  ],
+ "wrocław|namysłowska": [
+  51.125563,
+  17.045142
+ ],
  "wrocław|nankiera": [
   51.112654,
   17.037181
@@ -1314,6 +1371,10 @@
  "wrocław|obornicka": [
   51.13512,
   17.034389
+ ],
+ "wrocław|obornicka|105a": [
+  51.14355,
+  17.026658
  ],
  "wrocław|obornicka|76a": [
   51.139627,
@@ -1411,6 +1472,14 @@
  "wrocław|piastowska": [
   51.113383,
   17.060525
+ ],
+ "wrocław|pigwowa": [
+  51.059524,
+  17.016481
+ ],
+ "wrocław|pigwowa|6": [
+  51.05868,
+  17.015403
  ],
  "wrocław|pilczycka|101": [
   51.13983,
@@ -1610,6 +1679,10 @@
   51.1289,
   17.046897
  ],
+ "wrocław|rychtalska|22": [
+  51.129894,
+  17.046282
+ ],
  "wrocław|rydygiera": [
   51.120924,
   17.032261
@@ -1677,6 +1750,10 @@
  "wrocław|solny|16": [
   51.108762,
   17.029563
+ ],
+ "wrocław|sołtysowicka 30": [
+  51.144491,
+  17.071559
  ],
  "wrocław|spiżowa": [
   51.101703,
@@ -1891,6 +1968,10 @@
   51.103355,
   17.007642
  ],
+ "wrocław|tęczowa|83h": [
+  51.10526,
+  17.00891
+ ],
  "wrocław|ulowa": [
   51.157161,
   16.857882
@@ -1922,6 +2003,10 @@
  "wrocław|walońska|17": [
   51.103588,
   17.052325
+ ],
+ "wrocław|walońska|9": [
+  51.10412,
+  17.051487
  ],
  "wrocław|wandy rutkiewicz": [
   51.073139,
@@ -2064,6 +2149,10 @@
   51.129756,
   17.040758
  ],
+ "wrocław|zakładowa|24": [
+  51.131567,
+  17.04594
+ ],
  "wrocław|zaolziańska": [
   51.096099,
   17.027894
@@ -2095,6 +2184,10 @@
  "wrocław|zielonogórska": [
   51.118933,
   17.004508
+ ],
+ "wrocław|ziemowita": [
+  51.111279,
+  17.016517
  ],
  "wrocław|ziemowita|11c": [
   51.111677,
@@ -2145,6 +2238,10 @@
   51.060218,
   17.022242
  ],
+ "wrocław|łódzka|27": [
+  51.090421,
+  17.037283
+ ],
  "wrocław|łąkowa": [
   51.10377,
   17.02795
@@ -2189,9 +2286,17 @@
   51.102099,
   17.029211
  ],
+ "wrocław|świeradowska": [
+  51.07701,
+  17.042773
+ ],
  "wrocław|świstackiego": [
   51.099134,
   17.050261
+ ],
+ "wrocław|żegiestowska": [
+  51.082824,
+  17.036818
  ],
  "wrocław|żelazna": [
   51.096933,
@@ -2200,6 +2305,10 @@
  "wrocław|żmigrodzka": [
   51.163194,
   17.027694
+ ],
+ "wrocław|żmudzka|29": [
+  51.141983,
+  17.139232
  ],
  "wrocław|żwirki i wigury": [
   51.097493,
