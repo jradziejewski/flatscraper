@@ -96,6 +96,10 @@
   51.115304,
   17.053249
  ],
+ "wrocław|bernarda pretficza": [
+  51.090809,
+  17.013391
+ ],
  "wrocław|bernarda pretficza|53": [
   51.092726,
   17.004694
@@ -140,6 +144,10 @@
  "wrocław|bobrza|38": [
   51.127959,
   16.986301
+ ],
+ "wrocław|bogatyńska": [
+  51.151656,
+  16.943195
  ],
  "wrocław|boleslawa ulanowskiego": [
   51.082714,
@@ -216,6 +224,10 @@
  "wrocław|braniborska|66": [
   51.111566,
   17.009038
+ ],
+ "wrocław|braniborska|70": [
+  51.111495,
+  17.008475
  ],
  "wrocław|braterska": [
   51.06729,
@@ -502,6 +514,10 @@
   51.115747,
   17.063663
  ],
+ "wrocław|gdańska|4": [
+  51.116309,
+  17.064356
+ ],
  "wrocław|gen. ignacego prądzyńskiego": [
   51.098661,
   17.049255
@@ -551,6 +567,7 @@
   51.099292,
   17.042382
  ],
+ "wrocław|generała józefa bema|4": null,
  "wrocław|generała józefa bema|5b": [
   51.117717,
   17.043065
@@ -580,6 +597,10 @@
   51.114429,
   17.01939
  ],
+ "wrocław|gliniana": [
+  51.091635,
+  17.040709
+ ],
  "wrocław|gorlicka": [
   51.145696,
   17.113675
@@ -587,6 +608,10 @@
  "wrocław|gorlicka 80": [
   51.142613,
   17.123432
+ ],
+ "wrocław|gosławicka": [
+  51.14786,
+  16.950139
  ],
  "wrocław|grabiszyńska": [
   51.095292,
@@ -651,6 +676,10 @@
  "wrocław|gwiaździsta": [
   51.094551,
   17.017726
+ ],
+ "wrocław|górecka": [
+  51.159729,
+  16.899869
  ],
  "wrocław|górnicza": [
   51.133555,
@@ -1020,6 +1049,10 @@
  "wrocław|komuny paryskiej|56": [
   51.101587,
   17.047764
+ ],
+ "wrocław|konstytucji 3 maja|7": [
+  51.099926,
+  17.040016
  ],
  "wrocław|kosmonautów": [
   51.125556,
@@ -1779,6 +1812,10 @@
   51.079049,
   16.987618
  ],
+ "wrocław|rutkiewicz": [
+  51.073403,
+  17.035807
+ ],
  "wrocław|rybnicka": [
   51.080145,
   17.087912
@@ -1786,6 +1823,14 @@
  "wrocław|rybnicka|18d": [
   51.08223,
   17.082647
+ ],
+ "wrocław|rycerska": [
+  51.144122,
+  17.107958
+ ],
+ "wrocław|rycerska|35": [
+  51.143073,
+  17.109077
  ],
  "wrocław|rychtalska": [
   51.1289,
@@ -1826,6 +1871,10 @@
  "wrocław|siemianowicka": [
   51.072066,
   17.093149
+ ],
+ "wrocław|siemianowicka|9": [
+  51.0711,
+  17.091837
  ],
  "wrocław|sienkiewicza": [
   51.115139,
@@ -2270,6 +2319,14 @@
   51.165449,
   16.900688
  ],
+ "wrocław|z.krasińskiego": [
+  51.106497,
+  17.043567
+ ],
+ "wrocław|zachodnia": [
+  51.117152,
+  17.001482
+ ],
  "wrocław|zagłębiowska": [
   51.074425,
   17.090943
@@ -2309,6 +2366,10 @@
  "wrocław|zielińskiego": [
   51.098099,
   17.020193
+ ],
+ "wrocław|zielna": [
+  51.14307,
+  17.117926
  ],
  "wrocław|zielonogórska": [
   51.118933,

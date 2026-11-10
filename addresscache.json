@@ -26,6 +26,10 @@
   "52A"
  ],
  "morizon:mzn2048338892": null,
+ "morizon:mzn2048378340": [
+  "Przyjaźni",
+  null
+ ],
  "nieruchomosci:26894261": null,
  "nieruchomosci:27021854": null,
  "nieruchomosci:27081942": [
@@ -84,10 +88,6 @@
   null
  ],
  "olx:1105508225": null,
- "olx:1105531707": [
-  "Kozia",
-  null
- ],
  "olx:1107039890": [
   "Złotnicka",
   "9"
@@ -109,10 +109,6 @@
  "otodom:68602567": [
   "Jerzego Bajana",
   "8"
- ],
- "otodom:68602689": [
-  "Komuny Paryskiej",
-  "56"
  ],
  "otodom:68602694": [
   "Tadeusza Kościuszki",
@@ -174,5 +170,6 @@
   null
  ],
  "otodom:68618946": null,
- "otodom:68619081": null
+ "otodom:68619081": null,
+ "otodom:68620825": null
 }
