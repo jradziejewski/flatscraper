@@ -3,7 +3,6 @@
   "Łubinowa",
   null
  ],
- "morizon:mzn2048270756": null,
  "morizon:mzn2048275015": [
   "Miedziana",
   null
@@ -33,14 +32,6 @@
   "Powstańców Śląskich",
   null
  ],
- "nieruchomosci:27100697": [
-  "Tęczowa",
-  null
- ],
- "nieruchomosci:27104227": [
-  "Tadeusza Kościuszki",
-  null
- ],
  "nieruchomosci:27107028": null,
  "nieruchomosci:27110024": [
   "Żelazna",
@@ -54,12 +45,7 @@
  "olx:1068780343": null,
  "olx:1088399327": null,
  "olx:1090129222": null,
- "olx:1093829811": null,
  "olx:1094971185": null,
- "olx:1095517958": [
-  "Grabiszyńska",
-  null
- ],
  "olx:1096207066": null,
  "olx:1096744430": null,
  "olx:1097167174": null,
@@ -69,10 +55,6 @@
  ],
  "olx:1097765686": null,
  "olx:1098448787": null,
- "olx:1099509847": [
-  "Małopanewska",
-  null
- ],
  "olx:1100382954": [
   "Orawska",
   null
@@ -101,7 +83,6 @@
   "Górnicza",
   null
  ],
- "olx:1105507928": null,
  "olx:1105508225": null,
  "olx:1105531707": [
   "Kozia",
@@ -112,24 +93,12 @@
   "9"
  ],
  "olx:1107121609": null,
- "olx:1107178879": [
-  "Szczęśliwa",
-  null
- ],
  "olx:1107702783": null,
  "olx:1108220518": [
   "Tadeusza Kościuszki",
   "146"
  ],
- "olx:1108239586": [
-  "Głogowska",
-  "2"
- ],
  "olx:1108525895": null,
- "olx:1108591509": [
-  "Marcelego Bacciarellego",
-  null
- ],
  "olx:1108597831": [
   "Stabłowicka",
   null
@@ -143,64 +112,9 @@
   "Tadeusza Zielińskiego",
   null
  ],
- "olx:1109691313": null,
  "olx:1109696473": null,
  "olx:1109709251": null,
- "olx:1109825087": null,
- "olx:1109826817": null,
- "olx:1109848093": null,
  "olx:1109848240": null,
- "olx:1109901261": null,
- "otodom:68593486": [
-  "Jabłeczna",
-  null
- ],
- "otodom:68594249": [
-  "Grecka",
-  null
- ],
- "otodom:68594283": [
-  "Braterska",
-  null
- ],
- "otodom:68594735": null,
- "otodom:68596198": null,
- "otodom:68596492": [
-  "Iwana Pawłowa",
-  null
- ],
- "otodom:68596962": [
-  "Dolnobrzeska",
-  null
- ],
- "otodom:68597263": [
-  "Tęczowa",
-  null
- ],
- "otodom:68597272": [
-  "Jarosława Iwaszkiewicza",
-  null
- ],
- "otodom:68597422": [
-  "Solny",
-  "16"
- ],
- "otodom:68598009": [
-  "Dokerska",
-  null
- ],
- "otodom:68598566": [
-  "Jedności Narodowej",
-  null
- ],
- "otodom:68598877": [
-  "Tęczowa",
-  null
- ],
- "otodom:68600158": [
-  "Arbuzowa",
-  null
- ],
  "otodom:68602567": [
   "Jerzego Bajana",
   "8"
@@ -223,7 +137,6 @@
   "Legnicka",
   "52A"
  ],
- "otodom:68604373": null,
  "otodom:68605627": null,
  "otodom:68605937": null,
  "otodom:68606080": null,
@@ -258,6 +171,15 @@
  "otodom:68616873": null,
  "otodom:68616888": [
   "Jana Pawła II",
+  null
+ ],
+ "otodom:68617547": null,
+ "otodom:68617657": [
+  "Gradowa",
+  null
+ ],
+ "otodom:68617668": [
+  "Krucza",
   null
  ]
 }

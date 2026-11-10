@@ -309,6 +309,10 @@
   51.081226,
   17.085531
  ],
+ "wrocław|czeremchowa": [
+  51.065724,
+  17.013107
+ ],
  "wrocław|czerniawska": [
   51.07321,
   17.039449
@@ -536,6 +540,10 @@
   51.092886,
   16.97888
  ],
+ "wrocław|generała józefa hallera|29a": [
+  51.0882,
+  17.006871
+ ],
  "wrocław|generała karola kniaziewicza|38": [
   51.101247,
   17.045205
@@ -556,6 +564,10 @@
   51.145696,
   17.113675
  ],
+ "wrocław|gorlicka 80": [
+  51.142613,
+  17.123432
+ ],
  "wrocław|grabiszyńska": [
   51.095292,
   16.98328
@@ -567,6 +579,10 @@
  "wrocław|grabiszyńska|91": [
   51.101536,
   17.008239
+ ],
+ "wrocław|gradowa": [
+  51.076539,
+  16.995137
  ],
  "wrocław|graniczna": [
   51.111421,
@@ -604,6 +620,10 @@
   51.110202,
   17.053976
  ],
+ "wrocław|grunwaldzki|8": [
+  51.110719,
+  17.055935
+ ],
  "wrocław|gwiaździsta": [
   51.094551,
   17.017726
@@ -635,6 +655,10 @@
  "wrocław|henryka michała kamieńskiego|202": [
   51.155759,
   17.043629
+ ],
+ "wrocław|henryka pobożnego": [
+  51.120704,
+  17.038491
  ],
  "wrocław|henryka pobożnego|16": [
   51.120596,
@@ -1081,6 +1105,10 @@
   51.122194,
   16.981437
  ],
+ "wrocław|kępa mieszczańska": [
+  51.118271,
+  17.021922
+ ],
  "wrocław|kłodnicka": [
   51.122614,
   16.984245
@@ -1096,6 +1124,10 @@
  "wrocław|legnicka": [
   51.124608,
   16.985128
+ ],
+ "wrocław|legnicka|30": [
+  51.112104,
+  17.013777
  ],
  "wrocław|legnicka|33": [
   51.114271,
@@ -1197,6 +1229,10 @@
  "wrocław|marka hłaski": [
   51.101111,
   16.947765
+ ],
+ "wrocław|marka hłaski|59": [
+  51.099922,
+  16.949452
  ],
  "wrocław|marysieńki": [
   51.156589,
@@ -1319,6 +1355,10 @@
  "wrocław|nankiera": [
   51.112654,
   17.037181
+ ],
+ "wrocław|nefrytowa": [
+  51.04925,
+  17.020795
  ],
  "wrocław|niedźwiedzia": [
   51.125283,
@@ -1500,6 +1540,10 @@
  "wrocław|piękna": [
   51.084457,
   17.05752
+ ],
+ "wrocław|piękna|21": [
+  51.08468,
+  17.052368
  ],
  "wrocław|pochyła": [
   51.103231,
@@ -1803,6 +1847,7 @@
   51.090564,
   16.93725
  ],
+ "wrocław|stanisława staszica|15": null,
  "wrocław|stanisława więckowskiego": [
   51.098417,
   17.052974
@@ -2004,6 +2049,10 @@
   51.103588,
   17.052325
  ],
+ "wrocław|walońska|19": [
+  51.103309,
+  17.052555
+ ],
  "wrocław|walońska|9": [
   51.10412,
   17.051487
@@ -2136,6 +2185,10 @@
  "wrocław|władysława reymonta|10f": [
   51.129224,
   17.026889
+ ],
+ "wrocław|władysława sikorskiego": [
+  51.114286,
+  17.024099
  ],
  "wrocław|włókniarzy": [
   51.165449,
