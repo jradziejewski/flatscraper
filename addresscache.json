@@ -3,10 +3,6 @@
   "Łubinowa",
   null
  ],
- "morizon:mzn2048275015": [
-  "Miedziana",
-  null
- ],
  "morizon:mzn2048306318": [
   "Marcina Kromera",
   null
@@ -30,8 +26,17 @@
   "Przyjaźni",
   null
  ],
+ "nieruchomosci:26074695": [
+  "Wincentego Pola",
+  null
+ ],
  "nieruchomosci:26894261": null,
+ "nieruchomosci:26977914": [
+  "Muzealny",
+  null
+ ],
  "nieruchomosci:27021854": null,
+ "nieruchomosci:27081778": null,
  "nieruchomosci:27081942": [
   "Powstańców Śląskich",
   null
@@ -42,14 +47,11 @@
   null
  ],
  "nieruchomosci:27112628": null,
- "olx:1051277157": [
-  "Jesionowa",
-  "47"
- ],
+ "nieruchomosci:27117688": null,
+ "nieruchomosci:27117689": null,
  "olx:1068780343": null,
  "olx:1088399327": null,
  "olx:1090129222": null,
- "olx:1094971185": null,
  "olx:1096207066": null,
  "olx:1096744430": null,
  "olx:1097167174": null,
@@ -171,5 +173,11 @@
  ],
  "otodom:68618946": null,
  "otodom:68619081": null,
- "otodom:68620825": null
+ "otodom:68620825": null,
+ "otodom:68622061": null,
+ "otodom:68622062": null,
+ "otodom:68622663": [
+  "Młynarska",
+  "2A"
+ ]
 }
