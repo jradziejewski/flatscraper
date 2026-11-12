@@ -1,8 +1,4 @@
 {
- "morizon:mzn2048270026": [
-  "Łubinowa",
-  null
- ],
  "morizon:mzn2048306318": [
   "Marcina Kromera",
   null
@@ -42,7 +38,6 @@
   "Powstańców Śląskich",
   null
  ],
- "nieruchomosci:27107028": null,
  "nieruchomosci:27110024": [
   "Żelazna",
   null
@@ -55,7 +50,6 @@
   "Księdza Piotra Skargi",
   null
  ],
- "olx:1068780343": null,
  "olx:1088399327": null,
  "olx:1090129222": null,
  "olx:1096207066": null,
@@ -77,14 +71,9 @@
   null
  ],
  "olx:1101463974": null,
- "olx:1102304610": [
-  "Piwna",
-  null
- ],
  "olx:1102947903": null,
  "olx:1102996353": null,
  "olx:1103575994": null,
- "olx:1104724586": null,
  "olx:1105228083": null,
  "olx:1105508225": null,
  "olx:1107039890": [
@@ -93,9 +82,7 @@
  ],
  "olx:1107121609": null,
  "olx:1107702783": null,
- "olx:1108971747": null,
  "olx:1109023083": null,
- "olx:1109266234": null,
  "olx:1109390703": null,
  "olx:1109439696": [
   "Tadeusza Zielińskiego",
@@ -104,20 +91,6 @@
  "olx:1109696473": null,
  "olx:1109709251": null,
  "olx:1109848240": null,
- "otodom:68602694": [
-  "Tadeusza Kościuszki",
-  null
- ],
- "otodom:68602965": null,
- "otodom:68603376": null,
- "otodom:68603662": [
-  "Armii Krajowej",
-  null
- ],
- "otodom:68603943": [
-  "Legnicka",
-  "52A"
- ],
  "otodom:68605627": null,
  "otodom:68605937": null,
  "otodom:68606080": null,
@@ -175,6 +148,20 @@
  "otodom:68623317": null,
  "otodom:68624127": [
   "Kolista",
+  null
+ ],
+ "otodom:68624351": [
+  "Kurkowa",
+  null
+ ],
+ "otodom:68625598": [
+  "Złotnicka",
+  "10B"
+ ],
+ "otodom:68625679": null,
+ "otodom:68626722": null,
+ "otodom:68626750": [
+  "Mglista",
   null
  ]
 }
