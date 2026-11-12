@@ -26,6 +26,7 @@
   "Przyjaźni",
   null
  ],
+ "morizon:mzn2048383173": null,
  "nieruchomosci:26074695": [
   "Wincentego Pola",
   null
@@ -49,6 +50,11 @@
  "nieruchomosci:27112628": null,
  "nieruchomosci:27117688": null,
  "nieruchomosci:27117689": null,
+ "nieruchomosci:27118665": null,
+ "nieruchomosci:27119009": [
+  "Księdza Piotra Skargi",
+  null
+ ],
  "olx:1068780343": null,
  "olx:1088399327": null,
  "olx:1090129222": null,
@@ -77,18 +83,9 @@
  ],
  "olx:1102947903": null,
  "olx:1102996353": null,
- "olx:1103316260": [
-  "Krucza",
-  null
- ],
  "olx:1103575994": null,
- "olx:1103723860": null,
  "olx:1104724586": null,
  "olx:1105228083": null,
- "olx:1105263764": [
-  "Górnicza",
-  null
- ],
  "olx:1105508225": null,
  "olx:1107039890": [
   "Złotnicka",
@@ -98,7 +95,6 @@
  "olx:1107702783": null,
  "olx:1108971747": null,
  "olx:1109023083": null,
- "olx:1109212027": null,
  "olx:1109266234": null,
  "olx:1109390703": null,
  "olx:1109439696": [
@@ -108,10 +104,6 @@
  "olx:1109696473": null,
  "olx:1109709251": null,
  "olx:1109848240": null,
- "otodom:68602567": [
-  "Jerzego Bajana",
-  "8"
- ],
  "otodom:68602694": [
   "Tadeusza Kościuszki",
   null
@@ -179,5 +171,10 @@
  "otodom:68622663": [
   "Młynarska",
   "2A"
+ ],
+ "otodom:68623317": null,
+ "otodom:68624127": [
+  "Kolista",
+  null
  ]
 }

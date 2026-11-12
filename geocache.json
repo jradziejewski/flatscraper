@@ -1046,6 +1046,10 @@
   17.024143
  ],
  "wrocław|kolejowa|38": null,
+ "wrocław|kolista": [
+  51.134526,
+  16.974824
+ ],
  "wrocław|komandorska": [
   51.099564,
   17.030676
@@ -1182,6 +1186,10 @@
  "wrocław|księdza jana dzierżonia|36": [
   51.079506,
   16.958757
+ ],
+ "wrocław|księdza piotra skargi": [
+  51.107483,
+  17.038486
  ],
  "wrocław|księdza piotra wawrzyniaka": [
   51.075606,
@@ -1511,6 +1519,10 @@
   51.111448,
   17.063748
  ],
+ "wrocław|nowa": [
+  51.105275,
+  17.037998
+ ],
  "wrocław|nowodworska": [
   51.115051,
   16.960597
@@ -1554,6 +1566,10 @@
  "wrocław|obornicka|76a": [
   51.139627,
   17.026131
+ ],
+ "wrocław|obornicka|83": [
+  51.141277,
+  17.028075
  ],
  "wrocław|oboźna": [
   51.057625,
@@ -1660,6 +1676,7 @@
   51.13983,
   16.961613
  ],
+ "wrocław|piotra skargi / pl. dominikański + balkon": null,
  "wrocław|piwna": [
   51.113853,
   17.053218
@@ -1747,6 +1764,10 @@
   16.998024
  ],
  "wrocław|przejazdowa": [
+  51.147691,
+  17.081178
+ ],
+ "wrocław|przejazdowa, sołtysowice": [
   51.147691,
   17.081178
  ],
@@ -1929,6 +1950,10 @@
  "wrocław|siostrzana": [
   51.064704,
   16.99313
+ ],
+ "wrocław|skarbowców": [
+  51.078476,
+  16.998388
  ],
  "wrocław|skarbowców|108": [
   51.068582,
@@ -2260,6 +2285,10 @@
  "wrocław|wieczysta 111": [
   51.086276,
   17.040709
+ ],
+ "wrocław|wieczysta|87": [
+  51.086549,
+  17.037843
  ],
  "wrocław|wiejska": [
   51.077714,
