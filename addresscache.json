@@ -50,15 +50,18 @@
   "Księdza Piotra Skargi",
   null
  ],
+ "nieruchomosci:27123847": [
+  "Tadeusza Kościuszki",
+  null
+ ],
+ "nieruchomosci:27124237": [
+  "Jesionowa",
+  null
+ ],
  "olx:1088399327": null,
  "olx:1090129222": null,
  "olx:1096207066": null,
- "olx:1096744430": null,
  "olx:1097167174": null,
- "olx:1097435946": [
-  "Generała Karola Kniaziewicza",
-  "38"
- ],
  "olx:1097765686": null,
  "olx:1098448787": null,
  "olx:1100382954": [
@@ -70,7 +73,6 @@
   "Zakładowa",
   null
  ],
- "olx:1101463974": null,
  "olx:1102947903": null,
  "olx:1102996353": null,
  "olx:1103575994": null,
@@ -91,9 +93,6 @@
  "olx:1109709251": null,
  "olx:1109848240": null,
  "otodom:63646793": null,
- "otodom:68605937": null,
- "otodom:68606080": null,
- "otodom:68606083": null,
  "otodom:68607493": null,
  "otodom:68608072": [
   "Miłostowska",
@@ -121,7 +120,6 @@
   null
  ],
  "otodom:68615863": null,
- "otodom:68616873": null,
  "otodom:68616888": [
   "Jana Pawła II",
   null
@@ -171,5 +169,24 @@
  "otodom:68629685": [
   "Powstańców Śląskich",
   null
+ ],
+ "otodom:68630152": null,
+ "otodom:68630263": null,
+ "otodom:68631855": [
+  "Tadeusza Kościuszki",
+  null
+ ],
+ "otodom:68632207": [
+  "Jesionowa",
+  null
+ ],
+ "otodom:68632266": null,
+ "otodom:68633057": [
+  "Gazowa",
+  "38"
+ ],
+ "otodom:68633228": [
+  "Gradowa",
+  "12"
  ]
 }
