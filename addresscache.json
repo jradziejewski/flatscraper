@@ -82,7 +82,6 @@
  ],
  "olx:1107121609": null,
  "olx:1107702783": null,
- "olx:1109023083": null,
  "olx:1109390703": null,
  "olx:1109439696": [
   "Tadeusza Zielińskiego",
@@ -91,7 +90,7 @@
  "olx:1109696473": null,
  "olx:1109709251": null,
  "olx:1109848240": null,
- "otodom:68605627": null,
+ "otodom:63646793": null,
  "otodom:68605937": null,
  "otodom:68606080": null,
  "otodom:68606083": null,
@@ -164,5 +163,13 @@
   "Mglista",
   null
  ],
- "otodom:68628021": null
+ "otodom:68628021": null,
+ "otodom:68628731": [
+  "Sztabowa",
+  null
+ ],
+ "otodom:68629685": [
+  "Powstańców Śląskich",
+  null
+ ]
 }
