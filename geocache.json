@@ -658,6 +658,10 @@
   51.114429,
   17.01939
  ],
+ "wrocław|generała władysława sikorskiego|3r": [
+  51.113959,
+  17.022609
+ ],
  "wrocław|gliniana": [
   51.091635,
   17.040709
@@ -1212,6 +1216,10 @@
   51.162168,
   16.927862
  ],
+ "wrocław|kołłątaja": [
+  51.10363,
+  17.037339
+ ],
  "wrocław|kościuszki": [
   51.100169,
   17.045367
@@ -1219,6 +1227,10 @@
  "wrocław|krakowska": [
   51.083428,
   17.074893
+ ],
+ "wrocław|krakowska|108a": [
+  51.090699,
+  17.070141
  ],
  "wrocław|krakowska|39": [
   51.091413,
@@ -1659,6 +1671,10 @@
  "wrocław|niemcewicza juliana ursyna": [
   51.122371,
   17.03887
+ ],
+ "wrocław|nikliborca": [
+  51.073962,
+  16.978342
  ],
  "wrocław|nobla": [
   51.120688,
@@ -2537,6 +2553,10 @@
   17.028808
  ],
  "wrocław|wielka / komandorska / media miejskie / rozkład / po remoncie": null,
+ "wrocław|wielka|12": [
+  51.092625,
+  17.023956
+ ],
  "wrocław|wietrzna": [
   51.07245,
   16.997574
