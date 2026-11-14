@@ -145,6 +145,10 @@
   51.130464,
   16.996474
  ],
+ "wrocław|bierutowska": [
+  51.148434,
+  17.117723
+ ],
  "wrocław|blacharska": [
   51.081834,
   16.98961
@@ -489,6 +493,14 @@
  "wrocław|edmunda kajdasza|30": [
   51.05543,
   17.052719
+ ],
+ "wrocław|elizy orzeszkowej": [
+  51.121637,
+  17.056556
+ ],
+ "wrocław|emila zoli": [
+  51.076728,
+  16.957826
  ],
  "wrocław|energetyczna": [
   51.091814,
@@ -1142,6 +1154,10 @@
   51.155755,
   16.902227
  ],
+ "wrocław|kolbuszowska": [
+  51.092943,
+  16.997841
+ ],
  "wrocław|kolejowa": [
   51.101356,
   17.024143
@@ -1251,6 +1267,10 @@
  "wrocław|krawiecka|3": [
   51.109303,
   17.038055
+ ],
+ "wrocław|kromera": [
+  51.132368,
+  17.063015
  ],
  "wrocław|krucza": [
   51.093572,
@@ -2318,10 +2338,15 @@
   51.111634,
   16.961723
  ],
+ "wrocław|strzegomska|42": [
+  51.113623,
+  16.997107
+ ],
  "wrocław|strzegomska|42g": [
   51.113501,
   16.996192
  ],
+ "wrocław|strzegomski|1": null,
  "wrocław|stysia": [
   51.100218,
   17.020167
@@ -2349,6 +2374,10 @@
  "wrocław|szkocka": [
   51.109178,
   16.963766
+ ],
+ "wrocław|szparagowa": [
+  51.067213,
+  16.975868
  ],
  "wrocław|sztabowa": [
   51.088212,
@@ -2498,6 +2527,10 @@
  "wrocław|walońska|9": [
   51.10412,
   17.051487
+ ],
+ "wrocław|wambierzycka": [
+  51.075225,
+  17.048041
  ],
  "wrocław|wandy rutkiewicz": [
   51.073139,
@@ -2894,6 +2927,10 @@
   51.099134,
   17.050261
  ],
+ "wrocław|świętego wincentego|51": [
+  51.123068,
+  17.037461
+ ],
  "wrocław|żegiestowska": [
   51.082824,
   17.036818
@@ -2909,6 +2946,10 @@
  "wrocław|żmigrodzka": [
   51.163194,
   17.027694
+ ],
+ "wrocław|żmudzka": [
+  51.141619,
+  17.14014
  ],
  "wrocław|żmudzka|29": [
   51.141983,
