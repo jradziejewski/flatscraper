@@ -588,9 +588,17 @@
   51.051643,
   17.013175
  ],
+ "wrocław|gen. karola kniaziewicza": [
+  51.102295,
+  17.040025
+ ],
  "wrocław|gen. kazimierza pułaskiego": [
   51.100396,
   17.045687
+ ],
+ "wrocław|gen. ludwika mierosławskiego": [
+  51.111369,
+  17.106791
  ],
  "wrocław|gen. romualda traugutta": [
   51.104069,
@@ -645,6 +653,10 @@
  "wrocław|generała józefa hallera|29a": [
   51.0882,
   17.006871
+ ],
+ "wrocław|generała karola kniaziewicza": [
+  51.100923,
+  17.045846
  ],
  "wrocław|generała karola kniaziewicza|36": [
   51.101292,
@@ -1150,6 +1162,10 @@
   51.17933,
   16.991723
  ],
+ "wrocław|kniaziewicza": [
+  51.102295,
+  17.040025
+ ],
  "wrocław|kokosowa": [
   51.155755,
   16.902227
@@ -1227,6 +1243,10 @@
  "wrocław|kowalska": [
   51.127953,
   17.114867
+ ],
+ "wrocław|kozanowska": [
+  51.138001,
+  16.97931
  ],
  "wrocław|kozia": [
   51.162168,
@@ -1311,6 +1331,10 @@
  "wrocław|ks. szczepana zielińskiego": [
   51.125504,
   16.953632
+ ],
+ "wrocław|ksawerego liskego": [
+  51.1151,
+  17.069548
  ],
  "wrocław|księcia witolda": [
   51.114506,
@@ -1452,6 +1476,10 @@
  "wrocław|litewska|8": [
   51.142734,
   17.124978
+ ],
+ "wrocław|litomska": [
+  51.11938,
+  17.010771
  ],
  "wrocław|lniana": [
   51.090062,
@@ -1801,6 +1829,10 @@
   51.072234,
   17.089179
  ],
+ "wrocław|opolska|119f": [
+  51.072405,
+  17.086958
+ ],
  "wrocław|oporowska": [
   51.09783,
   16.998944
@@ -2017,6 +2049,10 @@
   51.076006,
   17.034688
  ],
+ "wrocław|północna|24": [
+  51.158883,
+  16.932894
+ ],
  "wrocław|racławicka": [
   51.081372,
   16.999926
@@ -2149,6 +2185,10 @@
   51.072836,
   16.991938
  ],
+ "wrocław|różyckiego": [
+  51.117096,
+  17.082483
+ ],
  "wrocław|sanocka": [
   51.094152,
   17.028604
@@ -2160,6 +2200,10 @@
  "wrocław|saperów": [
   51.086439,
   16.999719
+ ],
+ "wrocław|sarbinowska": [
+  51.127537,
+  16.946172
  ],
  "wrocław|semaforowa": [
   51.059822,
