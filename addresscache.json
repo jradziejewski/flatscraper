@@ -1,12 +1,4 @@
 {
- "morizon:mzn2048306318": [
-  "Marcina Kromera",
-  null
- ],
- "morizon:mzn2048312133": [
-  "Turniejowa",
-  null
- ],
  "morizon:mzn2048319189": [
   "Edmunda Kajdasza",
   null
@@ -41,7 +33,6 @@
   "Żelazna",
   null
  ],
- "nieruchomosci:27112628": null,
  "nieruchomosci:27117688": null,
  "nieruchomosci:27117689": null,
  "nieruchomosci:27118665": null,
@@ -68,10 +59,6 @@
  "olx:1096207066": null,
  "olx:1097765686": null,
  "olx:1100866972": null,
- "olx:1101429634": [
-  "Zakładowa",
-  null
- ],
  "olx:1102947903": null,
  "olx:1102996353": null,
  "olx:1103575994": null,
@@ -83,12 +70,7 @@
  ],
  "olx:1107702783": null,
  "olx:1109709251": null,
- "olx:1109848240": null,
  "otodom:63646793": null,
- "otodom:68609704": [
-  "Edmunda Kajdasza",
-  null
- ],
  "otodom:68611707": [
   "Zakładowa",
   null
@@ -175,5 +157,7 @@
   "Elizy Orzeszkowej",
   null
  ],
- "otodom:68635034": null
+ "otodom:68635034": null,
+ "otodom:68636082": null,
+ "otodom:68636604": null
 }

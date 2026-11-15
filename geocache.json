@@ -221,6 +221,10 @@
   51.111554,
   17.010051
  ],
+ "wrocław|braniborska 72": [
+  51.111214,
+  17.008286
+ ],
  "wrocław|braniborska|48": [
   51.111173,
   17.011014
@@ -252,6 +256,10 @@
  "wrocław|braniborska|70": [
   51.111495,
   17.008475
+ ],
+ "wrocław|braniborska|72": [
+  51.111214,
+  17.008286
  ],
  "wrocław|braterska": [
   51.06729,
@@ -473,6 +481,10 @@
  "wrocław|długa 7": [
   51.118404,
   17.016761
+ ],
+ "wrocław|długa|15": [
+  51.118692,
+  17.016302
  ],
  "wrocław|długa|44": [
   51.118641,
@@ -1428,6 +1440,11 @@
   51.124608,
   16.985128
  ],
+ "wrocław|legnicka 33": [
+  51.114271,
+  17.005848
+ ],
+ "wrocław|legnicka 33|33": null,
  "wrocław|legnicka 51a": [
   51.119067,
   16.997915
@@ -1776,6 +1793,10 @@
   51.085881,
   17.052807
  ],
+ "wrocław|objazdowa": [
+  51.122687,
+  16.922547
+ ],
  "wrocław|obornicka": [
   51.13512,
   17.034389
@@ -2080,6 +2101,10 @@
  "wrocław|reja": [
   51.11282,
   17.055626
+ ],
+ "wrocław|reymonta": [
+  51.129469,
+  17.024742
  ],
  "wrocław|robotnicza|34b": [
   51.110029,
@@ -2666,6 +2691,10 @@
   51.106629,
   16.964989
  ],
+ "wrocław|witolda lipińskiego szczedronia 39": [
+  51.1342,
+  16.924105
+ ],
  "wrocław|więzienna": [
   51.112301,
   17.032398
@@ -2709,6 +2738,10 @@
  "wrocław|wybrzeże stanisława wyspiańskiego": [
   51.109839,
   17.054464
+ ],
+ "wrocław|wykładowa": [
+  51.100846,
+  17.153528
  ],
  "wrocław|wyspa kępa mieszczańska": [
   51.118271,
