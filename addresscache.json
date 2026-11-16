@@ -71,14 +71,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68611707": [
-  "Zakładowa",
-  null
- ],
- "otodom:68611929": [
-  "Ślężna",
-  null
- ],
  "otodom:68615237": [
   "Grecka",
   null
@@ -159,5 +151,14 @@
  ],
  "otodom:68635034": null,
  "otodom:68636082": null,
- "otodom:68636604": null
+ "otodom:68636604": null,
+ "otodom:68637942": [
+  "Ignacego Chrzanowskiego",
+  null
+ ],
+ "otodom:68639499": null,
+ "otodom:68639570": [
+  "Oławska",
+  "28"
+ ]
 }
