@@ -1,8 +1,4 @@
 {
- "morizon:mzn2048319189": [
-  "Edmunda Kajdasza",
-  null
- ],
  "morizon:mzn2048334443": null,
  "morizon:mzn2048337412": null,
  "morizon:mzn2048338059": [
@@ -59,7 +55,6 @@
  "olx:1096207066": null,
  "olx:1097765686": null,
  "olx:1100866972": null,
- "olx:1102947903": null,
  "olx:1102996353": null,
  "olx:1103575994": null,
  "olx:1105228083": null,
@@ -71,15 +66,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68615237": [
-  "Grecka",
-  null
- ],
- "otodom:68615863": null,
- "otodom:68616888": [
-  "Jana Pawła II",
-  null
- ],
  "otodom:68617547": null,
  "otodom:68617657": [
   "Gradowa",
@@ -91,7 +77,6 @@
  ],
  "otodom:68618946": null,
  "otodom:68619081": null,
- "otodom:68620825": null,
  "otodom:68622061": null,
  "otodom:68622062": null,
  "otodom:68622663": [
@@ -160,5 +145,13 @@
  "otodom:68639570": [
   "Oławska",
   "28"
+ ],
+ "otodom:68640706": [
+  "Kleczkowska",
+  null
+ ],
+ "otodom:68641289": [
+  "Legnicka",
+  null
  ]
 }
