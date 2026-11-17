@@ -29,8 +29,6 @@
   "Żelazna",
   null
  ],
- "nieruchomosci:27117688": null,
- "nieruchomosci:27117689": null,
  "nieruchomosci:27118665": null,
  "nieruchomosci:27119009": [
   "Księdza Piotra Skargi",
@@ -50,6 +48,10 @@
   "Powstańców Śląskich",
   null
  ],
+ "nieruchomosci:27131387": [
+  "bulwar Ikara",
+  null
+ ],
  "olx:1088399327": null,
  "olx:1090129222": null,
  "olx:1096207066": null,
@@ -66,7 +68,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68617547": null,
  "otodom:68617657": [
   "Gradowa",
   null
@@ -111,8 +112,6 @@
   "Powstańców Śląskich",
   null
  ],
- "otodom:68630152": null,
- "otodom:68630263": null,
  "otodom:68631855": [
   "Tadeusza Kościuszki",
   null
@@ -153,5 +152,14 @@
  "otodom:68641289": [
   "Legnicka",
   null
+ ],
+ "otodom:68642985": [
+  "Oławska",
+  "28"
+ ],
+ "otodom:68644764": null,
+ "otodom:68644952": [
+  "Walońska",
+  "17"
  ]
 }
