@@ -25,15 +25,6 @@
   "Powstańców Śląskich",
   null
  ],
- "nieruchomosci:27110024": [
-  "Żelazna",
-  null
- ],
- "nieruchomosci:27118665": null,
- "nieruchomosci:27119009": [
-  "Księdza Piotra Skargi",
-  null
- ],
  "nieruchomosci:27123847": [
   "Tadeusza Kościuszki",
   null
@@ -67,8 +58,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68618946": null,
- "otodom:68619081": null,
  "otodom:68622061": null,
  "otodom:68622062": null,
  "otodom:68622663": [
@@ -155,5 +144,17 @@
  ],
  "otodom:68645291": null,
  "otodom:68645631": null,
- "otodom:68645748": null
+ "otodom:68645748": null,
+ "otodom:68647420": [
+  "Zygmunta Krasińskiego",
+  null
+ ],
+ "otodom:68647779": [
+  "Marcelego Bacciarellego",
+  null
+ ],
+ "otodom:68649002": [
+  "Aleksandra Hercena",
+  null
+ ]
 }

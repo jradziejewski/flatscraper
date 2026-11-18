@@ -11,6 +11,10 @@
   51.070055,
   17.015826
  ],
+ "wrocław|aleksandra hercena": [
+  51.102722,
+  17.041415
+ ],
  "wrocław|aleksandra kotsisa": [
   51.099764,
   17.105141
@@ -38,6 +42,10 @@
  "wrocław|antonia vivaldiego": [
   51.05222,
   17.06292
+ ],
+ "wrocław|antoniego czechowa": [
+  51.070334,
+  17.037271
  ],
  "wrocław|antoniego słonimskiego": [
   51.129016,
@@ -88,6 +96,7 @@
   51.087117,
   16.952839
  ],
+ "wrocław|baciarellego 40a": null,
  "wrocław|bajana": [
   51.130488,
   16.966965
@@ -927,6 +936,10 @@
   51.143668,
   17.069534
  ],
+ "wrocław|hercena": [
+  51.102722,
+  17.041415
+ ],
  "wrocław|hermanowska": [
   51.121489,
   16.958592
@@ -1064,6 +1077,10 @@
   51.118679,
   17.049886
  ],
+ "wrocław|jana nikliborca": [
+  51.073962,
+  16.978342
+ ],
  "wrocław|jana pawła ii": null,
  "wrocław|jana pawła ii|2": null,
  "wrocław|jana władysława dawida": [
@@ -1134,6 +1151,10 @@
   51.098116,
   17.01029
  ],
+ "wrocław|jerzego bajana": [
+  51.125229,
+  16.961224
+ ],
  "wrocław|jerzego bajana|8": [
   51.129048,
   16.96576
@@ -1153,6 +1174,10 @@
  "wrocław|jesionowa|47": [
   51.087903,
   17.055442
+ ],
+ "wrocław|jesionowa|68": [
+  51.088467,
+  17.053185
  ],
  "wrocław|jeździecka": [
   51.062732,
@@ -1261,6 +1286,10 @@
  "wrocław|kazimierza michalczyka|1d": [
   51.119118,
   17.01665
+ ],
+ "wrocław|kazimierza wielkiego": [
+  51.108887,
+  17.026923
  ],
  "wrocław|kiemliczów": [
   51.12192,
@@ -1464,6 +1493,10 @@
   51.11381,
   17.010124
  ],
+ "wrocław|krynicka": [
+  51.080133,
+  17.04902
+ ],
  "wrocław|krzycka": [
   51.07297,
   17.002318
@@ -1571,6 +1604,14 @@
  "wrocław|kłodnicka": [
   51.122614,
   16.984245
+ ],
+ "wrocław|kłośna": [
+  51.097858,
+  17.004032
+ ],
+ "wrocław|latawcowa": [
+  51.129626,
+  16.963616
  ],
  "wrocław|lauterbacha": [
   51.137512,
@@ -1685,6 +1726,10 @@
  "wrocław|marca polo": [
   51.111176,
   17.116638
+ ],
+ "wrocław|marcelego bacciarellego": [
+  51.103966,
+  17.113935
  ],
  "wrocław|marcelego bacciarellego|10c": [
   51.105607,
@@ -2009,6 +2054,10 @@
  "wrocław|oleska": [
   51.159729,
   17.135196
+ ],
+ "wrocław|oleska|11": [
+  51.159654,
+  17.13493
  ],
  "wrocław|olimpia port - + 2 m. postojowe": null,
  "wrocław|olszewskiego": [
@@ -2487,6 +2536,14 @@
   51.144947,
   16.870967
  ],
+ "wrocław|skrzydlata": [
+  51.126206,
+  16.958595
+ ],
+ "wrocław|skwer solidarności walczącej": [
+  51.102854,
+  17.030145
+ ],
  "wrocław|skwierzyńska": [
   51.098831,
   17.015312
@@ -2506,6 +2563,10 @@
  "wrocław|smardzowska 7a": [
   51.061748,
   17.04494
+ ],
+ "wrocław|sokolnicza": [
+  51.111987,
+  17.019824
  ],
  "wrocław|solny|16": [
   51.108762,
@@ -2688,6 +2749,10 @@
  "wrocław|sztabowa": [
   51.088212,
   17.014885
+ ],
+ "wrocław|szybowcowa": [
+  51.129539,
+  16.968208
  ],
  "wrocław|szymona konarskiego": [
   51.112723,
@@ -2891,6 +2956,10 @@
  "wrocław|widna": [
   51.084796,
   17.044809
+ ],
+ "wrocław|widna|9": [
+  51.0853,
+  17.043874
  ],
  "wrocław|wieczysta 111": [
   51.086276,
@@ -3270,6 +3339,10 @@
  "wrocław|św. mikołaja": [
   51.111376,
   17.029049
+ ],
+ "wrocław|świdnicka": [
+  51.108364,
+  17.032691
  ],
  "wrocław|świdnicka|45": [
   51.102099,
