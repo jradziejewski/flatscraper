@@ -59,7 +59,6 @@
  "olx:1100866972": null,
  "olx:1102996353": null,
  "olx:1103575994": null,
- "olx:1105228083": null,
  "olx:1105508225": null,
  "olx:1107039890": [
   "Złotnicka",
@@ -68,14 +67,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68617657": [
-  "Gradowa",
-  null
- ],
- "otodom:68617668": [
-  "Krucza",
-  null
- ],
  "otodom:68618946": null,
  "otodom:68619081": null,
  "otodom:68622061": null,
@@ -161,5 +152,8 @@
  "otodom:68644952": [
   "Walońska",
   "17"
- ]
+ ],
+ "otodom:68645291": null,
+ "otodom:68645631": null,
+ "otodom:68645748": null
 }
