@@ -1,20 +1,4 @@
 {
- "morizon:mzn2048334443": null,
- "morizon:mzn2048337412": null,
- "morizon:mzn2048338059": [
-  "Legnicka",
-  "52A"
- ],
- "morizon:mzn2048338892": null,
- "morizon:mzn2048378340": [
-  "Przyjaźni",
-  null
- ],
- "morizon:mzn2048383173": null,
- "morizon:mzn2048395136": [
-  "Marcina Kromera",
-  null
- ],
  "nieruchomosci:26894261": null,
  "nieruchomosci:27021854": null,
  "nieruchomosci:27081942": [
@@ -39,14 +23,13 @@
   "bulwar Ikara",
   null
  ],
+ "nieruchomosci:27136673": null,
  "olx:1088399327": null,
- "olx:1090129222": null,
  "olx:1096207066": null,
  "olx:1097765686": null,
  "olx:1100866972": null,
  "olx:1102996353": null,
  "olx:1103575994": null,
- "olx:1105508225": null,
  "olx:1107039890": [
   "Złotnicka",
   "9"
@@ -54,26 +37,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68622061": null,
- "otodom:68622062": null,
- "otodom:68622663": [
-  "Młynarska",
-  "2A"
- ],
- "otodom:68623317": null,
- "otodom:68624127": [
-  "Kolista",
-  null
- ],
- "otodom:68624351": [
-  "Kurkowa",
-  null
- ],
- "otodom:68625598": [
-  "Złotnicka",
-  "10B"
- ],
- "otodom:68625679": null,
  "otodom:68626722": null,
  "otodom:68626750": [
   "Mglista",
@@ -164,5 +127,22 @@
   "Młynarska",
   "8"
  ],
- "otodom:68650675": null
+ "otodom:68650675": null,
+ "otodom:68651531": [
+  "Zawidowska",
+  "13"
+ ],
+ "otodom:68652339": null,
+ "otodom:68652523": [
+  "Tęczowa",
+  null
+ ],
+ "otodom:68653137": [
+  "Kawalerzystów",
+  null
+ ],
+ "otodom:68653147": [
+  "Buforowa",
+  null
+ ]
 }
