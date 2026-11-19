@@ -16,10 +16,6 @@
   null
  ],
  "nieruchomosci:26894261": null,
- "nieruchomosci:26977914": [
-  "Muzealny",
-  null
- ],
  "nieruchomosci:27021854": null,
  "nieruchomosci:27081942": [
   "Powstańców Śląskich",
@@ -153,8 +149,20 @@
   "Marcelego Bacciarellego",
   null
  ],
+ "otodom:68648180": null,
+ "otodom:68648986": null,
  "otodom:68649002": [
   "Aleksandra Hercena",
   null
- ]
+ ],
+ "otodom:68649662": null,
+ "otodom:68649774": [
+  "Generała Władysława Sikorskiego",
+  "13C"
+ ],
+ "otodom:68649887": [
+  "Młynarska",
+  "8"
+ ],
+ "otodom:68650675": null
 }

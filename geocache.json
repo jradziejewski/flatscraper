@@ -775,6 +775,7 @@
   51.114429,
   17.01939
  ],
+ "wrocław|generała władysława sikorskiego|13c": null,
  "wrocław|generała władysława sikorskiego|3r": [
   51.113959,
   17.022609
@@ -947,6 +948,10 @@
  "wrocław|hiszpańska": [
   51.107528,
   16.960998
+ ],
+ "wrocław|hoene-wrońskiego": [
+  51.108342,
+  17.055925
  ],
  "wrocław|holenderska": [
   51.107299,
@@ -1191,6 +1196,10 @@
   51.054369,
   17.062405
  ],
+ "wrocław|jordanowska": [
+  51.083397,
+  16.960813
+ ],
  "wrocław|juliana ursyna niemcewicza": [
   51.120148,
   17.039063
@@ -1198,6 +1207,10 @@
  "wrocław|jurija gagarina|5": [
   51.096919,
   16.935252
+ ],
+ "wrocław|józefa marii hoene-wrońskiego": [
+  51.108342,
+  17.055925
  ],
  "wrocław|józefa rostafińskiego": [
   51.119801,
@@ -1919,6 +1932,10 @@
   51.143625,
   17.030614
  ],
+ "wrocław|młynarska|8": [
+  51.143181,
+  17.029233
+ ],
  "wrocław|na grobli": [
   51.105567,
   17.052954
@@ -2180,6 +2197,10 @@
   51.05868,
   17.015403
  ],
+ "wrocław|pilczycka": [
+  51.131268,
+  16.975615
+ ],
  "wrocław|pilczycka|101": [
   51.13983,
   16.961613
@@ -2249,6 +2270,10 @@
  "wrocław|pomorska|55": [
   51.121297,
   17.03122
+ ],
+ "wrocław|poniatowskiego": [
+  51.119498,
+  17.042223
  ],
  "wrocław|popowicka|11": null,
  "wrocław|porębska": [
@@ -2775,6 +2800,10 @@
   51.11973,
   17.00115
  ],
+ "wrocław|tadeusza boya-żeleńskiego": [
+  51.131688,
+  17.063547
+ ],
  "wrocław|tadeusza kościuszki": [
   51.100943,
   17.041257
@@ -3010,6 +3039,10 @@
   51.088729,
   17.069027
  ],
+ "wrocław|wilhelma roentgena": [
+  51.114848,
+  17.063492
+ ],
  "wrocław|wilkaska|7": [
   51.155493,
   16.92535
@@ -3094,6 +3127,10 @@
  "wrocław|wyspiańskiego": [
   51.109839,
   17.054464
+ ],
+ "wrocław|wyszyńskiego": [
+  51.122291,
+  17.052093
  ],
  "wrocław|wyścigowa": [
   51.063216,
@@ -3214,6 +3251,10 @@
  "wrocław|ziemowita|11c": [
   51.111677,
   17.016378
+ ],
+ "wrocław|ziębicka": [
+  51.078072,
+  17.057253
  ],
  "wrocław|zwycięska": [
   51.058654,
