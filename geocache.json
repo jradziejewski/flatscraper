@@ -68,6 +68,10 @@
   51.156083,
   16.897245
  ],
+ "wrocław|arbuzowa|5": [
+  51.154868,
+  16.90104
+ ],
  "wrocław|arctowskiego": [
   51.089212,
   16.986286
@@ -230,6 +234,10 @@
   51.119401,
   17.044054
  ],
+ "wrocław|bolesława prusa|6": [
+  51.119136,
+  17.041317
+ ],
  "wrocław|bolesława prusa|8": [
   51.119518,
   17.040933
@@ -370,9 +378,17 @@
   51.065276,
   16.980436
  ],
+ "wrocław|buska": [
+  51.089277,
+  17.002606
+ ],
  "wrocław|bystrzycka": [
   51.117699,
   16.984094
+ ],
+ "wrocław|canaletta": [
+  51.104593,
+  17.116877
  ],
  "wrocław|chabrowa": [
   51.046364,
@@ -566,6 +582,10 @@
  "wrocław|długa|55": [
   51.124856,
   17.013729
+ ],
+ "wrocław|długa|57d": [
+  51.124212,
+  17.015809
  ],
  "wrocław|długa|7": [
   51.118404,
@@ -774,6 +794,10 @@
  "wrocław|generała władysława sikorskiego": [
   51.114429,
   17.01939
+ ],
+ "wrocław|generała władysława sikorskiego|13": [
+  51.114863,
+  17.02019
  ],
  "wrocław|generała władysława sikorskiego|13c": null,
  "wrocław|generała władysława sikorskiego|3r": [
@@ -985,6 +1009,10 @@
   51.087658,
   17.046458
  ],
+ "wrocław|hugona kowarzyka": [
+  51.158238,
+  17.042536
+ ],
  "wrocław|hutnicza": [
   51.132699,
   16.959165
@@ -996,6 +1024,10 @@
  "wrocław|ibn siny awicenny": [
   51.082028,
   16.955952
+ ],
+ "wrocław|icchaka lejba pereca": [
+  51.101095,
+  17.008624
  ],
  "wrocław|icchaka lejba pereca|27": [
   51.097381,
@@ -1268,6 +1300,10 @@
   51.120596,
   17.028443
  ],
+ "wrocław|kaszubska|15": [
+  51.120713,
+  17.028592
+ ],
  "wrocław|kawalerzystów": [
   51.061438,
   17.004728
@@ -1518,6 +1554,10 @@
   51.074253,
   17.00354
  ],
+ "wrocław|krzysztofa komedy": [
+  51.055665,
+  17.054377
+ ],
  "wrocław|królowej marysieńki": [
   51.156589,
   17.130962
@@ -1610,6 +1650,10 @@
   51.124314,
   16.982208
  ],
+ "wrocław|kwiska|7a": [
+  51.124045,
+  16.981948
+ ],
  "wrocław|kępa mieszczańska": [
   51.118271,
   17.021922
@@ -1691,6 +1735,10 @@
  "wrocław|lipowa|25": [
   51.082534,
   17.02063
+ ],
+ "wrocław|liskego": [
+  51.115988,
+  17.069345
  ],
  "wrocław|litewska|8": [
   51.142734,
@@ -1842,6 +1890,10 @@
   51.118879,
   17.014872
  ],
+ "wrocław|michała wołodyjowskiego": [
+  51.156637,
+  16.92335
+ ],
  "wrocław|miedziana": [
   51.099662,
   16.998477
@@ -1943,6 +1995,10 @@
  "wrocław|na ostatnim groszu": [
   51.121961,
   16.974414
+ ],
+ "wrocław|na polance": [
+  51.132901,
+  17.032179
  ],
  "wrocław|namysłowska": [
   51.125563,
@@ -2493,6 +2549,10 @@
   51.079958,
   16.988732
  ],
+ "wrocław|rymarska|22": [
+  51.081585,
+  16.992458
+ ],
  "wrocław|ryszarda wagnera": [
   51.053471,
   17.060727
@@ -2812,6 +2872,10 @@
   51.099314,
   17.049816
  ],
+ "wrocław|tadeusza kościuszki|109": [
+  51.100117,
+  17.043588
+ ],
  "wrocław|tadeusza kościuszki|118": [
   51.100274,
   17.046524
@@ -2928,6 +2992,10 @@
   51.103757,
   17.051044
  ],
+ "wrocław|walońska|14": [
+  51.103709,
+  17.051252
+ ],
  "wrocław|walońska|17": [
   51.103588,
   17.052325
@@ -2989,6 +3057,10 @@
  "wrocław|widna|9": [
   51.0853,
   17.043874
+ ],
+ "wrocław|widok": [
+  51.106009,
+  17.033331
  ],
  "wrocław|wieczysta 111": [
   51.086276,
@@ -3103,6 +3175,10 @@
   51.103972,
   17.045025
  ],
+ "wrocław|wołodyjowskiego": [
+  51.156306,
+  16.924312
+ ],
  "wrocław|wołowska": [
   51.144899,
   17.02411
@@ -3111,7 +3187,14 @@
   51.145725,
   17.026065
  ],
+ "wrocław|wrocław, fabryczna, gosławicka": null,
+ "wrocław|wrocław, garbiszyn, oporowska, dla pary": null,
+ "wrocław|wrocław, krzyki, gaj, rutkiewicz": null,
+ "wrocław|wrocław, krzyki, powstańców śląskich": null,
+ "wrocław|wrocław, nowy dwór, chociebuska, nowe": null,
  "wrocław|wrocław, stabłowice, lubomierska": null,
+ "wrocław|wrocław, szczepin, szczepińska": null,
+ "wrocław|wrocław, śródmieście, biskupin, canaletta": null,
  "wrocław|wybrzeże stanisława wyspiańskiego": [
   51.109839,
   17.054464
@@ -3215,6 +3298,10 @@
  "wrocław|zatorska|132": [
   51.160686,
   17.138611
+ ],
+ "wrocław|zawidowska|13": [
+  51.153534,
+  16.940613
  ],
  "wrocław|zaziębie": [
   51.200019,

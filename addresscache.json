@@ -24,6 +24,10 @@
   null
  ],
  "nieruchomosci:27136673": null,
+ "nieruchomosci:27138999": [
+  "Widok",
+  null
+ ],
  "olx:1088399327": null,
  "olx:1096207066": null,
  "olx:1097765686": null,
@@ -92,6 +96,7 @@
   "Legnicka",
   null
  ],
+ "otodom:68641897": null,
  "otodom:68642985": [
   "Oławska",
   "28"
@@ -143,6 +148,14 @@
  ],
  "otodom:68653147": [
   "Buforowa",
+  null
+ ],
+ "otodom:68654167": [
+  "Ślężna",
+  null
+ ],
+ "otodom:68654624": [
+  "Widok",
   null
  ]
 }
