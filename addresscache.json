@@ -5,14 +5,6 @@
   "Powstańców Śląskich",
   null
  ],
- "nieruchomosci:27123847": [
-  "Tadeusza Kościuszki",
-  null
- ],
- "nieruchomosci:27124237": [
-  "Jesionowa",
-  null
- ],
  "nieruchomosci:27125081": null,
  "nieruchomosci:27125734": null,
  "nieruchomosci:27125946": [
@@ -41,11 +33,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68626722": null,
- "otodom:68626750": [
-  "Mglista",
-  null
- ],
  "otodom:68628021": null,
  "otodom:68628731": [
   "Sztabowa",
@@ -157,5 +144,9 @@
  "otodom:68654624": [
   "Widok",
   null
- ]
+ ],
+ "otodom:68655141": null,
+ "otodom:68655521": null,
+ "otodom:68655937": null,
+ "otodom:68657515": null
 }
