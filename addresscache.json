@@ -16,6 +16,7 @@
   null
  ],
  "nieruchomosci:27142675": null,
+ "nieruchomosci:27143738": null,
  "olx:1088399327": null,
  "olx:1096207066": null,
  "olx:1097765686": null,
@@ -28,12 +29,6 @@
  ],
  "olx:1107702783": null,
  "otodom:63646793": null,
- "otodom:68634571": [
-  "Elizy Orzeszkowej",
-  null
- ],
- "otodom:68635034": null,
- "otodom:68636082": null,
  "otodom:68636604": null,
  "otodom:68637942": [
   "Ignacego Chrzanowskiego",
@@ -122,5 +117,18 @@
  "otodom:68659569": [
   "Rychtalska",
   "24"
+ ],
+ "otodom:68660098": [
+  "Sztabowa",
+  null
+ ],
+ "otodom:68660515": [
+  "Mińska",
+  null
+ ],
+ "otodom:68660517": null,
+ "otodom:68660521": [
+  "Żmigrodzka",
+  null
  ]
 }
