@@ -6,11 +6,6 @@
   null
  ],
  "nieruchomosci:27125081": null,
- "nieruchomosci:27125734": null,
- "nieruchomosci:27125946": [
-  "Powstańców Śląskich",
-  null
- ],
  "nieruchomosci:27131387": [
   "bulwar Ikara",
   null
@@ -20,6 +15,7 @@
   "Widok",
   null
  ],
+ "nieruchomosci:27142675": null,
  "olx:1088399327": null,
  "olx:1096207066": null,
  "olx:1097765686": null,
@@ -33,32 +29,6 @@
  "olx:1107702783": null,
  "olx:1109709251": null,
  "otodom:63646793": null,
- "otodom:68628021": null,
- "otodom:68628731": [
-  "Sztabowa",
-  null
- ],
- "otodom:68629685": [
-  "Powstańców Śląskich",
-  null
- ],
- "otodom:68631855": [
-  "Tadeusza Kościuszki",
-  null
- ],
- "otodom:68632207": [
-  "Jesionowa",
-  null
- ],
- "otodom:68632266": null,
- "otodom:68633057": [
-  "Gazowa",
-  "38"
- ],
- "otodom:68633228": [
-  "Gradowa",
-  "12"
- ],
  "otodom:68634571": [
   "Elizy Orzeszkowej",
   null
@@ -148,5 +118,6 @@
  "otodom:68655141": null,
  "otodom:68655521": null,
  "otodom:68655937": null,
- "otodom:68657515": null
+ "otodom:68657515": null,
+ "otodom:68658625": null
 }
