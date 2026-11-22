@@ -17,11 +17,14 @@
  ],
  "nieruchomosci:27142675": null,
  "nieruchomosci:27143738": null,
+ "nieruchomosci:27144192": [
+  "Ryszarda Wagnera",
+  null
+ ],
  "olx:1088399327": null,
  "olx:1096207066": null,
  "olx:1097765686": null,
  "olx:1100866972": null,
- "olx:1102996353": null,
  "olx:1103575994": null,
  "olx:1107039890": [
   "Złotnicka",
@@ -29,11 +32,6 @@
  ],
  "olx:1107702783": null,
  "otodom:63646793": null,
- "otodom:68637942": [
-  "Ignacego Chrzanowskiego",
-  null
- ],
- "otodom:68639499": null,
  "otodom:68639570": [
   "Oławska",
   "28"
@@ -129,5 +127,10 @@
  "otodom:68660521": [
   "Żmigrodzka",
   null
- ]
+ ],
+ "otodom:68661576": [
+  "Ryszarda Wagnera",
+  null
+ ],
+ "otodom:68662418": null
 }

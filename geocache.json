@@ -190,6 +190,7 @@
   51.130464,
   16.996474
  ],
+ "wrocław|białowieska|84": null,
  "wrocław|bierutowska": [
   51.148434,
   17.117723
@@ -917,6 +918,10 @@
   51.094551,
   17.017726
  ],
+ "wrocław|gwiaździsta|10": [
+  51.097803,
+  17.022988
+ ],
  "wrocław|górecka": [
   51.159729,
   16.899869
@@ -1133,6 +1138,10 @@
   51.119238,
   17.039692
  ],
+ "wrocław|jana kilińskiego|34": [
+  51.119148,
+  17.039461
+ ],
  "wrocław|jana matejki": null,
  "wrocław|jana matejki|13": [
   51.118679,
@@ -1295,6 +1304,10 @@
  "wrocław|kamienna|13": [
   51.088962,
   17.021836
+ ],
+ "wrocław|kamienna|137": [
+  51.085465,
+  17.046826
  ],
  "wrocław|kamieńskiego": [
   51.15475,
@@ -2343,6 +2356,7 @@
   51.08468,
   17.052368
  ],
+ "wrocław|piękna|64": null,
  "wrocław|piławska": [
   51.075405,
   17.043314
@@ -2573,6 +2587,10 @@
  "wrocław|romana dmowskiego": [
   51.116947,
   17.021592
+ ],
+ "wrocław|romana dmowskiego|17d": [
+  51.117859,
+  17.019326
  ],
  "wrocław|romana dmowskiego|17e": [
   51.117692,
@@ -3328,6 +3346,10 @@
   51.063216,
   17.001444
  ],
+ "wrocław|władysława chachaja|13": [
+  51.082519,
+  16.958053
+ ],
  "wrocław|władysława jagiełły": [
   51.115791,
   17.02484
@@ -3493,6 +3515,10 @@
   51.14233,
   16.88808
  ],
+ "wrocław|złotostocka": [
+  51.078562,
+  17.060096
+ ],
  "wrocław|złotostocka|27": [
   51.078188,
   17.059993
@@ -3592,6 +3618,10 @@
  "wrocław|świeradowska": [
   51.07701,
   17.042773
+ ],
+ "wrocław|świeradowska|6": [
+  51.077502,
+  17.034809
  ],
  "wrocław|świstackiego": [
   51.099134,
