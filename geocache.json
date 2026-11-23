@@ -247,6 +247,7 @@
   51.119401,
   17.044054
  ],
+ "wrocław|bolesława prusa/pl. bema": null,
  "wrocław|bolesława prusa|6": [
   51.119136,
   17.041317
@@ -734,6 +735,10 @@
   51.104069,
   17.049226
  ],
+ "wrocław|gen. romualda traugutta|74": [
+  51.103119,
+  17.05112
+ ],
  "wrocław|gen. stanisława maczka": [
   51.05643,
   17.00973
@@ -812,6 +817,10 @@
   51.114429,
   17.01939
  ],
+ "wrocław|generała władysława sikorskiego|1": [
+  51.11343,
+  17.022927
+ ],
  "wrocław|generała władysława sikorskiego|13": [
   51.114863,
   17.02019
@@ -844,6 +853,10 @@
  "wrocław|grabiszyńska|204d": [
   51.096337,
   16.989228
+ ],
+ "wrocław|grabiszyńska|208": [
+  51.09623,
+  16.988428
  ],
  "wrocław|grabiszyńska|85b": [
   51.102299,
@@ -1221,6 +1234,10 @@
   51.098116,
   17.01029
  ],
+ "wrocław|jemiołowa|19": [
+  51.098671,
+  17.010216
+ ],
  "wrocław|jerzego badury": [
   51.108029,
   17.140476
@@ -1309,6 +1326,7 @@
   51.085465,
   17.046826
  ],
+ "wrocław|kamienna|5": null,
  "wrocław|kamieńskiego": [
   51.15475,
   17.04362
@@ -1656,6 +1674,10 @@
   51.107483,
   17.038486
  ],
+ "wrocław|księdza piotra skargi|22": [
+  51.105961,
+  17.038467
+ ],
  "wrocław|księdza piotra wawrzyniaka": [
   51.075606,
   17.000815
@@ -1786,6 +1808,10 @@
   51.101942,
   16.949129
  ],
+ "wrocław|leśna": [
+  51.151209,
+  16.83231
+ ],
  "wrocław|lipowa|25": [
   51.082534,
   17.02063
@@ -1810,6 +1836,10 @@
   51.144098,
   17.069229
  ],
+ "wrocław|lubelska": [
+  51.165767,
+  16.919813
+ ],
  "wrocław|lubomierska": [
   51.16776,
   16.897612
@@ -1817,6 +1847,10 @@
  "wrocław|lubuska": [
   51.099241,
   17.017096
+ ],
+ "wrocław|ludwika nabielaka": [
+  51.138501,
+  17.046075
  ],
  "wrocław|ludwika rydygiera": [
   51.120924,
@@ -2009,6 +2043,10 @@
  "wrocław|mińska": [
   51.099833,
   16.941395
+ ],
+ "wrocław|mińska|58e": [
+  51.104402,
+  16.944465
  ],
  "wrocław|mongolski": [
   51.060691,
@@ -2484,6 +2522,10 @@
   51.067912,
   16.997583
  ],
+ "wrocław|przyjaźni|2": [
+  51.068109,
+  17.002974
+ ],
  "wrocław|przystankowa": [
   51.069558,
   17.036004
@@ -2768,6 +2810,10 @@
   51.111987,
   17.019824
  ],
+ "wrocław|sokolnicza|5": [
+  51.110616,
+  17.019097
+ ],
  "wrocław|solny|16": [
   51.108762,
   17.029563
@@ -2852,6 +2898,10 @@
  "wrocław|stefana jaracza": [
   51.12283,
   17.055631
+ ],
+ "wrocław|stefana jaracza|37a": [
+  51.124866,
+  17.057685
  ],
  "wrocław|stefana żeromskiego": [
   51.121766,
@@ -2958,6 +3008,10 @@
   51.112723,
   17.104259
  ],
+ "wrocław|sąsiedzka": [
+  51.06531,
+  16.993373
+ ],
  "wrocław|słonimska|20": null,
  "wrocław|słonimskiego": [
   51.130561,
@@ -3026,6 +3080,10 @@
  "wrocław|torowa": [
   51.149722,
   17.041026
+ ],
+ "wrocław|toruńska": [
+  51.131611,
+  17.078704
  ],
  "wrocław|trawowa": [
   51.099247,
@@ -3318,6 +3376,7 @@
  "wrocław|wrocław, garbiszyn, oporowska, dla pary": null,
  "wrocław|wrocław, krzyki, gaj, rutkiewicz": null,
  "wrocław|wrocław, krzyki, powstańców śląskich": null,
+ "wrocław|wrocław, krzyki, powstańców śląskich|74": null,
  "wrocław|wrocław, nowy dwór, chociebuska, nowe": null,
  "wrocław|wrocław, stabłowice, lubomierska": null,
  "wrocław|wrocław, szczepin, szczepińska": null,
@@ -3429,6 +3488,10 @@
  "wrocław|zatorska|132": [
   51.160686,
   17.138611
+ ],
+ "wrocław|zatorska|184": [
+  51.15941,
+  17.143657
  ],
  "wrocław|zawidowska|13": [
   51.153534,
@@ -3630,6 +3693,10 @@
  "wrocław|świętego macieja|9": [
   51.120299,
   17.036821
+ ],
+ "wrocław|świętego mikołaja": [
+  51.111573,
+  17.028012
  ],
  "wrocław|świętego wincentego|51": [
   51.123068,

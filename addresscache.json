@@ -21,6 +21,7 @@
   "Ryszarda Wagnera",
   null
  ],
+ "nieruchomosci:27147477": null,
  "olx:1088399327": null,
  "olx:1096207066": null,
  "olx:1097765686": null,
@@ -32,18 +33,6 @@
  ],
  "olx:1107702783": null,
  "otodom:63646793": null,
- "otodom:68639570": [
-  "Oławska",
-  "28"
- ],
- "otodom:68640706": [
-  "Kleczkowska",
-  null
- ],
- "otodom:68641289": [
-  "Legnicka",
-  null
- ],
  "otodom:68641897": null,
  "otodom:68642985": [
   "Oławska",
@@ -132,5 +121,8 @@
   "Ryszarda Wagnera",
   null
  ],
- "otodom:68662418": null
+ "otodom:68662418": null,
+ "otodom:68663019": null,
+ "otodom:68665738": null,
+ "otodom:68666311": null
 }
