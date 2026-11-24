@@ -6,10 +6,6 @@
   null
  ],
  "nieruchomosci:27125081": null,
- "nieruchomosci:27131387": [
-  "bulwar Ikara",
-  null
- ],
  "nieruchomosci:27136673": null,
  "nieruchomosci:27138999": [
   "Widok",
@@ -33,18 +29,11 @@
  ],
  "olx:1107702783": null,
  "otodom:63646793": null,
- "otodom:68641897": null,
- "otodom:68642985": [
-  "Oławska",
-  "28"
- ],
- "otodom:68644764": null,
  "otodom:68644952": [
   "Walońska",
   "17"
  ],
  "otodom:68645291": null,
- "otodom:68645631": null,
  "otodom:68645748": null,
  "otodom:68647420": [
   "Zygmunta Krasińskiego",
@@ -124,5 +113,15 @@
  "otodom:68662418": null,
  "otodom:68663019": null,
  "otodom:68665738": null,
- "otodom:68666311": null
+ "otodom:68666311": null,
+ "otodom:68668024": null,
+ "otodom:68668077": [
+  "Jedności Narodowej",
+  null
+ ],
+ "otodom:68668136": null,
+ "otodom:68669349": [
+  "Armii Krajowej",
+  null
+ ]
 }

@@ -3,6 +3,10 @@
   51.153431,
   17.045801
  ],
+ "wrocław|adama jerzego czartoryskiego|47": [
+  51.153914,
+  17.047533
+ ],
  "wrocław|adama jerzego czartoryskiego|4c": [
   51.15255,
   17.044737
@@ -10,6 +14,10 @@
  "wrocław|adama jerzego czartoryskiego|61": [
   51.15497,
   17.047971
+ ],
+ "wrocław|adama uznańskiego|13": [
+  51.07218,
+  17.038482
  ],
  "wrocław|agrestowa": [
   51.070055,
@@ -88,6 +96,10 @@
   51.086415,
   17.069873
  ],
+ "wrocław|artemskiej": [
+  51.055965,
+  17.049758
+ ],
  "wrocław|artemskiej 6": [
   51.056109,
   17.05331
@@ -137,6 +149,10 @@
   51.120107,
   17.046663
  ],
+ "wrocław|bednarska": [
+  51.135846,
+  16.954707
+ ],
  "wrocław|bema": [
   51.116825,
   17.041559
@@ -178,6 +194,10 @@
   16.990129
  ],
  "wrocław|białowieska / balkon": null,
+ "wrocław|białowieska 45c": [
+  51.13059,
+  16.994842
+ ],
  "wrocław|białowieska|105": [
   51.131125,
   16.989782
@@ -243,6 +263,10 @@
   51.138616,
   17.079872
  ],
+ "wrocław|bolesława krzywoustego|7a": [
+  51.135529,
+  17.071375
+ ],
  "wrocław|bolesława prusa": [
   51.119401,
   17.044054
@@ -275,6 +299,10 @@
  "wrocław|borowska|99": [
   51.090544,
   17.032235
+ ],
+ "wrocław|boya-żeleńskiego": [
+  51.131688,
+  17.063547
  ],
  "wrocław|braci gierymskich": [
   51.102189,
@@ -444,6 +472,10 @@
   51.062811,
   16.979883
  ],
+ "wrocław|cukrowa|13c": [
+  51.062346,
+  16.981907
+ ],
  "wrocław|cynamonowa": [
   51.176399,
   17.005513
@@ -480,6 +512,10 @@
   51.075404,
   17.040108
  ],
+ "wrocław|czysta": [
+  51.103299,
+  17.032934
+ ],
  "wrocław|daktylowa": [
   51.154975,
   16.895777
@@ -495,6 +531,10 @@
  "wrocław|daszyńskiego": [
   51.126702,
   17.048539
+ ],
+ "wrocław|dawida": [
+  51.094394,
+  17.039114
  ],
  "wrocław|dedala": [
   51.126392,
@@ -536,6 +576,10 @@
  "wrocław|drabika 42": [
   51.059634,
   17.051504
+ ],
+ "wrocław|drohobycka": [
+  51.096137,
+  16.939323
  ],
  "wrocław|drukarska": [
   51.090056,
@@ -891,6 +935,10 @@
   51.094468,
   17.010577
  ],
+ "wrocław|grota roweckiego": [
+  51.05065,
+  17.030412
+ ],
  "wrocław|grota-roweckiego": [
   51.05065,
   17.030412
@@ -955,6 +1003,10 @@
   51.167348,
   16.891379
  ],
+ "wrocław|główna|68": [
+  51.160788,
+  16.901975
+ ],
  "wrocław|główna|92": [
   51.161356,
   16.90176
@@ -1010,6 +1062,10 @@
  "wrocław|hiszpańska": [
   51.107528,
   16.960998
+ ],
+ "wrocław|hlonda": [
+  51.114779,
+  17.049788
  ],
  "wrocław|hoene-wrońskiego": [
   51.108342,
@@ -1170,6 +1226,10 @@
   51.094394,
   17.039114
  ],
+ "wrocław|jana władysława dawida|17": [
+  51.093303,
+  17.041455
+ ],
  "wrocław|januszowicka": [
   51.084515,
   17.013538
@@ -1309,6 +1369,10 @@
  "wrocław|jęczmienna": [
   51.102014,
   17.017218
+ ],
+ "wrocław|kabaczkowa": [
+  51.068142,
+  16.978543
  ],
  "wrocław|kajdasza": [
   51.054477,
@@ -1682,6 +1746,10 @@
   51.075606,
   17.000815
  ],
+ "wrocław|księska|2": [
+  51.077014,
+  17.089152
+ ],
  "wrocław|kurkowa": [
   51.120158,
   17.028525
@@ -1832,6 +1900,10 @@
   51.090062,
   17.043376
  ],
+ "wrocław|lothara herbsta": [
+  51.143668,
+  17.069534
+ ],
  "wrocław|lothara herbsta|4": [
   51.144098,
   17.069229
@@ -1934,9 +2006,17 @@
   51.099922,
   16.949452
  ],
+ "wrocław|marsz. józefa piłsudskiego": [
+  51.105694,
+  17.021659
+ ],
  "wrocław|marszałka józefa piłsudskiego": [
   51.101501,
   17.028194
+ ],
+ "wrocław|marszałka józefa piłsudskiego|110": [
+  51.099823,
+  17.037786
  ],
  "wrocław|marysieńki": [
   51.156589,
@@ -2159,6 +2239,10 @@
  "wrocław|nowowiejska": [
   51.121777,
   17.053068
+ ],
+ "wrocław|nowowiejska|12a": [
+  51.124592,
+  17.04659
  ],
  "wrocław|nowowiejska|7": [
   51.123984,
@@ -2866,6 +2950,10 @@
   51.117394,
   17.032202
  ],
+ "wrocław|stanisława hartmana": [
+  51.160556,
+  16.874427
+ ],
  "wrocław|stanisława kunickiego": [
   51.090564,
   16.93725
@@ -3065,9 +3153,17 @@
   51.100415,
   17.023236
  ],
+ "wrocław|tadeusza zielińskiego|54": [
+  51.09779,
+  17.021805
+ ],
  "wrocław|tadeusza zielińskiego|55": [
   51.099538,
   17.020622
+ ],
+ "wrocław|teodora parnickiego|4": [
+  51.139635,
+  17.029355
  ],
  "wrocław|tkacka|65": [
   51.138755,
