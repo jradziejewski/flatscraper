@@ -215,6 +215,10 @@
   51.148434,
   17.117723
  ],
+ "wrocław|biskupia": [
+  51.108574,
+  17.036501
+ ],
  "wrocław|blacharska": [
   51.081834,
   16.98961
@@ -565,6 +569,10 @@
   51.065413,
   16.981987
  ],
+ "wrocław|dożynkowa|8d": [
+  51.06626,
+  16.98485
+ ],
  "wrocław|dr. ludwika rydygiera": [
   51.120924,
   17.032261
@@ -832,6 +840,10 @@
  "wrocław|generała józefa hallera|29a": [
   51.0882,
   17.006871
+ ],
+ "wrocław|generała józefa hallera|73": [
+  51.090025,
+  16.999801
  ],
  "wrocław|generała karola kniaziewicza": [
   51.100923,
@@ -1274,6 +1286,10 @@
   51.127722,
   17.05058
  ],
+ "wrocław|jedności narodowej|200": [
+  51.128501,
+  17.050743
+ ],
  "wrocław|jedności narodowej|204": [
   51.128624,
   17.051475
@@ -1629,6 +1645,10 @@
   51.093926,
   17.060765
  ],
+ "wrocław|krakowska|88": [
+  51.092013,
+  17.064081
+ ],
  "wrocław|krasińskiego": [
   51.105863,
   17.043351
@@ -1774,6 +1794,10 @@
   51.051643,
   17.013175
  ],
+ "wrocław|kutrzeby": [
+  51.051836,
+  17.018809
+ ],
  "wrocław|kuźnicza": [
   51.11195,
   17.034133
@@ -1912,6 +1936,10 @@
   51.165767,
   16.919813
  ],
+ "wrocław|lubińska": [
+  51.116992,
+  17.005212
+ ],
  "wrocław|lubomierska": [
   51.16776,
   16.897612
@@ -1931,6 +1959,10 @@
  "wrocław|ludwika rydygiera|34": [
   51.119911,
   17.032189
+ ],
+ "wrocław|ludwika rydygiera|44": [
+  51.120604,
+  17.032093
  ],
  "wrocław|madalińskiego": [
   51.095766,
@@ -2312,6 +2344,10 @@
   51.113379,
   17.031551
  ],
+ "wrocław|ofiar oświęcimskich|36": [
+  51.107997,
+  17.034518
+ ],
  "wrocław|oficerska": [
   51.091772,
   17.010237
@@ -2533,6 +2569,10 @@
   17.042223
  ],
  "wrocław|popowicka|11": null,
+ "wrocław|popowicka|142": [
+  51.128871,
+  16.987958
+ ],
  "wrocław|poranna 35": [
   51.071813,
   16.991471
@@ -2609,6 +2649,10 @@
  "wrocław|przyjaźni|2": [
   51.068109,
   17.002974
+ ],
+ "wrocław|przyjaźni|4": [
+  51.067349,
+  17.000682
  ],
  "wrocław|przystankowa": [
   51.069558,
@@ -2870,6 +2914,10 @@
   51.102854,
   17.030145
  ],
+ "wrocław|skwerowa": [
+  51.096846,
+  17.030207
+ ],
  "wrocław|skwierzyńska": [
   51.098831,
   17.015312
@@ -2889,6 +2937,10 @@
  "wrocław|smardzowska 7a": [
   51.061748,
   17.04494
+ ],
+ "wrocław|sokola": [
+  51.083938,
+  17.000656
  ],
  "wrocław|sokolnicza": [
   51.111987,

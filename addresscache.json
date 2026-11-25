@@ -24,7 +24,6 @@
  "olx:1103575994": null,
  "olx:1107702783": null,
  "otodom:63646793": null,
- "otodom:68645748": null,
  "otodom:68647420": [
   "Zygmunta Krasińskiego",
   null
@@ -112,5 +111,23 @@
  "otodom:68669349": [
   "Armii Krajowej",
   null
+ ],
+ "otodom:68671562": null,
+ "otodom:68672767": [
+  "Grecka",
+  null
+ ],
+ "otodom:68673012": [
+  "Armii Krajowej",
+  null
+ ],
+ "otodom:68673246": null,
+ "otodom:68673550": [
+  "Zwycięska",
+  "3"
+ ],
+ "otodom:68674894": [
+  "Ludwika Rydygiera",
+  "44"
  ]
 }
