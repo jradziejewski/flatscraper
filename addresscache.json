@@ -1,16 +1,16 @@
 {
- "nieruchomosci:26894261": null,
+ "morizon:mzn2048395136": [
+  "Marcina Kromera",
+  null
+ ],
+ "morizon:mzn2048398973": null,
+ "morizon:mzn2048428826": null,
  "nieruchomosci:27021854": null,
  "nieruchomosci:27081942": [
   "Powstańców Śląskich",
   null
  ],
  "nieruchomosci:27125081": null,
- "nieruchomosci:27136673": null,
- "nieruchomosci:27138999": [
-  "Widok",
-  null
- ],
  "nieruchomosci:27142675": null,
  "nieruchomosci:27143738": null,
  "nieruchomosci:27144192": [
@@ -23,26 +23,10 @@
  "olx:1097765686": null,
  "olx:1103575994": null,
  "olx:1107702783": null,
- "otodom:68648986": null,
- "otodom:68649002": [
-  "Aleksandra Hercena",
-  null
- ],
- "otodom:68649662": null,
- "otodom:68649774": [
-  "Generała Władysława Sikorskiego",
-  "13C"
- ],
- "otodom:68649887": [
-  "Młynarska",
-  "8"
- ],
- "otodom:68650675": null,
  "otodom:68651531": [
   "Zawidowska",
   "13"
  ],
- "otodom:68652339": null,
  "otodom:68652523": [
   "Tęczowa",
   null
@@ -64,7 +48,6 @@
   null
  ],
  "otodom:68655141": null,
- "otodom:68655521": null,
  "otodom:68655937": null,
  "otodom:68657515": null,
  "otodom:68658625": null,
@@ -120,5 +103,11 @@
  "otodom:68674894": [
   "Ludwika Rydygiera",
   "44"
- ]
+ ],
+ "otodom:68677054": [
+  "Sokolnicza",
+  null
+ ],
+ "otodom:68677188": null,
+ "otodom:68677243": null
 }
