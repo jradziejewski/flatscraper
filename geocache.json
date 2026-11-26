@@ -72,6 +72,10 @@
   17.045726
  ],
  "wrocław|antoniego słonimskiego|62b": null,
+ "wrocław|antoniego wiwulskiego": [
+  51.101354,
+  17.084075
+ ],
  "wrocław|anyżowa": [
   51.176438,
   16.996885
@@ -1175,6 +1179,7 @@
   51.116781,
   17.015308
  ],
+ "wrocław|inowrocławska|10": null,
  "wrocław|inowrocławska|39": [
   51.117059,
   17.015677
@@ -2544,6 +2549,10 @@
   51.108172,
   17.043107
  ],
+ "wrocław|poleska|45": [
+  51.143898,
+  17.124691
+ ],
  "wrocław|poleska|47": [
   51.143589,
   17.12469
@@ -2990,6 +2999,10 @@
   51.059226,
   17.051552
  ],
+ "wrocław|stanisława drabika|50": [
+  51.05796,
+  17.052737
+ ],
  "wrocław|stanisława drabika|66": [
   51.057024,
   17.053243
@@ -3248,6 +3261,10 @@
  "wrocław|turawska": [
   51.072768,
   17.091366
+ ],
+ "wrocław|turawska|5": [
+  51.073152,
+  17.093005
  ],
  "wrocław|turniejowa": [
   51.069957,
