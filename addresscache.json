@@ -11,42 +11,21 @@
   null
  ],
  "nieruchomosci:27125081": null,
- "nieruchomosci:27142675": null,
  "nieruchomosci:27143738": null,
  "nieruchomosci:27144192": [
   "Ryszarda Wagnera",
   null
  ],
  "nieruchomosci:27147477": null,
+ "nieruchomosci:27158809": [
+  "Witolda Lipińskiego „Szczedronia”",
+  "17"
+ ],
  "olx:1088399327": null,
  "olx:1096207066": null,
  "olx:1097765686": null,
  "olx:1103575994": null,
  "olx:1107702783": null,
- "otodom:68651531": [
-  "Zawidowska",
-  "13"
- ],
- "otodom:68652523": [
-  "Tęczowa",
-  null
- ],
- "otodom:68653137": [
-  "Kawalerzystów",
-  null
- ],
- "otodom:68653147": [
-  "Buforowa",
-  null
- ],
- "otodom:68654167": [
-  "Ślężna",
-  null
- ],
- "otodom:68654624": [
-  "Widok",
-  null
- ],
  "otodom:68655141": null,
  "otodom:68655937": null,
  "otodom:68657515": null,
@@ -110,5 +89,18 @@
  ],
  "otodom:68677188": null,
  "otodom:68677243": null,
- "otodom:68679247": null
+ "otodom:68679247": null,
+ "otodom:68681628": [
+  "Racławicka",
+  null
+ ],
+ "otodom:68681960": null,
+ "otodom:68682382": [
+  "Księcia Witolda",
+  null
+ ],
+ "otodom:68682627": [
+  "Księcia Witolda",
+  null
+ ]
 }

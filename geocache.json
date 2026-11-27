@@ -149,6 +149,10 @@
   51.077264,
   16.958121
  ],
+ "wrocław|bardzka": [
+  51.084775,
+  17.04833
+ ],
  "wrocław|bardzka|28": [
   51.081934,
   17.051287
@@ -452,6 +456,10 @@
   51.126231,
   16.971301
  ],
+ "wrocław|bulwar ikara|18": [
+  51.125496,
+  16.971708
+ ],
  "wrocław|buraczana": [
   51.065276,
   16.980436
@@ -601,6 +609,10 @@
   51.065413,
   16.981987
  ],
+ "wrocław|dożynkowa|56": [
+  51.070628,
+  16.984355
+ ],
  "wrocław|dożynkowa|8d": [
   51.06626,
   16.98485
@@ -616,6 +628,10 @@
  "wrocław|drabika 42": [
   51.059634,
   17.051504
+ ],
+ "wrocław|drabika 87": [
+  51.058869,
+  17.055429
  ],
  "wrocław|drohobycka": [
   51.096137,
@@ -1022,6 +1038,10 @@
  "wrocław|grunwaldzki|2": [
   51.110202,
   17.053976
+ ],
+ "wrocław|grunwaldzki|57": [
+  51.114038,
+  17.07024
  ],
  "wrocław|grunwaldzki|8": [
   51.110719,
@@ -1957,6 +1977,10 @@
   51.151209,
   16.83231
  ],
+ "wrocław|lipińskiego szczedronia": [
+  51.134219,
+  16.924989
+ ],
  "wrocław|lipowa|25": [
   51.082534,
   17.02063
@@ -2269,6 +2293,10 @@
   51.143625,
   17.030614
  ],
+ "wrocław|młynarska|2h": [
+  51.143791,
+  17.030189
+ ],
  "wrocław|młynarska|8": [
   51.143181,
   17.029233
@@ -2538,6 +2566,10 @@
   51.062148,
   16.990895
  ],
+ "wrocław|partynicka|11": [
+  51.062588,
+  16.991665
+ ],
  "wrocław|partyzantów": [
   51.10964,
   17.09964
@@ -2719,6 +2751,10 @@
   51.147691,
   17.081178
  ],
+ "wrocław|przesmyckiego": [
+  51.137758,
+  17.064009
+ ],
  "wrocław|przestrzenna": [
   51.089285,
   17.038549
@@ -2870,6 +2906,10 @@
  "wrocław|rostafińskiego": [
   51.119801,
   17.034017
+ ],
+ "wrocław|roślinna": [
+  51.100883,
+  16.943301
  ],
  "wrocław|ruczajowa|13": [
   51.159516,
@@ -3042,6 +3082,10 @@
  "wrocław|sokolnicza|5": [
   51.110616,
   17.019097
+ ],
+ "wrocław|solny": [
+  51.109409,
+  17.029458
  ],
  "wrocław|solny|16": [
   51.108762,
@@ -3481,6 +3525,10 @@
   51.09125,
   17.035901
  ],
+ "wrocław|wesoła|15": [
+  51.091059,
+  17.035799
+ ],
  "wrocław|wełniana": [
   51.159736,
   16.90135
@@ -3585,6 +3633,14 @@
  "wrocław|witolda lipińskiego szczedronia 39": [
   51.1342,
   16.924105
+ ],
+ "wrocław|witolda lipińskiego „szczedronia”": [
+  51.134219,
+  16.924989
+ ],
+ "wrocław|witolda lipińskiego „szczedronia”|17": [
+  51.133933,
+  16.925963
  ],
  "wrocław|więzienna": [
   51.112301,
@@ -3778,6 +3834,10 @@
  "wrocław|zemska": [
   51.119325,
   16.95309
+ ],
+ "wrocław|zenona miriama przesmyckiego": [
+  51.137758,
+  17.064009
  ],
  "wrocław|zgorzelecka": [
   51.118795,
