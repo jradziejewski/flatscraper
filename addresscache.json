@@ -5,6 +5,10 @@
  ],
  "morizon:mzn2048398973": null,
  "morizon:mzn2048428826": null,
+ "morizon:mzn2048457712": [
+  "Księcia Witolda",
+  null
+ ],
  "nieruchomosci:27021854": null,
  "nieruchomosci:27081942": [
   "Powstańców Śląskich",
@@ -102,5 +106,14 @@
  "otodom:68682627": [
   "Księcia Witolda",
   null
- ]
+ ],
+ "otodom:68682923": [
+  "Ołtaszyńska",
+  null
+ ],
+ "otodom:68683177": [
+  "Armeńska",
+  null
+ ],
+ "otodom:68683237": null
 }
