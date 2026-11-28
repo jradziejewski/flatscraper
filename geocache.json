@@ -226,6 +226,11 @@
   51.13059,
   16.994842
  ],
+ "wrocław|białowieska 67a": [
+  51.129965,
+  16.990814
+ ],
+ "wrocław|białowieska 67a|67a": null,
  "wrocław|białowieska|105": [
   51.131125,
   16.989782
@@ -351,6 +356,10 @@
  "wrocław|braniborska 72": [
   51.111214,
   17.008286
+ ],
+ "wrocław|braniborska|44": [
+  51.111043,
+  17.011823
  ],
  "wrocław|braniborska|48": [
   51.111173,
@@ -677,6 +686,10 @@
   51.076846,
   17.047142
  ],
+ "wrocław|dzielna": [
+  51.138316,
+  16.973221
+ ],
  "wrocław|dzielnicowa": [
   51.098607,
   16.959198
@@ -732,6 +745,10 @@
  "wrocław|elizy orzeszkowej": [
   51.121637,
   17.056556
+ ],
+ "wrocław|elizy orzeszkowej|52": [
+  51.12388,
+  17.052978
  ],
  "wrocław|emila zoli": [
   51.076728,
@@ -945,6 +962,10 @@
  "wrocław|generała władysława sikorskiego|3r": [
   51.113959,
   17.022609
+ ],
+ "wrocław|giserska": [
+  51.080636,
+  16.987971
  ],
  "wrocław|gliniana": [
   51.091635,
@@ -1343,6 +1364,10 @@
   51.115059,
   16.993157
  ],
+ "wrocław|jaworska|8": [
+  51.115121,
+  16.9924
+ ],
  "wrocław|jedności narodowej": [
   51.122557,
   17.044107
@@ -1523,6 +1548,10 @@
  "wrocław|kaszubska": [
   51.120596,
   17.028443
+ ],
+ "wrocław|kaszubska 15": [
+  51.120713,
+  17.028592
  ],
  "wrocław|kaszubska|15": [
   51.120713,
@@ -2246,6 +2275,10 @@
   51.115172,
   17.05787
  ],
+ "wrocław|miodowa": [
+  51.136566,
+  16.849847
+ ],
  "wrocław|międzyleska": [
   51.079019,
   17.069193
@@ -2908,6 +2941,10 @@
   51.117692,
   17.019558
  ],
+ "wrocław|romana dmowskiego|17f": [
+  51.117525,
+  17.019479
+ ],
  "wrocław|romana dmowskiego|19d": [
   51.119082,
   17.020162
@@ -3476,6 +3513,7 @@
   51.072459,
   17.038863
  ],
+ "wrocław|vasco da gamma": null,
  "wrocław|vespucciego": [
   51.107435,
   17.124253
@@ -4096,5 +4134,9 @@
  "wrocław|żwirki i wigury": [
   51.097493,
   16.934954
+ ],
+ "wrocław|żywiecka": [
+  51.133289,
+  16.889872
  ]
 }
